@@ -5,6 +5,4 @@ labels:
 include:
 - "*.py"
 python:
-  packages:
-  - bentoml
-  - vllm
+  requirements_txt: "./requirements.txt"
