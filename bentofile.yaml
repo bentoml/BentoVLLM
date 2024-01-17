@@ -1,0 +1,10 @@
+service: "service:VLLMService"
+labels:
+  owner: bentoml-team
+  stage: demo
+include:
+- "*.py"
+python:
+  packages:
+  - bentoml
+  - vllm
