@@ -10,7 +10,14 @@ ENGINE_ARGS = AsyncEngineArgs(
     max_model_len=MAX_TOKENS
 )
 
-@bentoml.service(workers=1, resources={"gpu": "1"})
+@bentoml.service(
+    workers=1,
+    tiemout=300,
+    resources={
+        "gpu": 1,
+        "memory": "16Gi",
+    },
+)
 class VLLMService:
     def __init__(self) -> None:
         self.engine = AsyncLLMEngine.from_engine_args(ENGINE_ARGS)
