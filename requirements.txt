@@ -1,0 +1,4 @@
+bentoml>=1.2.0a0
+torch
+vllm
+xformers
