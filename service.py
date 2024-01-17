@@ -3,8 +3,12 @@ import bentoml
 from vllm import AsyncEngineArgs, AsyncLLMEngine, SamplingParams
 from typing import Optional, AsyncGenerator, List
 
-SAMPLING_PARAM = SamplingParams(max_tokens=4096)
-ENGINE_ARGS = AsyncEngineArgs(model='meta-llama/Llama-2-7b-chat-hf')
+MAX_TOKENS = 1024
+SAMPLING_PARAM = SamplingParams(max_tokens=MAX_TOKENS)
+ENGINE_ARGS = AsyncEngineArgs(
+    model='meta-llama/Llama-2-7b-chat-hf',
+    max_model_len=MAX_TOKENS
+)
 
 @bentoml.service(workers=1, resources={"gpu": "1"})
 class VLLMService:
