@@ -10,7 +10,7 @@ This document demonstrates how to build a LLM application using BentoML, powered
 ## Install dependencies
 
 ```bash
-pip install -r requirements.txt
+pip install -r requirements.txt && pip install -f -U "pydantic>=2.0"
 ```
 
 ## Run the BentoML Service
