@@ -8,3 +8,5 @@ python:
   requirements_txt: "./requirements.txt"
 docker:
   setup_script: "./setup.sh"
+envs:
+  - name: HF_TOKEN
