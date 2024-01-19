@@ -6,3 +6,5 @@ include:
 - "*.py"
 python:
   requirements_txt: "./requirements.txt"
+docker:
+  setup_script: "./setup.sh"
