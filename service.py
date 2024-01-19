@@ -11,7 +11,6 @@ ENGINE_ARGS = AsyncEngineArgs(
 )
 
 @bentoml.service(
-    workers=1,
     tiemout=300,
     resources={
         "gpu": 1,
