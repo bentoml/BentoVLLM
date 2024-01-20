@@ -9,9 +9,18 @@ ENGINE_ARGS = AsyncEngineArgs(
     model='meta-llama/Llama-2-7b-chat-hf',
     max_model_len=MAX_TOKENS
 )
+PROMPT_TEMPLATE = """<s>[INST] <<SYS>>
+You are a helpful, respectful and honest assistant. Always answer as helpfully as possible, while being safe. Your answers should not include any harmful, unethical, racist, sexist, toxic, dangerous, or illegal content. Please ensure that your responses are socially unbiased and positive in nature.
+
+If a question does not make any sense, or is not factually coherent, explain why instead of answering something not correct. If you don't know the answer to a question, please don't share false information.
+<</SYS>>
+
+{user_prompt} [/INST] """
 
 @bentoml.service(
-    tiemout=300,
+    traffic={
+        "timeout": 300,
+    },
     resources={
         "gpu": 1,
         "memory": "16Gi",
@@ -24,6 +33,7 @@ class VLLMService:
 
     @bentoml.api
     async def generate(self, prompt: str = "Explain superconductors like I'm five years old", tokens: Optional[List[int]] = None) -> AsyncGenerator[str, None]:
+        prompt = PROMPT_TEMPLATE.format(user_prompt=prompt)
         stream = await self.engine.add_request(self.request_id, prompt, SAMPLING_PARAM, prompt_token_ids=tokens)
         self.request_id += 1
         async for request_output in stream:
