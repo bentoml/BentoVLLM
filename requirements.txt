@@ -1,4 +1,4 @@
-bentoml>=1.2.0a7
+bentoml>=1.2.0rc1
 torch==2.1.2
 transformers==4.37.2
 vllm==0.3.0
