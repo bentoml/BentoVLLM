@@ -1,11 +1,12 @@
-This document demonstrates how to build a LLM application using BentoML, powered by [vllm](https://vllm.ai).
+This project demonstrates how to build an LLM application using BentoML and [vLLM](https://vllm.ai).
 
-## **Prerequisites**
+## Prerequisites
 
-- You have installed Python 3.8+ and `pip`. See the [Python downloads page](https://www.python.org/downloads/) to learn more.
-- You have a basic understanding of key concepts in BentoML, such as Services. We recommend you read [Quickstart](https://docs.bentoml.com/en/latest/get-started/quickstart.html) first.
-- (Optional) We recommend you create a virtual environment for dependency isolation for this project. See Installation for details.
-- If you want to test the service locally, you also need a Nvidia GPU card that has at least 16G VRAM.
+- You have installed Python 3.8+ and `pip`. See the [Python downloads page](https://www.python.org/downloads/) to learn more.
+- You have a basic understanding of key concepts in BentoML, such as Services. We recommend you read [Quickstart](https://docs.bentoml.com/en/1.2/get-started/quickstart.html) first.
+- This example Service uses the model ``meta-llama/Llama-2-7b-chat-hf``. You can choose any other model supported by vLLM based on your needs. If you are using the same model in the project, you need to obtain access to it on the [Meta website](https://ai.meta.com/resources/models-and-libraries/llama-downloads/) and [Hugging Face](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf).
+- If you want to test the Service locally, you need a Nvidia GPU with at least 16G VRAM.
+- (Optional) We recommend you create a virtual environment for dependency isolation for this project. See the [Conda documentation](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html) or the [Python documentation](https://docs.python.org/3/library/venv.html) for details.
 
 ## Install dependencies
 
@@ -26,13 +27,13 @@ INFO 01-18 07:51:40 model_runner.py:505] CUDA graphs can take additional 1~3 GiB
 INFO 01-18 07:51:46 model_runner.py:547] Graph capturing finished in 6 secs.
 ```
 
-The server is now active at [http://0.0.0.0:3000](http://0.0.0.0:3000/). You can interact with it using Swagger UI or in other different ways.
+The server is now active at [http://localhost:3000](http://localhost:3000/). You can interact with it using the Swagger UI or in other different ways.
 
 CURL
 
 ```bash
 curl -X 'POST' \
-  'http://0.0.0.0:3000/generate' \
+  'http://localhost:3000/generate' \
   -H 'accept: text/event-stream' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -41,16 +42,30 @@ curl -X 'POST' \
 }'
 ```
 
-## Deploy the application to BentoCloud
+BentoML client
 
-After the Service is ready, you can deploy the application to BentoCloud for better management and scalability. A configuration YAML file (`bentofile.yaml`) is used to define the build options for your application. It is used for packaging your application into a Bento. See [Bento build options](https://docs.bentoml.com/en/latest/concepts/bento.html#bento-build-options) to learn more.
+```python
+import bentoml
 
-Make sure you have logged in to BentoCloud, then run the following command in your project directory to deploy the application to BentoCloud. Under the hood, this commands automatically builds a Bento, push the Bento to BentoCloud, and deploy it on BentoCloud.
+with bentoml.SyncHTTPClient("http://localhost:3000") as client:
+    response_generator = client.generate(
+        prompt="Explain superconductors like I'm five years old",
+        tokens=None
+    )
+    for response in response_generator:
+        print(response)
+```
+
+## Deploy to production
+
+After the Service is ready, you can deploy the application to BentoCloud for better management and scalability. A YAML configuration file (`bentofile.yaml`) is used to define the build options and package your application into a Bento. See [Bento build options](https://docs.bentoml.com/en/latest/concepts/bento.html#bento-build-options) to learn more.
+
+Make sure you have [logged in to BentoCloud](https://docs.bentoml.com/en/1.2/bentocloud/how-tos/manage-access-token.html), set your Hugging Face access token in ``bentofile.yaml``, then run the following command in your project directory to deploy the application to BentoCloud.
 
 ```bash
 bentoml deploy .
 ```
 
-**Note**: Alternatively, you can manually build the Bento, containerize the Bento as a Docker image, and deploy it in any Docker-compatible environment. See [Docker deployment](https://docs.bentoml.org/en/latest/concepts/deploy.html#docker) for details.
-
 Once the application is up and running on BentoCloud, you can access it via the exposed URL.
+
+**Note**: Alternatively, you can use BentoML to generate a [Docker image](https://docs.bentoml.com/en/1.2/guides/containerization.html) for a custom deployment.
