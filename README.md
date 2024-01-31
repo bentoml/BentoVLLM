@@ -11,6 +11,8 @@ This project demonstrates how to build an LLM application using BentoML and [vLL
 ## Install dependencies
 
 ```bash
+git clone https://github.com/bentoml/BentoVLLM.git
+cd BentoVLLM
 pip install -r requirements.txt && pip install -f -U "pydantic>=2.0"
 ```
 
