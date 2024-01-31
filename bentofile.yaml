@@ -1,4 +1,4 @@
-service: "service:VLLMService"
+service: "service:VLLM"
 labels:
   owner: bentoml-team
   stage: demo

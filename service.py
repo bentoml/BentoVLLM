@@ -20,7 +20,7 @@ If a question does not make any sense, or is not factually coherent, explain why
         "memory": "16Gi",
     },
 )
-class VLLMService:
+class VLLM:
     def __init__(self) -> None:
         from vllm import AsyncEngineArgs, AsyncLLMEngine
 
