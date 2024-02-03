@@ -17,7 +17,7 @@ If a question does not make any sense, or is not factually coherent, explain why
     },
     resources={
         "gpu": 1,
-        "memory": "16Gi",
+        "gpu_type": "nvidia-l4",
     },
 )
 class VLLM:
