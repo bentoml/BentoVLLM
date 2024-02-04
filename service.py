@@ -20,13 +20,6 @@ If a question does not make any sense, or is not factually coherent, explain why
         "gpu": 1,
         "gpu_type": "nvidia-l4",
     },
-    http={
-        "cors": {
-            "enabled": True,
-            "access_control_allow_origins": "*",
-            "access_control_allow_methods": "*"
-        }
-    },
 )
 class VLLM:
     def __init__(self) -> None:
