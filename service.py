@@ -1,5 +1,6 @@
 import bentoml
 
+import uuid
 from typing import Optional, AsyncGenerator, List
 
 MAX_TOKENS = 1024
@@ -30,7 +31,6 @@ class VLLM:
         )
         
         self.engine = AsyncLLMEngine.from_engine_args(ENGINE_ARGS)
-        self.request_id = 0
 
     @bentoml.api
     async def generate(self, prompt: str = "Explain superconductors like I'm five years old", tokens: Optional[List[int]] = None) -> AsyncGenerator[str, None]:
@@ -38,7 +38,6 @@ class VLLM:
 
         SAMPLING_PARAM = SamplingParams(max_tokens=MAX_TOKENS)
         prompt = PROMPT_TEMPLATE.format(user_prompt=prompt)
-        stream = await self.engine.add_request(self.request_id, prompt, SAMPLING_PARAM, prompt_token_ids=tokens)
-        self.request_id += 1
+        stream = await self.engine.add_request(uuid.uuid4().hex, prompt, SAMPLING_PARAM, prompt_token_ids=tokens)
         async for request_output in stream:
             yield request_output.outputs[0].text
