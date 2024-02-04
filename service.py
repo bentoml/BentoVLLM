@@ -20,6 +20,13 @@ If a question does not make any sense, or is not factually coherent, explain why
         "gpu": 1,
         "gpu_type": "nvidia-l4",
     },
+    http={
+        "cors": {
+            "enabled": True,
+            "access_control_allow_origins": "*",
+            "access_control_allow_methods": "*"
+        }
+    },
 )
 class VLLM:
     def __init__(self) -> None:
@@ -38,6 +45,10 @@ class VLLM:
 
         SAMPLING_PARAM = SamplingParams(max_tokens=MAX_TOKENS)
         prompt = PROMPT_TEMPLATE.format(user_prompt=prompt)
-        stream = await self.engine.add_request(uuid.uuid4().hex, prompt, SAMPLING_PARAM, prompt_token_ids=tokens)
+        stream = await self.engine.add_request(uuid.uuid4().hex, prompt, SAMPLING_PARAM, prompt_token_ids=tokens or None)
+
+        cursor = 0
         async for request_output in stream:
-            yield request_output.outputs[0].text
+            text = request_output.outputs[0].text
+            yield text[cursor:]
+            cursor = len(text)

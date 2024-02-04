@@ -4,6 +4,8 @@ labels:
   stage: demo
 include:
 - "*.py"
+exclude:
+- "myenv"
 python:
   requirements_txt: "./requirements.txt"
 envs:
