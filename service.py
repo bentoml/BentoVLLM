@@ -1,7 +1,10 @@
-import bentoml
-
 import uuid
 from typing import Optional, AsyncGenerator, List
+from typing_extensions import Annotated
+
+import bentoml
+from annotated_types import Le
+
 
 MAX_TOKENS = 1024
 PROMPT_TEMPLATE = """<s>[INST] <<SYS>>
@@ -11,6 +14,7 @@ If a question does not make any sense, or is not factually coherent, explain why
 <</SYS>>
 
 {user_prompt} [/INST] """
+
 
 @bentoml.service(
     traffic={
@@ -33,11 +37,19 @@ class VLLM:
         self.engine = AsyncLLMEngine.from_engine_args(ENGINE_ARGS)
 
     @bentoml.api
-    async def generate(self, prompt: str = "Explain superconductors like I'm five years old", tokens: Optional[List[int]] = None) -> AsyncGenerator[str, None]:
+    async def generate(
+        self,
+        prompt: str = "Explain superconductors like I'm five years old",
+        max_tokens: Annotated[int, Le(MAX_TOKENS)] = MAX_TOKENS,
+    ) -> AsyncGenerator[str, None]:
         from vllm import SamplingParams
 
-        SAMPLING_PARAM = SamplingParams(max_tokens=MAX_TOKENS)
+        SAMPLING_PARAM = SamplingParams(max_tokens=max_tokens)
         prompt = PROMPT_TEMPLATE.format(user_prompt=prompt)
-        stream = await self.engine.add_request(uuid.uuid4().hex, prompt, SAMPLING_PARAM, prompt_token_ids=tokens)
+        stream = await self.engine.add_request(uuid.uuid4().hex, prompt, SAMPLING_PARAM)
+
+        cursor = 0
         async for request_output in stream:
-            yield request_output.outputs[0].text
+            text = request_output.outputs[0].text
+            yield text[cursor:]
+            cursor = len(text)
