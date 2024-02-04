@@ -40,7 +40,7 @@ class VLLM:
     async def generate(
         self,
         prompt: str = "Explain superconductors like I'm five years old",
-        max_tokens: Annotated[int, Le(1024)] = 1024,
+        max_tokens: Annotated[int, Le(MAX_TOKENS)] = MAX_TOKENS,
     ) -> AsyncGenerator[str, None]:
         from vllm import SamplingParams
 
