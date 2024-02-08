@@ -1,9 +1,9 @@
 import uuid
-from typing import Optional, AsyncGenerator, List
-from typing_extensions import Annotated
+from typing import AsyncGenerator
 
 import bentoml
-from annotated_types import Le
+from annotated_types import Ge, Le
+from typing_extensions import Annotated
 
 
 MAX_TOKENS = 1024
@@ -40,7 +40,7 @@ class VLLM:
     async def generate(
         self,
         prompt: str = "Explain superconductors like I'm five years old",
-        max_tokens: Annotated[int, Le(MAX_TOKENS)] = MAX_TOKENS,
+        max_tokens: Annotated[int, Ge(128), Le(MAX_TOKENS)] = MAX_TOKENS,
     ) -> AsyncGenerator[str, None]:
         from vllm import SamplingParams
 
