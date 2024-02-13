@@ -46,8 +46,6 @@ class PatchedOpenAIServingChat(OpenAIServingChat):
 
 
 def demo_deco(cls):
-    def echo(self: cls, s: str) -> str:
-        return s
 
     async def create_chat_completion(
             self: cls,
@@ -66,7 +64,6 @@ def demo_deco(cls):
             openai_serving_chat = self._openai_serving_chat
 
         models = await openai_serving_chat.show_available_models()
-        print("kaka", models.model_dump())
 
         # tmp hack
         class DummyRequest:
