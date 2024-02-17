@@ -7,12 +7,16 @@ import bentoml
 
 from vllm import AsyncLLMEngine
 from vllm.entrypoints.openai.protocol import (
-    ChatCompletionRequest, ChatCompletionResponse,
-    ChatCompletionResponseChoice, ChatCompletionResponseStreamChoice,
-    ChatCompletionStreamResponse, ChatMessage, DeltaMessage, ErrorResponse,
-    UsageInfo
+    ChatCompletionRequest, CompletionRequest,
 )
 from vllm.entrypoints.openai.serving_chat import OpenAIServingChat
+from vllm.entrypoints.openai.serving_completion import OpenAIServingCompletion
+
+# tmp hack
+class DummyRequest:
+    async def is_disconnected(self) -> bool:
+        return False
+
 
 # https://github.com/vllm-project/vllm/issues/2683
 class PatchedOpenAIServingChat(OpenAIServingChat):
@@ -47,13 +51,11 @@ class PatchedOpenAIServingChat(OpenAIServingChat):
 
 def demo_deco(cls):
 
+    # chat completion
     async def create_chat_completion(
             self: cls,
-            messages: t.Union[str, t.List[t.Dict[str, str]]],
+            request: ChatCompletionRequest,
     ) -> dict:
-
-
-        request = ChatCompletionRequest(messages=messages, model="test_model")
 
         openai_serving_chat = getattr(self, "_openai_serving_chat", None)
         if openai_serving_chat is None:
@@ -65,10 +67,6 @@ def demo_deco(cls):
 
         models = await openai_serving_chat.show_available_models()
 
-        # tmp hack
-        class DummyRequest:
-            async def is_disconnected(self) -> bool:
-                return False
         raw_request = DummyRequest()
 
         generator = await openai_serving_chat.create_chat_completion(
@@ -78,5 +76,53 @@ def demo_deco(cls):
 
     wrapper = bentoml.api(route="/v1/chat/completions")
     cls.create_chat_completion = wrapper(create_chat_completion)
-    return cls
 
+    # chat completion stream
+    async def create_chat_completion_stream(
+            self: cls,
+            request: ChatCompletionRequest,
+    ) -> t.AsyncGenerator[str, None]:
+
+        openai_serving_chat = getattr(self, "_openai_serving_chat", None)
+        if openai_serving_chat is None:
+            self._openai_serving_chat = PatchedOpenAIServingChat(
+                self.engine, "test_model",
+                "assistant",
+            )
+            openai_serving_chat = self._openai_serving_chat
+
+        raw_request = DummyRequest()
+        request.stream = True
+
+        generator = await openai_serving_chat.create_chat_completion(
+            request, raw_request)
+
+        return generator
+
+    wrapper = bentoml.api(route="/v1/chat/completions_stream")
+    cls.create_chat_completion_stream = wrapper(create_chat_completion_stream)
+
+    # completion
+    async def create_completion(
+            self: cls,
+            request: CompletionRequest,
+    ) -> dict:
+
+        openai_serving_completion = getattr(self, "_openai_serving_completion", None)
+        if openai_serving_completion is None:
+            self._openai_serving_completion = OpenAIServingCompletion(
+                self.engine, "test_model",
+            )
+            openai_serving_completion = self._openai_serving_completion
+
+        raw_request = DummyRequest()
+
+        generator = await openai_serving_completion.create_completion(
+            request, raw_request)
+
+        return generator.model_dump()
+
+    wrapper = bentoml.api(route="/v1/completions")
+    cls.create_completion = wrapper(create_completion)
+
+    return cls
