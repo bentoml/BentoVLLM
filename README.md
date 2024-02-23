@@ -1,4 +1,13 @@
-This project demonstrates how to build an LLM application using BentoML and [vLLM](https://vllm.ai).
+<div align="center">
+    <h1 align="center">BentoVLLM</h1>
+    <br>
+    <strong>Achieve efficient inference and high throughput with vLLM<br></strong>
+    <i>Powered by BentoML 🍱</i>
+    <br>
+</div>
+<br>
+
+[vLLM](https://vllm.ai) is a high-throughput and memory-efficient inference and serving engine for large language models (LLMs). This project demonstrates how to build an LLM application using BentoML and vLLM.
 
 ## Prerequisites
 
@@ -44,7 +53,7 @@ curl -X 'POST' \
 }'
 ```
 
-BentoML client
+Python client
 
 ```python
 import bentoml
@@ -58,11 +67,11 @@ with bentoml.SyncHTTPClient("http://localhost:3000") as client:
         print(response)
 ```
 
-## Deploy to production
+## Deploy to BentoCloud
 
-After the Service is ready, you can deploy the application to BentoCloud for better management and scalability. A YAML configuration file (`bentofile.yaml`) is used to define the build options and package your application into a Bento. See [Bento build options](https://docs.bentoml.com/en/latest/concepts/bento.html#bento-build-options) to learn more.
+After the Service is ready, you can deploy the application to BentoCloud for better management and scalability. [Sign up](https://www.bentoml.com/) if you haven't got a BentoCloud account.
 
-Make sure you have [logged in to BentoCloud](https://docs.bentoml.com/en/1.2/bentocloud/how-tos/manage-access-token.html), set your Hugging Face access token in ``bentofile.yaml``, then run the following command in your project directory to deploy the application to BentoCloud.
+Make sure you have [logged in to BentoCloud](https://docs.bentoml.com/en/latest/bentocloud/how-tos/manage-access-token.html), set your Hugging Face access token in ``bentofile.yaml``, then run the following command to deploy it.
 
 ```bash
 bentoml deploy .
@@ -70,4 +79,4 @@ bentoml deploy .
 
 Once the application is up and running on BentoCloud, you can access it via the exposed URL.
 
-**Note**: Alternatively, you can use BentoML to generate a [Docker image](https://docs.bentoml.com/en/1.2/guides/containerization.html) for a custom deployment.
+**Note**: For custom deployment in your own infrastructure, use [BentoML to generate an OCI-compliant image](https://docs.bentoml.com/en/latest/guides/containerization.html).
