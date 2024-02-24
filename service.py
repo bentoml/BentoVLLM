@@ -5,7 +5,8 @@ import bentoml
 from annotated_types import Ge, Le
 from typing_extensions import Annotated
 
-from openai_utils import demo_deco
+from openai_utils import openai_deco
+
 
 MAX_TOKENS = 1024
 PROMPT_TEMPLATE = """<s>[INST] <<SYS>>
@@ -17,6 +18,7 @@ If a question does not make any sense, or is not factually coherent, explain why
 {user_prompt} [/INST] """
 
 
+@openai_deco(served_model="llama-2-7b-chat-hf")
 @bentoml.service(
     traffic={
         "timeout": 300,
@@ -26,7 +28,6 @@ If a question does not make any sense, or is not factually coherent, explain why
         "gpu_type": "nvidia-l4",
     },
 )
-@demo_deco
 class VLLM:
     def __init__(self) -> None:
         from vllm import AsyncEngineArgs, AsyncLLMEngine

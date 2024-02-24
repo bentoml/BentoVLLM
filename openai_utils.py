@@ -3,19 +3,19 @@ from __future__ import annotations
 import asyncio
 import typing as t
 
-import bentoml
+from fastapi import Depends, FastAPI, Request
+from fastapi.responses import JSONResponse, StreamingResponse
 
 from vllm import AsyncLLMEngine
 from vllm.entrypoints.openai.protocol import (
-    ChatCompletionRequest, CompletionRequest,
+    ChatCompletionRequest, CompletionRequest, ErrorResponse
 )
 from vllm.entrypoints.openai.serving_chat import OpenAIServingChat
 from vllm.entrypoints.openai.serving_completion import OpenAIServingCompletion
 
-# tmp hack
-class DummyRequest:
-    async def is_disconnected(self) -> bool:
-        return False
+from  _bentoml_sdk.service.factory import Service
+
+T = t.TypeVar("T", bound=object)
 
 
 # https://github.com/vllm-project/vllm/issues/2683
@@ -49,57 +49,72 @@ class PatchedOpenAIServingChat(OpenAIServingChat):
         return super()._load_chat_template(chat_template)
 
 
-def demo_deco(cls):
+def openai_deco(
+        served_model: str,
+        response_role: str ="assistant",
+        chat_template: t.Optional[str] = None,
+):
 
-    # chat completion
-    async def create_chat_completion(
-            self: cls,
-            request: ChatCompletionRequest,
-    ) -> t.AsyncGenerator[str, None]:
+    def openai_wrapper(svc: Service[T]):
 
-        openai_serving_chat = getattr(self, "_openai_serving_chat", None)
-        if openai_serving_chat is None:
-            self._openai_serving_chat = PatchedOpenAIServingChat(
-                self.engine, "test_model",
-                "assistant",
-            )
-            openai_serving_chat = self._openai_serving_chat
+        cls = svc.inner
+        app = FastAPI()
 
-        raw_request = DummyRequest()
+        class new_cls(cls):
 
-        generator = await openai_serving_chat.create_chat_completion(
-            request, raw_request)
+            def __init__(self):
 
-        if request.stream == True:
-            async for resp in  generator:
-                yield resp
-        else:
-            yield generator.model_dump_json()
+                from fastapi import Depends, FastAPI, Request
+                from fastapi.responses import JSONResponse, StreamingResponse
 
-    wrapper = bentoml.api(route="/v1/chat/completions")
-    cls.create_chat_completion = wrapper(create_chat_completion)
+                super().__init__()
 
-    # completion
-    async def create_completion(
-            self: cls,
-            request: CompletionRequest,
-    ) -> dict:
+                self.openai_serving_completion = OpenAIServingCompletion(
+                    engine=self.engine, served_model=served_model,
+                )
+                self.openai_serving_chat = PatchedOpenAIServingChat(
+                    engine=self.engine,
+                    served_model=served_model,
+                    response_role=response_role,
+                    chat_template=chat_template,
+                )
 
-        openai_serving_completion = getattr(self, "_openai_serving_completion", None)
-        if openai_serving_completion is None:
-            self._openai_serving_completion = OpenAIServingCompletion(
-                self.engine, "test_model",
-            )
-            openai_serving_completion = self._openai_serving_completion
+                @app.get("/v1/models")
+                async def show_available_models():
+                    models = await self.openai_serving_chat.show_available_models()
+                    return JSONResponse(content=models.model_dump())
 
-        raw_request = DummyRequest()
+                @app.post("/v1/chat/completions")
+                async def create_chat_completion(
+                        request: ChatCompletionRequest,
+                        raw_request: Request
+                ):
+                    generator = await self.openai_serving_chat.create_chat_completion(
+                        request, raw_request)
+                    if isinstance(generator, ErrorResponse):
+                        return JSONResponse(content=generator.model_dump(),
+                                            status_code=generator.code)
+                    if request.stream:
+                        return StreamingResponse(content=generator,
+                                                 media_type="text/event-stream")
+                    else:
+                        return JSONResponse(content=generator.model_dump())
 
-        generator = await openai_serving_completion.create_completion(
-            request, raw_request)
+                @app.post("/v1/completions")
+                async def create_completion(request: CompletionRequest, raw_request: Request):
+                    generator = await self.openai_serving_completion.create_completion(
+                        request, raw_request)
+                    if isinstance(generator, ErrorResponse):
+                        return JSONResponse(content=generator.model_dump(),
+                                            status_code=generator.code)
+                    if request.stream:
+                        return StreamingResponse(content=generator,
+                                                 media_type="text/event-stream")
+                    else:
+                        return JSONResponse(content=generator.model_dump())
 
-        return generator.model_dump()
+        svc.inner = new_cls
+        svc.mount_asgi_app(app)
+        return svc
 
-    wrapper = bentoml.api(route="/v1/completions")
-    cls.create_completion = wrapper(create_completion)
-
-    return cls
+    return openai_wrapper
