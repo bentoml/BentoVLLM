@@ -64,9 +64,6 @@ def openai_deco(
 
             def __init__(self):
 
-                from fastapi import Depends, FastAPI, Request
-                from fastapi.responses import JSONResponse, StreamingResponse
-
                 super().__init__()
 
                 self.openai_serving_completion = OpenAIServingCompletion(
