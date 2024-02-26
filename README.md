@@ -1,13 +1,10 @@
 <div align="center">
-    <h1 align="center">BentoVLLM</h1>
-    <br>
-    <strong>Achieve efficient inference and high throughput with vLLM<br></strong>
-    <i>Powered by BentoML 🍱</i>
-    <br>
+    <h1 align="center">Serving LLMs + vLLM with BentoML</h1>
 </div>
-<br>
 
-[vLLM](https://vllm.ai) is a high-throughput and memory-efficient inference and serving engine for large language models (LLMs). This project demonstrates how to build an LLM application using BentoML and vLLM.
+[vLLM](https://vllm.ai) is a high-throughput and memory-efficient inference and serving engine for large language models (LLMs).
+
+This is a BentoML example project, demonstrating how to build an LLM inference API server, using the vLLM backend. See [here](https://github.com/bentoml/BentoML?tab=readme-ov-file#%EF%B8%8F-what-you-can-build-with-bentoml) for a full list of BentoML example projects.
 
 ## Prerequisites
 
@@ -66,6 +63,8 @@ with bentoml.SyncHTTPClient("http://localhost:3000") as client:
     for response in response_generator:
         print(response)
 ```
+
+For detailed explanations of the Service code, see [vLLM inference](https://docs.bentoml.org/en/latest/use-cases/large-language-models/vllm.html).
 
 ## Deploy to BentoCloud
 
