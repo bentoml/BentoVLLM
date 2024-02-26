@@ -1,10 +1,13 @@
 <div align="center">
-    <h1 align="center">Serving LLMs + vLLM with BentoML</h1>
+    <h1 align="center">Self-host LLMs with vLLM and BentoML</h1>
 </div>
 
-[vLLM](https://vllm.ai) is a high-throughput and memory-efficient inference and serving engine for large language models (LLMs).
+This is a BentoML example project, showing you how to serve and deploy open-source Large Language Models using [vLLM](https://vllm.ai), a high-throughput and memory-efficient inference engine.
 
-This is a BentoML example project, demonstrating how to build an LLM inference API server, using the vLLM backend. See [here](https://github.com/bentoml/BentoML?tab=readme-ov-file#%EF%B8%8F-what-you-can-build-with-bentoml) for a full list of BentoML example projects.
+See [here](https://github.com/bentoml/BentoML?tab=readme-ov-file#%EF%B8%8F-what-you-can-build-with-bentoml) for a full list of BentoML example projects.
+
+💡 This example is served as a basis for advanced code customization, such as custom model, inference logic or vLLM options. For simple LLM hosting with OpenAI compatible endpoint without writing any code, see [OpenLLM](https://github.com/bentoml/OpenLLM).
+
 
 ## Prerequisites
 
