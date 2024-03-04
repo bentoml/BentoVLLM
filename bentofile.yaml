@@ -4,7 +4,6 @@ labels:
   stage: demo
 include:
 - "*.py"
+- "bentovllm_openai/*.py"
 python:
   requirements_txt: "./requirements.txt"
-envs:
-  - name: HF_TOKEN
