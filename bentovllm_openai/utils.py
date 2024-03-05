@@ -14,7 +14,7 @@ T = t.TypeVar("T", bound=object)
 if t.TYPE_CHECKING:
     from vllm import AsyncLLMEngine
 
-def openai_deco(
+def openai_endpoints(
         served_model: str,
         response_role: str ="assistant",
         chat_template: t.Optional[str] = None,
