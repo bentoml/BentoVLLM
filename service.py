@@ -5,6 +5,8 @@ import bentoml
 from annotated_types import Ge, Le
 from typing_extensions import Annotated
 
+from bentovllm_openai.utils import openai_deco, _make_httpx_client
+
 
 MAX_TOKENS = 1024
 PROMPT_TEMPLATE = """<s>[INST] <<SYS>>
@@ -15,7 +17,9 @@ If a question does not make any sense, or is not factually coherent, explain why
 
 {user_prompt} [/INST] """
 
+MODEL_ID = "mistralai/Mistral-7B-Instruct-v0.2"
 
+@openai_deco(served_model=MODEL_ID)
 @bentoml.service(
     traffic={
         "timeout": 300,
@@ -28,9 +32,8 @@ If a question does not make any sense, or is not factually coherent, explain why
 class VLLM:
     def __init__(self) -> None:
         from vllm import AsyncEngineArgs, AsyncLLMEngine
-
         ENGINE_ARGS = AsyncEngineArgs(
-            model='meta-llama/Llama-2-7b-chat-hf',
+            model=MODEL_ID,
             max_model_len=MAX_TOKENS
         )
         
