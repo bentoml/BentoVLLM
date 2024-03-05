@@ -5,7 +5,7 @@ import bentoml
 from annotated_types import Ge, Le
 from typing_extensions import Annotated
 
-from bentovllm_openai.utils import openai_deco, _make_httpx_client
+from bentovllm_openai.utils import openai_endpoints
 
 
 MAX_TOKENS = 1024
@@ -19,7 +19,7 @@ If a question does not make any sense, or is not factually coherent, explain why
 
 MODEL_ID = "mistralai/Mistral-7B-Instruct-v0.2"
 
-@openai_deco(served_model=MODEL_ID)
+@openai_endpoints(served_model=MODEL_ID)
 @bentoml.service(
     traffic={
         "timeout": 300,
