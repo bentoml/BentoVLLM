@@ -13,7 +13,6 @@ See [here](https://github.com/bentoml/BentoML?tab=readme-ov-file#%EF%B8%8F-what-
 
 - You have installed Python 3.8+ and `pip`. See the [Python downloads page](https://www.python.org/downloads/) to learn more.
 - You have a basic understanding of key concepts in BentoML, such as Services. We recommend you read [Quickstart](https://docs.bentoml.com/en/1.2/get-started/quickstart.html) first.
-- This example Service uses the model ``meta-llama/Llama-2-7b-chat-hf``. You can choose any other model supported by vLLM based on your needs. If you are using the same model in the project, you need to obtain access to it on the [Meta website](https://ai.meta.com/resources/models-and-libraries/llama-downloads/) and [Hugging Face](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf).
 - If you want to test the Service locally, you need a Nvidia GPU with at least 16G VRAM.
 - (Optional) We recommend you create a virtual environment for dependency isolation for this project. See the [Conda documentation](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html) or the [Python documentation](https://docs.python.org/3/library/venv.html) for details.
 
@@ -67,13 +66,15 @@ with bentoml.SyncHTTPClient("http://localhost:3000") as client:
         print(response)
 ```
 
+**Note**: This Service uses the `@openai_endpoints` decorator to set up OpenAI-compatible endpoints. This means your client can interact with the backend Service (in this case, the VLLM class) as if they were communicating directly with OpenAI's API. This [utility](https://github.com/bentoml/BentoVLLM/tree/main/bentovllm_openai) does not affect your BentoML Service code, and you can use it for other LLMs as well.
+
 For detailed explanations of the Service code, see [vLLM inference](https://docs.bentoml.org/en/latest/use-cases/large-language-models/vllm.html).
 
 ## Deploy to BentoCloud
 
 After the Service is ready, you can deploy the application to BentoCloud for better management and scalability. [Sign up](https://www.bentoml.com/) if you haven't got a BentoCloud account.
 
-Make sure you have [logged in to BentoCloud](https://docs.bentoml.com/en/latest/bentocloud/how-tos/manage-access-token.html), set your Hugging Face access token in ``bentofile.yaml``, then run the following command to deploy it.
+Make sure you have [logged in to BentoCloud](https://docs.bentoml.com/en/latest/bentocloud/how-tos/manage-access-token.html), then run the following command to deploy it.
 
 ```bash
 bentoml deploy .
