@@ -18,6 +18,7 @@ def openai_endpoints(
         served_model: str,
         response_role: str ="assistant",
         chat_template: t.Optional[str] = None,
+        chat_template_model_id: t.Optional[str] = None,
 ):
 
     def openai_wrapper(svc: Service[T]):
@@ -76,11 +77,18 @@ def openai_endpoints(
                 self.openai_serving_completion = OpenAIServingCompletion(
                     engine=self.engine, served_model=served_model,
                 )
+
+                self.chat_template = chat_template
+                if self.chat_template is None and chat_template_model_id is not None:
+                    from transformers import AutoTokenizer
+                    _tokenizer = AutoTokenizer.from_pretrained(chat_template_model_id)
+                    self.chat_template = _tokenizer.chat_template
+
                 self.openai_serving_chat = PatchedOpenAIServingChat(
                     engine=self.engine,
                     served_model=served_model,
                     response_role=response_role,
-                    chat_template=chat_template,
+                    chat_template=self.chat_template,
                 )
 
                 @app.get("/v1/models")
