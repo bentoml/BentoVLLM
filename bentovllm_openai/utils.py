@@ -113,7 +113,7 @@ def openai_endpoints(
                         return JSONResponse(content=generator.model_dump())
 
                 @app.post("/v1/completions")
-                async def create_completion(request: "CompletionRequest", raw_request: Request):
+                async def create_completion(request: CompletionRequest, raw_request: Request):
                     generator = await self.openai_serving_completion.create_completion(
                         request, raw_request)
                     if isinstance(generator, ErrorResponse):
