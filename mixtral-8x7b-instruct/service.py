@@ -20,7 +20,7 @@ MODEL_ID = "TheBloke/Mixtral-8x7B-Instruct-v0.1-GPTQ"
 
 @openai_endpoints(served_model=MODEL_ID)
 @bentoml.service(
-    name="mixtral-8x7b-instruct-service",
+    name="mixtral-8x7b-instruct-gptq-service",
     traffic={
         "timeout": 300,
     },
