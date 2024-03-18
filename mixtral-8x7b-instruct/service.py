@@ -8,7 +8,7 @@ from typing_extensions import Annotated
 from bentovllm_openai.utils import openai_endpoints
 
 
-MAX_TOKENS = 1024
+MAX_TOKENS = 8192
 PROMPT_TEMPLATE = """<s>[INST]
 You are a helpful, respectful and honest assistant. Always answer as helpfully as possible, while being safe. Your answers should not include any harmful, unethical, racist, sexist, toxic, dangerous, or illegal content. Please ensure that your responses are socially unbiased and positive in nature.
 
@@ -16,16 +16,17 @@ If a question does not make any sense, or is not factually coherent, explain why
 
 {user_prompt} [/INST] """
 
-MODEL_ID = "mistralai/Mistral-7B-Instruct-v0.2"
+MODEL_ID = "TheBloke/Mixtral-8x7B-Instruct-v0.1-GPTQ"
 
 @openai_endpoints(served_model=MODEL_ID)
 @bentoml.service(
+    name="mixtral-8x7b-instruct-gptq-service",
     traffic={
         "timeout": 300,
     },
     resources={
         "gpu": 1,
-        "gpu_type": "nvidia-l4",
+        "gpu_type": "nvidia-a100-80gb",
     },
 )
 class VLLM:
@@ -33,7 +34,10 @@ class VLLM:
         from vllm import AsyncEngineArgs, AsyncLLMEngine
         ENGINE_ARGS = AsyncEngineArgs(
             model=MODEL_ID,
-            max_model_len=MAX_TOKENS
+            max_model_len=MAX_TOKENS,
+            gpu_memory_utilization=0.85,
+            quantization="gptq",
+            dtype="half",
         )
         
         self.engine = AsyncLLMEngine.from_engine_args(ENGINE_ARGS)
