@@ -21,7 +21,7 @@ MODEL_ID = "upstage/SOLAR-10.7B-Instruct-v1.0"
 
 @openai_endpoints(served_model=MODEL_ID)
 @bentoml.service(
-    name="solar-instruct-service",
+    name="bentovllm-solar-instruct-service",
     traffic={
         "timeout": 300,
     },
