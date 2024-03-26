@@ -127,7 +127,7 @@ def openai_endpoints(
 
         new_cls.__name__ = "%s_OpenAI" % cls.__name__
         svc.inner = new_cls
-        svc.mount_asgi_app(app, path="/v1")
+        svc.mount_asgi_app(app, path="/v1/")
         return svc
 
     return openai_wrapper
