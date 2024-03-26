@@ -91,12 +91,12 @@ def openai_endpoints(
                     chat_template=self.chat_template,
                 )
 
-                @app.get("/v1/models")
+                @app.get("/models")
                 async def show_available_models():
                     models = await self.openai_serving_chat.show_available_models()
                     return JSONResponse(content=models.model_dump())
 
-                @app.post("/v1/chat/completions")
+                @app.post("/chat/completions")
                 async def create_chat_completion(
                         request: ChatCompletionRequest,
                         raw_request: Request
@@ -112,7 +112,7 @@ def openai_endpoints(
                     else:
                         return JSONResponse(content=generator.model_dump())
 
-                @app.post("/v1/completions")
+                @app.post("/completions")
                 async def create_completion(request: CompletionRequest, raw_request: Request):
                     generator = await self.openai_serving_completion.create_completion(
                         request, raw_request)
@@ -127,7 +127,7 @@ def openai_endpoints(
 
         new_cls.__name__ = "%s_OpenAI" % cls.__name__
         svc.inner = new_cls
-        svc.mount_asgi_app(app)
+        svc.mount_asgi_app(app, path="/v1")
         return svc
 
     return openai_wrapper
