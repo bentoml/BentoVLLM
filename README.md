@@ -142,3 +142,9 @@ Besides the mistral-7b-instruct model, we have examples for other models in subd
 - [Mixtral-8x7B-Instruct-v0.1 with gptq quantization](mistral-7b-instruct/)
 - [Llama-2-7b-chat-hf](llama2-7b-chat/)
 - [SOLAR-10.7B-v1.0](solar-10.7b-instruct/)
+
+
+## LLM tools integration examples
+
+- Every model directory contains codes to add OpenAI compatible endpoints to the BentoML service.
+- [outlines-integration/](outlines-integration/) contains the code to integrate with [outlines](https://github.com/outlines-dev/outlines) for structured generation.
