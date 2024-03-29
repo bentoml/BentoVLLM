@@ -85,7 +85,7 @@ with bentoml.SyncHTTPClient("http://localhost:3000") as client:
 
 <summary>OpenAI-compatible endpoints</summary>
 
-This Service uses the `@openai_endpoints` decorator to set up OpenAI-compatible endpoints (`chat/completions` and `completions`). This means your client can interact with the backend Service (in this case, the VLLM class) as if they were communicating directly with OpenAI's API. This [utility](https://github.com/bentoml/BentoVLLM/tree/main/bentovllm_openai) does not affect your BentoML Service code, and you can use it for other LLMs as well.
+This Service uses the `@openai_endpoints` decorator to set up OpenAI-compatible endpoints (`chat/completions` and `completions`). This means your client can interact with the backend Service (in this case, the VLLM class) as if they were communicating directly with OpenAI's API. This [utility](bentovllm_openai/) does not affect your BentoML Service code, and you can use it for other LLMs as well.
 
 ```python
 from openai import OpenAI
