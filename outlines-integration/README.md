@@ -17,7 +17,7 @@ This is a BentoML example project, demonstrating how to output structured data f
 
 ```bash
 git clone https://github.com/bentoml/BentoVLLM.git
-cd outlines-integration
+cd BentoVLLM/outlines-integration
 pip install -r requirements.txt && pip install -f -U "pydantic>=2.0"
 ```
 

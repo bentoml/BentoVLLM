@@ -1,8 +1,8 @@
 <div align="center">
-    <h1 align="center">Self-host LLMs with vLLM and BentoML</h1>
+    <h1 align="center">Self-host Mistral 7B with vLLM and BentoML</h1>
 </div>
 
-This is a BentoML example project, showing you how to serve and deploy open-source Large Language Models using [vLLM](https://vllm.ai), a high-throughput and memory-efficient inference engine.
+This is a BentoML example project, showing you how to serve and deploy Mistral 7B using [vLLM](https://vllm.ai), a high-throughput and memory-efficient inference engine.
 
 See [here](https://github.com/bentoml/BentoML?tab=readme-ov-file#%EF%B8%8F-what-you-can-build-with-bentoml) for a full list of BentoML example projects.
 
@@ -78,7 +78,7 @@ with bentoml.SyncHTTPClient("http://localhost:3000") as client:
 
 <summary>OpenAI-compatible endpoints</summary>
 
-This Service uses the `@openai_endpoints` decorator to set up OpenAI-compatible endpoints (`chat/completions` and `completions`). This means your client can interact with the backend Service (in this case, the VLLM class) as if they were communicating directly with OpenAI's API. This [utility](https://github.com/bentoml/BentoVLLM/tree/main/bentovllm_openai) does not affect your BentoML Service code, and you can use it for other LLMs as well.
+This Service uses the `@openai_endpoints` decorator to set up OpenAI-compatible endpoints (`chat/completions` and `completions`). This means your client can interact with the backend Service (in this case, the VLLM class) as if they were communicating directly with OpenAI's API. This [utility](bentovllm_openai/) does not affect your BentoML Service code, and you can use it for other LLMs as well.
 
 ```python
 from openai import OpenAI
