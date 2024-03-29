@@ -25,6 +25,12 @@ cd BentoVLLM/llama2-7b-chat
 pip install -r requirements.txt && pip install -f -U "pydantic>=2.0"
 ```
 
+## Download the model
+
+```bash
+python import_model.py
+```
+
 ## Run the BentoML Service
 
 We have defined a BentoML Service in `service.py`. Run `bentoml serve` in your project directory to start the Service.
@@ -32,7 +38,7 @@ We have defined a BentoML Service in `service.py`. Run `bentoml serve` in you
 ```python
 $ bentoml serve .
 
-2024-01-18T07:51:30+0800 [INFO] [cli] Starting production HTTP BentoServer from "service:VLLMService" listening on http://localhost:3000 (Press CTRL+C to quit)
+2024-01-18T07:51:30+0800 [INFO] [cli] Starting production HTTP BentoServer from "service:VLLM" listening on http://localhost:3000 (Press CTRL+C to quit)
 INFO 01-18 07:51:40 model_runner.py:501] Capturing the model for CUDA graphs. This may lead to unexpected consequences if the model is not static. To run the model in eager mode, set 'enforce_eager=True' or use '--enforce-eager' in the CLI.
 INFO 01-18 07:51:40 model_runner.py:505] CUDA graphs can take additional 1~3 GiB memory per GPU. If you are running out of memory, consider decreasing `gpu_memory_utilization` or enforcing eager mode.
 INFO 01-18 07:51:46 model_runner.py:547] Graph capturing finished in 6 secs.
@@ -90,7 +96,7 @@ client = OpenAI(base_url='http://localhost:3000/v1', api_key='na')
 client.models.list()
 
 chat_completion = client.chat.completions.create(
-    model="mistralai/Mistral-7B-Instruct-v0.2",
+    model="meta-llama/Llama-2-7b-chat-hf",
     messages=[
         {
             "role": "user",
