@@ -1,6 +1,7 @@
 import bentoml
 
-from service import MODEL_ID, BENTO_MODEL_TAG
+MODEL_ID = "meta-llama/Llama-2-7b-chat-hf"
+BENTO_MODEL_TAG = MODEL_ID.lower().replace("/", "--")
 
 def import_model(model_id, bento_model_tag):
 
