@@ -28,7 +28,7 @@ pip install -r requirements.txt && pip install -f -U "pydantic>=2.0"
 
 We have defined a BentoML Service in `service.py`. Run `bentoml serve` in your project directory to start the Service.
 
-```python
+```bash
 $ bentoml serve .
 
 2024-01-18T07:51:30+0800 [INFO] [cli] Starting production HTTP BentoServer from "service:VLLM" listening on http://localhost:3000 (Press CTRL+C to quit)
@@ -78,7 +78,7 @@ with bentoml.SyncHTTPClient("http://localhost:3000") as client:
 
 <summary>OpenAI-compatible endpoints</summary>
 
-This Service uses the `@openai_endpoints` decorator to set up OpenAI-compatible endpoints (`chat/completions` and `completions`). This means your client can interact with the backend Service (in this case, the VLLM class) as if they were communicating directly with OpenAI's API. This [utility](https://github.com/bentoml/BentoVLLM/tree/main/bentovllm_openai) does not affect your BentoML Service code, and you can use it for other LLMs as well.
+This Service uses the `@openai_endpoints` decorator to set up OpenAI-compatible endpoints (`chat/completions` and `completions`). This means your client can interact with the backend Service (in this case, the VLLM class) as if they were communicating directly with OpenAI's API. This [utility](mistral-7b-instruct/bentovllm_openai/) does not affect your BentoML Service code, and you can use it for other LLMs as well.
 
 ```python
 from openai import OpenAI
