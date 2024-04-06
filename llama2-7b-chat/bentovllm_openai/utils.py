@@ -3,9 +3,9 @@ from __future__ import annotations
 import asyncio
 import typing as t
 
-from fastapi import Depends, FastAPI, Request
+from _bentoml_sdk.service.factory import Service
+from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse, StreamingResponse
-from  _bentoml_sdk.service.factory import Service
 
 from .protocol import ChatCompletionRequest, CompletionRequest, ErrorResponse
 
@@ -14,11 +14,12 @@ T = t.TypeVar("T", bound=object)
 if t.TYPE_CHECKING:
     from vllm import AsyncLLMEngine
 
+
 def openai_endpoints(
-        served_model: str,
-        response_role: str ="assistant",
-        chat_template: t.Optional[str] = None,
-        chat_template_model_id: t.Optional[str] = None,
+    served_model: str,
+    response_role: str = "assistant",
+    chat_template: t.Optional[str] = None,
+    chat_template_model_id: t.Optional[str] = None,
 ):
 
     def openai_wrapper(svc: Service[T]):
@@ -37,9 +38,10 @@ def openai_endpoints(
                 # That's also why we put these codes inside class's
                 # `__init__` function
                 import bentoml
-
                 from vllm.entrypoints.openai.serving_chat import OpenAIServingChat
-                from vllm.entrypoints.openai.serving_completion import OpenAIServingCompletion
+                from vllm.entrypoints.openai.serving_completion import (
+                    OpenAIServingCompletion,
+                )
 
                 # https://github.com/vllm-project/vllm/issues/2683
                 class PatchedOpenAIServingChat(OpenAIServingChat):
@@ -51,7 +53,8 @@ def openai_endpoints(
                         chat_template=None,
                     ):
                         super(OpenAIServingChat, self).__init__(
-                            engine=engine, served_model=served_model,
+                            engine=engine,
+                            served_model=served_model,
                             lora_modules=None,
                         )
                         self.response_role = response_role
@@ -61,7 +64,9 @@ def openai_endpoints(
                             event_loop = None
 
                         if event_loop is not None and event_loop.is_running():
-                            event_loop.create_task(self._load_chat_template(chat_template))
+                            event_loop.create_task(
+                                self._load_chat_template(chat_template)
+                            )
                         else:
                             asyncio.run(self._load_chat_template(chat_template))
 
@@ -75,12 +80,14 @@ def openai_endpoints(
                         return super()._load_chat_template(chat_template)
 
                 self.openai_serving_completion = OpenAIServingCompletion(
-                    engine=self.engine, served_model=served_model,
+                    engine=self.engine,
+                    served_model=served_model,
                 )
 
                 self.chat_template = chat_template
                 if self.chat_template is None and chat_template_model_id is not None:
                     from transformers import AutoTokenizer
+
                     _tokenizer = AutoTokenizer.from_pretrained(chat_template_model_id)
                     self.chat_template = _tokenizer.chat_template
 
@@ -98,30 +105,37 @@ def openai_endpoints(
 
                 @app.post("/chat/completions")
                 async def create_chat_completion(
-                        request: ChatCompletionRequest,
-                        raw_request: Request
+                    request: ChatCompletionRequest, raw_request: Request
                 ):
                     generator = await self.openai_serving_chat.create_chat_completion(
-                        request, raw_request)
+                        request, raw_request
+                    )
                     if isinstance(generator, ErrorResponse):
-                        return JSONResponse(content=generator.model_dump(),
-                                            status_code=generator.code)
+                        return JSONResponse(
+                            content=generator.model_dump(), status_code=generator.code
+                        )
                     if request.stream:
-                        return StreamingResponse(content=generator,
-                                                 media_type="text/event-stream")
+                        return StreamingResponse(
+                            content=generator, media_type="text/event-stream"
+                        )
                     else:
                         return JSONResponse(content=generator.model_dump())
 
                 @app.post("/completions")
-                async def create_completion(request: CompletionRequest, raw_request: Request):
+                async def create_completion(
+                    request: CompletionRequest, raw_request: Request
+                ):
                     generator = await self.openai_serving_completion.create_completion(
-                        request, raw_request)
+                        request, raw_request
+                    )
                     if isinstance(generator, ErrorResponse):
-                        return JSONResponse(content=generator.model_dump(),
-                                            status_code=generator.code)
+                        return JSONResponse(
+                            content=generator.model_dump(), status_code=generator.code
+                        )
                     if request.stream:
-                        return StreamingResponse(content=generator,
-                                                 media_type="text/event-stream")
+                        return StreamingResponse(
+                            content=generator, media_type="text/event-stream"
+                        )
                     else:
                         return JSONResponse(content=generator.model_dump())
 
@@ -136,8 +150,9 @@ def openai_endpoints(
 # helper function to make a httpx client for BentoML service
 def _make_httpx_client(url, svc):
 
-    import httpx
     from urllib.parse import urlparse
+
+    import httpx
     from bentoml._internal.utils.uri import uri_to_path
 
     timeout = svc.config["traffic"]["timeout"]
@@ -153,9 +168,12 @@ def _make_httpx_client(url, svc):
     elif parsed.scheme == "tcp":
         target_url = f"http://{parsed.netloc}"
 
-    return httpx.Client(
-        transport=transport,
-        timeout=timeout,
-        follow_redirects=True,
-        headers=headers,
-    ), target_url
+    return (
+        httpx.Client(
+            transport=transport,
+            timeout=timeout,
+            follow_redirects=True,
+            headers=headers,
+        ),
+        target_url,
+    )
