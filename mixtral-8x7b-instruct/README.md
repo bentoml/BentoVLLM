@@ -128,7 +128,7 @@ chat_completion = client.chat.completions.create(
             "content": "What is the capital of France?"
         }
     ],
-	extra_body=dict(guided_json=json_schema),
+    extra_body=dict(guided_json=json_schema),
 )
 print(chat_completion.choices[0].message.content)  # will return something like: {"city": "Paris"}
 ```
