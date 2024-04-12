@@ -121,7 +121,7 @@ json_schema = {
 }
 
 chat_completion = client.chat.completions.create(
-    model="mistralai/Mistral-7B-Instruct-v0.2",
+    model="TheBloke/Mixtral-8x7B-Instruct-v0.1-GPTQ",
     messages=[
         {
             "role": "user",
