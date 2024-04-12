@@ -103,6 +103,38 @@ for chunk in chat_completion:
     print(chunk.choices[0].delta.content or "", end="")
 ```
 
+These OpenAI-compatible endpoints also support [vLLM extra parameters](https://docs.vllm.ai/en/latest/serving/openai_compatible_server.html#extra-parameters). For example, you can force the chat completion output a JSON object by using the `guided_json` parameters:
+
+```python
+from openai import OpenAI
+
+client = OpenAI(base_url='http://localhost:3000/v1', api_key='na')
+
+# Use the following func to get the available models
+client.models.list()
+
+json_schema = {
+    "type": "object",
+    "properties": {
+        "city": {"type": "string"}
+    }
+}
+
+chat_completion = client.chat.completions.create(
+    model="mistralai/Mistral-7B-Instruct-v0.2",
+    messages=[
+        {
+            "role": "user",
+            "content": "What is the capital of France?"
+        }
+    ],
+    extra_body=dict(guided_json=json_schema),
+)
+print(chat_completion.choices[0].message.content)  # will return something like: {"city": "Paris"}
+```
+
+All supported extra parameters are listed in [vLLM documentation](https://docs.vllm.ai/en/latest/serving/openai_compatible_server.html#extra-parameters).
+
 **Note**: If your Service is deployed with [protected endpoints on BentoCloud](https://docs.bentoml.com/en/latest/bentocloud/how-tos/manage-access-token.html#access-protected-deployments), you need to set the environment variable `OPENAI_API_KEY` to your BentoCloud API key first.
 
 ```bash
