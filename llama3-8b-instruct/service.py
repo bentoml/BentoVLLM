@@ -50,7 +50,7 @@ class VLLM:
 
         self.engine = AsyncLLMEngine.from_engine_args(ENGINE_ARGS)
 
-        tokenizer = AutoTokenizer.from_pretrained(MODEL_ID)
+        tokenizer = AutoTokenizer.from_pretrained(self.bento_model_ref.path)
         self.stop_token_ids = [
             tokenizer.eos_token_id,
             tokenizer.convert_tokens_to_ids("<|eot_id|>"),
