@@ -22,6 +22,7 @@ See [here](https://github.com/bentoml/BentoML?tab=readme-ov-file#%EF%B8%8F-what-
 ```bash
 git clone https://github.com/bentoml/BentoVLLM.git
 cd BentoVLLM/llama3-8b-instruct
+pip install -r requirements.txt
 ```
 
 ## Download the model
