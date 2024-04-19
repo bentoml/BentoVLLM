@@ -95,7 +95,7 @@ client = OpenAI(base_url='http://localhost:3000/v1', api_key='na')
 client.models.list()
 
 chat_completion = client.chat.completions.create(
-    model="llama3-8b-instruct/service.py",
+    model="meta-llama/Meta-Llama-3-8B-Instruct",
     messages=[
         {
             "role": "user",
@@ -127,7 +127,7 @@ json_schema = {
 }
 
 chat_completion = client.chat.completions.create(
-    model="llama3-8b-instruct/service.py",
+    model="meta-llama/Meta-Llama-3-8B-Instruct",
     messages=[
         {
             "role": "user",
