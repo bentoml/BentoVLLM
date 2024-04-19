@@ -1,0 +1,6 @@
+accelerate==0.29.3
+bentoml>=1.2.11
+flash-attn==2.5.7
+torch==2.1.2
+transformers==4.39.3
+vllm==0.4.0.post1
