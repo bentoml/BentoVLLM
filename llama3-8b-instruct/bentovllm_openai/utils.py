@@ -51,7 +51,8 @@ def openai_endpoints(
                         chat_template=None,
                     ):
                         super(OpenAIServingChat, self).__init__(
-                            engine=engine, served_model=served_model,
+                            engine=engine,
+                            served_model_names=served_model,
                             lora_modules=None,
                         )
                         self.response_role = response_role
@@ -75,7 +76,7 @@ def openai_endpoints(
                         return super()._load_chat_template(chat_template)
 
                 self.openai_serving_completion = OpenAIServingCompletion(
-                    engine=self.engine, served_model=served_model,
+                    engine=self.engine, served_model_names=served_model,
                 )
 
                 self.chat_template = chat_template

@@ -1,6 +1,6 @@
 accelerate==0.29.3
-bentoml>=1.2.11
+bentoml>=1.2.12
 packaging==24.0
-torch==2.1.2
-transformers==4.39.3
-vllm==0.4.0.post1
+torch==2.2.1
+transformers==4.40.0
+vllm==0.4.1
