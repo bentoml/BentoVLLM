@@ -140,6 +140,7 @@ Besides the mistral-7b-instruct model, we have examples for other models in subd
 
 - [Llama-2-7b-chat-hf](llama2-7b-chat/)
 - [Llama-3-8b-instruct](llama3-8b-instruct/)
+- [Llama-3-70b-instruct with AWQ quantization](llama3-70b-instruct-awq/)
 - [Mistral-7B-Instruct-v0.2](mistral-7b-instruct/)
 - [Mixtral-8x7B-Instruct-v0.1 with gptq quantization](mistral-7b-instruct/)
 - [Outlines integration](outlines-integration/)

@@ -9,7 +9,7 @@ from bentovllm_openai.utils import openai_endpoints
 from import_model import MODEL_ID, BENTO_MODEL_TAG
 
 
-MAX_TOKENS = 1024
+MAX_TOKENS = 8192
 SYSTEM_PROMPT = """You are a helpful, respectful and honest assistant. Always answer as helpfully as possible, while being safe. Your answers should not include any harmful, unethical, racist, sexist, toxic, dangerous, or illegal content. Please ensure that your responses are socially unbiased and positive in nature.
 
 If a question does not make any sense, or is not factually coherent, explain why instead of answering something not correct. If you don't know the answer to a question, please don't share false information."""
@@ -26,7 +26,7 @@ PROMPT_TEMPLATE = """<|begin_of_text|><|start_header_id|>system<|end_header_id|>
 @bentoml.service(
     name="bentovllm-llama3-70b-insruct-awq-service",
     traffic={
-        "timeout": 300,
+        "timeout": 1200,
     },
     resources={
         "gpu": 1,
@@ -45,6 +45,7 @@ class VLLM:
             model=self.bento_model_ref.path,
             max_model_len=MAX_TOKENS,
             quantization="AWQ",
+            gpu_memory_utilization=0.95,
         )
 
         self.engine = AsyncLLMEngine.from_engine_args(ENGINE_ARGS)
