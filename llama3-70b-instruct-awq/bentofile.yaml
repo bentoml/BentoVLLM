@@ -1,15 +1,16 @@
-service: "service:VLLM"
+service: 'service:VLLM'
 labels:
   owner: bentoml-team
   stage: demo
 include:
-- "*.py"
-- "bentovllm_openai/*.py"
-- "setup.sh"
+  - '*.py'
+  - 'bentovllm_openai/*.py'
+  - 'setup.sh'
 python:
-  requirements_txt: "./requirements.txt"
+  requirements_txt: './requirements.txt'
   lock_packages: false
 docker:
-  setup_script: "./setup.sh"
+  python_version: 3.11
+  setup_script: './setup.sh'
   system_packages:
     - git

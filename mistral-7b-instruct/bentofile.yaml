@@ -1,12 +1,14 @@
-service: "service:VLLM"
+service: 'service:VLLM'
 labels:
   owner: bentoml-team
   stage: demo
 include:
-- "*.py"
-- "bentovllm_openai/*.py"
+  - '*.py'
+  - 'bentovllm_openai/*.py'
 python:
-  requirements_txt: "./requirements.txt"
+  requirements_txt: './requirements.txt'
   lock_packages: false
 envs:
   - name: HF_TOKEN
+docker:
+  python_version: 3.11

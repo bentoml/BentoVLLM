@@ -1,9 +1,11 @@
-service: "service:VLLM"
+service: 'service:VLLM'
 labels:
   owner: bentoml-team
   stage: demo
 include:
-- "*.py"
+  - '*.py'
 python:
-  requirements_txt: "./requirements.txt"
+  requirements_txt: './requirements.txt'
   lock_packages: false
+docker:
+  python_version: 3.11

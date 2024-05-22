@@ -1,4 +1,2 @@
 bentoml>=1.2.9
-torch==2.1.2
-transformers==4.39.3
-vllm==0.4.0.post1
+vllm==0.4.2

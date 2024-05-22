@@ -2,6 +2,4 @@ accelerate==0.29.3
 autoawq==0.2.3
 bentoml>=1.2.11
 packaging==24.0
-torch==2.1.2
-transformers==4.39.3
-vllm==0.4.0.post1
+vllm==0.4.2
