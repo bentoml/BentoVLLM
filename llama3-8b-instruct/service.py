@@ -45,7 +45,8 @@ class VLLM:
 
         ENGINE_ARGS = AsyncEngineArgs(
             model=self.bento_model_ref.path,
-            max_model_len=MAX_TOKENS
+            max_model_len=MAX_TOKENS,
+            enable_prefix_caching=True
         )
 
         self.engine = AsyncLLMEngine.from_engine_args(ENGINE_ARGS)

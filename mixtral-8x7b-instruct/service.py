@@ -38,6 +38,7 @@ class VLLM:
             gpu_memory_utilization=0.85,
             quantization="gptq",
             dtype="half",
+            enable_prefix_caching=True
         )
         
         self.engine = AsyncLLMEngine.from_engine_args(ENGINE_ARGS)
