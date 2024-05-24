@@ -45,7 +45,7 @@ class VLLM:
             model=self.bento_model_ref.path,
             max_model_len=MAX_TOKENS,
             quantization="AWQ",
-            gpu_memory_utilization=0.95,
+            enable_prefix_caching=True
         )
 
         self.engine = AsyncLLMEngine.from_engine_args(ENGINE_ARGS)

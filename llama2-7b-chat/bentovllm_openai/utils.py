@@ -51,7 +51,7 @@ def openai_endpoints(
                         chat_template=None,
                     ):
                         super(OpenAIServingChat, self).__init__(
-                            engine=engine, served_model=served_model,
+                            engine=engine, served_model_names=[served_model],
                             lora_modules=None,
                         )
                         self.response_role = response_role
@@ -72,10 +72,13 @@ def openai_endpoints(
                         # guarantee the order in which scheduled tasks are run
                         while self.tokenizer is None:
                             await asyncio.sleep(0.1)
-                        return super()._load_chat_template(chat_template)
+                        # Note: the current vLLM head is changing this back to synchronous function,
+                        # see: https://github.com/vllm-project/vllm/blob/6a50f4cafaf9f734b3f6ad11e6af38838aa3baf8/vllm/entrypoints/openai/serving_chat.py#L57
+                        # we need to update this after the next stable version is released
+                        await super()._load_chat_template(chat_template)
 
                 self.openai_serving_completion = OpenAIServingCompletion(
-                    engine=self.engine, served_model=served_model,
+                    engine=self.engine, served_model_names=[served_model],
                 )
 
                 self.chat_template = chat_template
