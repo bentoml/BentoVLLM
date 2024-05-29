@@ -22,7 +22,6 @@ PROMPT_TEMPLATE = """<|begin_of_text|><|start_header_id|>system<|end_header_id|>
 """
 
 MODEL_ID = "meta-llama/Meta-Llama-3-8B-Instruct"
-BENTO_MODEL_TAG = MODEL_ID.lower().replace("/", "--")
 
 @openai_endpoints(served_model=MODEL_ID)
 @bentoml.service(
@@ -37,21 +36,19 @@ BENTO_MODEL_TAG = MODEL_ID.lower().replace("/", "--")
 )
 class VLLM:
 
-    bento_model_ref = bentoml.models.get(BENTO_MODEL_TAG)
-
     def __init__(self) -> None:
         from transformers import AutoTokenizer
         from vllm import AsyncEngineArgs, AsyncLLMEngine
 
         ENGINE_ARGS = AsyncEngineArgs(
-            model=self.bento_model_ref.path,
+            model=MODEL_ID,
             max_model_len=MAX_TOKENS,
             enable_prefix_caching=True
         )
 
         self.engine = AsyncLLMEngine.from_engine_args(ENGINE_ARGS)
 
-        tokenizer = AutoTokenizer.from_pretrained(self.bento_model_ref.path)
+        tokenizer = AutoTokenizer.from_pretrained(MODEL_ID)
         self.stop_token_ids = [
             tokenizer.eos_token_id,
             tokenizer.convert_tokens_to_ids("<|eot_id|>"),

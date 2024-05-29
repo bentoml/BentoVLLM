@@ -25,12 +25,6 @@ cd BentoVLLM/llama3-8b-instruct
 pip install -r requirements.txt
 ```
 
-## Download the model
-
-```bash
-python import_model.py
-```
-
 ## Run the BentoML Service
 
 We have defined a BentoML Service in `service.py`. Run `bentoml serve` in your project directory to start the Service.
@@ -165,7 +159,7 @@ After the Service is ready, you can deploy the application to BentoCloud for bet
 Make sure you have [logged in to BentoCloud](https://docs.bentoml.com/en/latest/bentocloud/how-tos/manage-access-token.html), then run the following command to deploy it.
 
 ```bash
-bentoml deploy .
+bentoml deploy --env HF_TOKEN=<your_huggingface_token> .
 ```
 
 Once the application is up and running on BentoCloud, you can access it via the exposed URL.
