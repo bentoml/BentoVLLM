@@ -23,6 +23,7 @@ MODEL_ID = "mistralai/Mistral-7B-Instruct-v0.2"
     name="mistral-7b-instruct-service",
     traffic={
         "timeout": 300,
+        "concurrency": 256, # Matches the default max_num_seqs in the VLLM engine
     },
     resources={
         "gpu": 1,

@@ -25,7 +25,7 @@ BENTO_MODEL_TAG = MODEL_ID.lower().replace("/", "--")
     name="bentovllm-llama2-7b-chat-service",
     traffic={
         "timeout": 300,
-        "concurrency": 1,
+        "concurrency": 256, # Matches the default max_num_seqs in the VLLM engine
     },
     resources={
         "gpu": 1,
