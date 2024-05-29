@@ -1,4 +1,5 @@
 accelerate==0.29.3
 bentoml>=1.2.11
+openai==1.30.4
 packaging==24.0
 vllm==0.4.2
