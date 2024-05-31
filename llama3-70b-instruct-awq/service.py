@@ -27,6 +27,7 @@ PROMPT_TEMPLATE = """<|begin_of_text|><|start_header_id|>system<|end_header_id|>
     name="bentovllm-llama3-70b-insruct-awq-service",
     traffic={
         "timeout": 1200,
+        "concurrency": 256, # Matches the default max_num_seqs in the VLLM engine
     },
     resources={
         "gpu": 1,

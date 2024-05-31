@@ -23,6 +23,7 @@ MODEL_ID = "TheBloke/Mixtral-8x7B-Instruct-v0.1-GPTQ"
     name="mixtral-8x7b-instruct-gptq-service",
     traffic={
         "timeout": 300,
+        "concurrency": 256, # Matches the default max_num_seqs in the VLLM engine
     },
     resources={
         "gpu": 1,

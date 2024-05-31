@@ -24,6 +24,7 @@ MODEL_ID = "upstage/SOLAR-10.7B-Instruct-v1.0"
     name="bentovllm-solar-instruct-service",
     traffic={
         "timeout": 300,
+        "concurrency": 256, # Matches the default max_num_seqs in the VLLM engine
     },
     resources={
         "gpu": 1,

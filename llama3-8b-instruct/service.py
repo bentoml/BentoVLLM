@@ -28,6 +28,7 @@ MODEL_ID = "meta-llama/Meta-Llama-3-8B-Instruct"
     name="bentovllm-llama3-8b-insruct-service",
     traffic={
         "timeout": 300,
+        "concurrency": 256, # Matches the default max_num_seqs in the VLLM engine
     },
     resources={
         "gpu": 1,

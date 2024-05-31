@@ -34,6 +34,7 @@ DEFAULT_USER_PROMPT = "Create a user profile with the fields name, last_name and
     name="mistral-7b-instruct-outlines-service",
     traffic={
         "timeout": 300,
+        "concurrency": 256, # Matches the default max_num_seqs in the VLLM engine
     },
     resources={
         "gpu": 1,
