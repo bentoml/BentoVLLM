@@ -19,12 +19,27 @@ def openai_endpoints(
         response_role: str ="assistant",
         chat_template: t.Optional[str] = None,
         chat_template_model_id: t.Optional[str] = None,
+        default_completion_parameters: t.Optional[t.Dict[str, t.Any]] = None,
+        default_chat_completion_parameters: t.Optional[t.Dict[str, t.Any]] = None,
 ):
 
     def openai_wrapper(svc: Service[T]):
 
         cls = svc.inner
         app = FastAPI()
+
+        # make sure default_*_parameters are in valid format
+        if default_completion_parameters is not None:
+            assert "messages" not in default_completion_parameters
+            assert CompletionRequest(
+                prompt="", model="", **default_completion_parameters
+            )
+
+        if default_chat_completion_parameters is not None:
+            assert "messages" not in default_chat_completion_parameters
+            assert ChatCompletionRequest(
+                messages=[], model="", **default_chat_completion_parameters
+            )
 
         class new_cls(cls):
 
@@ -104,6 +119,10 @@ def openai_endpoints(
                         request: ChatCompletionRequest,
                         raw_request: Request
                 ):
+                    if default_chat_completion_parameters is not None:
+                        for k, v in default_chat_completion_parameters.items():
+                            if k not in request.__fields_set__:
+                                setattr(request, k, v)
                     generator = await self.openai_serving_chat.create_chat_completion(
                         request, raw_request)
                     if isinstance(generator, ErrorResponse):
@@ -117,6 +136,10 @@ def openai_endpoints(
 
                 @app.post("/completions")
                 async def create_completion(request: CompletionRequest, raw_request: Request):
+                    if default_completion_parameters is not None:
+                        for k, v in default_completion_parameters.items():
+                            if k not in request.__fields_set__:
+                                setattr(request, k, v)
                     generator = await self.openai_serving_completion.create_completion(
                         request, raw_request)
                     if isinstance(generator, ErrorResponse):
