@@ -30,7 +30,7 @@ def openai_endpoints(
 
         # make sure default_*_parameters are in valid format
         if default_completion_parameters is not None:
-            assert "messages" not in default_completion_parameters
+            assert "prompt" not in default_completion_parameters
             assert CompletionRequest(
                 prompt="", model="", **default_completion_parameters
             )
