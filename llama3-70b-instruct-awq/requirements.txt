@@ -1,4 +1,5 @@
 accelerate==0.29.3
-autoawq==0.2.3
+autoawq==0.2.5
 bentoml>=1.2.17
+bitsandbytes==0.43.1
 vllm==0.4.3
