@@ -1,2 +1,2 @@
-bentoml>=1.2.9
-vllm==0.4.2
+bentoml>=1.2.17
+vllm==0.4.3

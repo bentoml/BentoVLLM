@@ -22,7 +22,7 @@ PROMPT_TEMPLATE = """<|begin_of_text|><|start_header_id|>system<|end_header_id|>
 
 """
 
-@openai_endpoints(served_model=MODEL_ID)
+@openai_endpoints(model_id=MODEL_ID)
 @bentoml.service(
     name="bentovllm-llama3-70b-insruct-awq-service",
     traffic={

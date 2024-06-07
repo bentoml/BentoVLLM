@@ -18,7 +18,7 @@ If a question does not make any sense, or is not factually coherent, explain why
 
 MODEL_ID = "mistralai/Mistral-7B-Instruct-v0.2"
 
-@openai_endpoints(served_model=MODEL_ID)
+@openai_endpoints(model_id=MODEL_ID)
 @bentoml.service(
     name="mistral-7b-instruct-service",
     traffic={
