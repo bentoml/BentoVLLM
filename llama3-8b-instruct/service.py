@@ -24,7 +24,7 @@ PROMPT_TEMPLATE = """<|begin_of_text|><|start_header_id|>system<|end_header_id|>
 MODEL_ID = "meta-llama/Meta-Llama-3-8B-Instruct"
 
 @openai_endpoints(
-    served_model=MODEL_ID,
+    model_id=MODEL_ID,
     default_chat_completion_parameters=dict(stop=["<|eot_id|>"]),
 )
 @bentoml.service(
