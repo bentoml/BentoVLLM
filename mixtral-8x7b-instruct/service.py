@@ -38,7 +38,7 @@ class VLLM:
             max_model_len=MAX_TOKENS,
             quantization="gptq",
             dtype="half",
-            enable_prefix_caching=True
+            enable_prefix_caching=False,
         )
         
         self.engine = AsyncLLMEngine.from_engine_args(ENGINE_ARGS)
