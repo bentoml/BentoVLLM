@@ -5,7 +5,6 @@ labels:
 include:
   - '*.py'
   - 'bentovllm_openai/*.py'
-  - 'setup.sh'
 python:
   requirements_txt: './requirements.txt'
   lock_packages: false
@@ -13,6 +12,3 @@ envs:
   - name: HF_TOKEN
 docker:
   python_version: 3.11
-  setup_script: './setup.sh'
-  system_packages:
-    - git
