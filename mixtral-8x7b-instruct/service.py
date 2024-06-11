@@ -18,7 +18,7 @@ If a question does not make any sense, or is not factually coherent, explain why
 
 MODEL_ID = "TheBloke/Mixtral-8x7B-Instruct-v0.1-GPTQ"
 
-@openai_endpoints(served_model=MODEL_ID)
+@openai_endpoints(model_id=MODEL_ID)
 @bentoml.service(
     name="mixtral-8x7b-instruct-gptq-service",
     traffic={
@@ -38,7 +38,7 @@ class VLLM:
             max_model_len=MAX_TOKENS,
             quantization="gptq",
             dtype="half",
-            enable_prefix_caching=True
+            enable_prefix_caching=False,
         )
         
         self.engine = AsyncLLMEngine.from_engine_args(ENGINE_ARGS)

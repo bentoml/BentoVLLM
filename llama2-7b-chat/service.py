@@ -20,7 +20,7 @@ If a question does not make any sense, or is not factually coherent, explain why
 MODEL_ID = "meta-llama/Llama-2-7b-chat-hf"
 BENTO_MODEL_TAG = MODEL_ID.lower().replace("/", "--")
 
-@openai_endpoints(served_model=MODEL_ID)
+@openai_endpoints(model_id=MODEL_ID)
 @bentoml.service(
     name="bentovllm-llama2-7b-chat-service",
     traffic={

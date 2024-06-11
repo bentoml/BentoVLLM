@@ -19,7 +19,7 @@ If a question does not make any sense, or is not factually coherent, explain why
 
 MODEL_ID = "upstage/SOLAR-10.7B-Instruct-v1.0"
 
-@openai_endpoints(served_model=MODEL_ID)
+@openai_endpoints(model_id=MODEL_ID)
 @bentoml.service(
     name="bentovllm-solar-instruct-service",
     traffic={

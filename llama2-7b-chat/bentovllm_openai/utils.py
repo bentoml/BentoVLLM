@@ -3,9 +3,9 @@ from __future__ import annotations
 import asyncio
 import typing as t
 
-from fastapi import Depends, FastAPI, Request
+from _bentoml_sdk.service.factory import Service
+from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse, StreamingResponse
-from  _bentoml_sdk.service.factory import Service
 
 from .protocol import ChatCompletionRequest, CompletionRequest, ErrorResponse
 
@@ -15,13 +15,17 @@ if t.TYPE_CHECKING:
     from vllm import AsyncLLMEngine
 
 def openai_endpoints(
-        served_model: str,
-        response_role: str ="assistant",
+        model_id: str,
+        response_role: str = "assistant",
+        served_model_names: t.Optional[list[str]] = None,
         chat_template: t.Optional[str] = None,
         chat_template_model_id: t.Optional[str] = None,
         default_completion_parameters: t.Optional[t.Dict[str, t.Any]] = None,
         default_chat_completion_parameters: t.Optional[t.Dict[str, t.Any]] = None,
 ):
+
+    if served_model_names is None:
+        served_model_names = [model_id]
 
     def openai_wrapper(svc: Service[T]):
 
@@ -56,44 +60,14 @@ def openai_endpoints(
                 from vllm.entrypoints.openai.serving_chat import OpenAIServingChat
                 from vllm.entrypoints.openai.serving_completion import OpenAIServingCompletion
 
-                # https://github.com/vllm-project/vllm/issues/2683
-                class PatchedOpenAIServingChat(OpenAIServingChat):
-                    def __init__(
-                        self,
-                        engine: AsyncLLMEngine,
-                        served_model: str,
-                        response_role: str,
-                        chat_template=None,
-                    ):
-                        super(OpenAIServingChat, self).__init__(
-                            engine=engine, served_model_names=[served_model],
-                            lora_modules=None,
-                        )
-                        self.response_role = response_role
-                        try:
-                            event_loop = asyncio.get_running_loop()
-                        except RuntimeError:
-                            event_loop = None
-
-                        if event_loop is not None and event_loop.is_running():
-                            event_loop.create_task(self._load_chat_template(chat_template))
-                        else:
-                            asyncio.run(self._load_chat_template(chat_template))
-
-                    async def _load_chat_template(self, chat_template):
-                        # Simply making this function async is usually already enough to give the parent
-                        # class time to load the tokenizer (so usually no sleeping happens here)
-                        # However, it feels safer to be explicit about this since asyncio does not
-                        # guarantee the order in which scheduled tasks are run
-                        while self.tokenizer is None:
-                            await asyncio.sleep(0.1)
-                        # Note: the current vLLM head is changing this back to synchronous function,
-                        # see: https://github.com/vllm-project/vllm/blob/6a50f4cafaf9f734b3f6ad11e6af38838aa3baf8/vllm/entrypoints/openai/serving_chat.py#L57
-                        # we need to update this after the next stable version is released
-                        await super()._load_chat_template(chat_template)
+                # we can do this because worker/engine_user_ray is always False for us
+                model_config = self.engine.engine.get_model_config()
 
                 self.openai_serving_completion = OpenAIServingCompletion(
-                    engine=self.engine, served_model_names=[served_model],
+                    engine=self.engine,
+                    served_model_names=served_model_names,
+                    model_config=model_config,
+                    lora_modules=None,
                 )
 
                 self.chat_template = chat_template
@@ -102,11 +76,12 @@ def openai_endpoints(
                     _tokenizer = AutoTokenizer.from_pretrained(chat_template_model_id)
                     self.chat_template = _tokenizer.chat_template
 
-                self.openai_serving_chat = PatchedOpenAIServingChat(
+                self.openai_serving_chat = OpenAIServingChat(
                     engine=self.engine,
-                    served_model=served_model,
+                    served_model_names=served_model_names,
                     response_role=response_role,
                     chat_template=self.chat_template,
+                    model_config=model_config,
                 )
 
                 @app.get("/models")
