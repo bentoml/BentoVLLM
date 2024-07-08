@@ -20,7 +20,7 @@ See [here](https://github.com/bentoml/BentoML?tab=readme-ov-file#%EF%B8%8F-what-
 
 ```bash
 git clone https://github.com/bentoml/BentoVLLM.git
-cd BentoVLLM/mistral-7b-instruct
+cd BentoVLLM/gemma-7b-it
 pip install -r requirements.txt && pip install -f -U "pydantic>=2.0"
 ```
 
@@ -28,7 +28,7 @@ pip install -r requirements.txt && pip install -f -U "pydantic>=2.0"
 
 We have defined a BentoML Service in `service.py`. Run `bentoml serve` in your project directory to start the Service.
 
-```bash
+```python
 $ bentoml serve .
 
 2024-01-18T07:51:30+0800 [INFO] [cli] Starting production HTTP BentoServer from "service:VLLM" listening on http://localhost:3000 (Press CTRL+C to quit)
@@ -78,7 +78,7 @@ with bentoml.SyncHTTPClient("http://localhost:3000") as client:
 
 <summary>OpenAI-compatible endpoints</summary>
 
-This Service uses the `@openai_endpoints` decorator to set up OpenAI-compatible endpoints (`chat/completions` and `completions`). This means your client can interact with the backend Service (in this case, the VLLM class) as if they were communicating directly with OpenAI's API. This [utility](mistral-7b-instruct/bentovllm_openai/) does not affect your BentoML Service code, and you can use it for other LLMs as well.
+This Service uses the `@openai_endpoints` decorator to set up OpenAI-compatible endpoints (`chat/completions` and `completions`). This means your client can interact with the backend Service (in this case, the VLLM class) as if they were communicating directly with OpenAI's API. This [utility](https://github.com/bentoml/BentoVLLM/tree/main/bentovllm_openai) does not affect your BentoML Service code, and you can use it for other LLMs as well.
 
 ```python
 from openai import OpenAI
@@ -89,7 +89,7 @@ client = OpenAI(base_url='http://localhost:3000/v1', api_key='na')
 client.models.list()
 
 chat_completion = client.chat.completions.create(
-    model="mistralai/Mistral-7B-Instruct-v0.2",
+    model="google/gemma-7b-it",
     messages=[
         {
             "role": "user",
@@ -132,23 +132,3 @@ bentoml deploy .
 Once the application is up and running on BentoCloud, you can access it via the exposed URL.
 
 **Note**: For custom deployment in your own infrastructure, use [BentoML to generate an OCI-compliant image](https://docs.bentoml.com/en/latest/guides/containerization.html).
-
-
-## Different LLM Models
-
-Besides the mistral-7b-instruct model, we have examples for other models in subdirectories of this repository. Below is a list of these models and links to the example subdirectories.
-
-- [gemma-7b-it](gemma-7b-it/)
-- [Llama-2-7b-chat-hf](llama2-7b-chat/)
-- [Llama-3-8b-instruct](llama3-8b-instruct/)
-- [Llama-3-70b-instruct with AWQ quantization](llama3-70b-instruct-awq/)
-- [Mistral-7B-Instruct-v0.2](mistral-7b-instruct/)
-- [Mixtral-8x7B-Instruct-v0.1 with gptq quantization](mistral-7b-instruct/)
-- [Outlines integration](outlines-integration/)
-- [SOLAR-10.7B-v1.0](solar-10.7b-instruct/)
-
-
-## LLM tools integration examples
-
-- Every model directory contains codes to add OpenAI compatible endpoints to the BentoML service.
-- [outlines-integration/](outlines-integration/) contains the code to integrate with [outlines](https://github.com/outlines-dev/outlines) for structured generation.
