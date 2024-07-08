@@ -138,6 +138,7 @@ Once the application is up and running on BentoCloud, you can access it via the 
 
 Besides the mistral-7b-instruct model, we have examples for other models in subdirectories of this repository. Below is a list of these models and links to the example subdirectories.
 
+- [gemma-7b-it](gemma-7b-it/)
 - [Llama-2-7b-chat-hf](llama2-7b-chat/)
 - [Llama-3-8b-instruct](llama3-8b-instruct/)
 - [Llama-3-70b-instruct with AWQ quantization](llama3-70b-instruct-awq/)
