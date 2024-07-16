@@ -1,2 +1,5 @@
-bentoml>=1.2.17
-vllm==0.5.0.post1
+accelerate==0.29.3
+bentoml>=1.2.20
+fastapi==0.111.1
+openai==1.35.14
+vllm==0.5.2; sys_platform == "linux"
