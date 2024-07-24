@@ -21,7 +21,7 @@ See [here](https://github.com/bentoml/BentoML?tab=readme-ov-file#%EF%B8%8F-what-
 
 ```bash
 git clone https://github.com/bentoml/BentoVLLM.git
-cd BentoVLLM/llama3-70b-instruct-awq
+cd BentoVLLM/llama3.1-70b-instruct-awq
 pip install -r requirements.txt
 ```
 
