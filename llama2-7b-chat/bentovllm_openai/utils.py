@@ -68,6 +68,8 @@ def openai_endpoints(
                     served_model_names=served_model_names,
                     model_config=model_config,
                     lora_modules=None,
+                    prompt_adapters=None,
+                    request_logger=None,
                 )
 
                 self.chat_template = chat_template
@@ -82,6 +84,9 @@ def openai_endpoints(
                     response_role=response_role,
                     chat_template=self.chat_template,
                     model_config=model_config,
+                    lora_modules=None,
+                    prompt_adapters=None,
+                    request_logger=None,
                 )
 
                 @app.get("/models")
