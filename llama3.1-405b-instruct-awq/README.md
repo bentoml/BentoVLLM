@@ -1,8 +1,8 @@
 <div align="center">
-    <h1 align="center">Self-host Llama 3.1 70B with vLLM and BentoML</h1>
+    <h1 align="center">Self-host Llama 3.1 405B with vLLM and BentoML</h1>
 </div>
 
-This is a BentoML example project, showing you how to serve and deploy Llama 3.1 70B (with AWQ quantization) using [vLLM](https://vllm.ai), a high-throughput and memory-efficient inference engine.
+This is a BentoML example project, showing you how to serve and deploy Llama 3.1 405B (with AWQ quantization) using [vLLM](https://vllm.ai), a high-throughput and memory-efficient inference engine.
 
 See [here](https://github.com/bentoml/BentoML?tab=readme-ov-file#%EF%B8%8F-what-you-can-build-with-bentoml) for a full list of BentoML example projects.
 
@@ -13,15 +13,14 @@ See [here](https://github.com/bentoml/BentoML?tab=readme-ov-file#%EF%B8%8F-what-
 
 - You have installed Python 3.8+ and `pip`. See the [Python downloads page](https://www.python.org/downloads/) to learn more.
 - You have a basic understanding of key concepts in BentoML, such as Services. We recommend you read [Quickstart](https://docs.bentoml.com/en/1.2/get-started/quickstart.html) first.
-- You have gained access to Llama 3.1 8B on [its official website](https://llama.meta.com/) and [Hugging Face](https://huggingface.co/meta-llama/Meta-Llama-3.1-70B-Instruct).
-- If you want to test the Service locally, you need a Nvidia GPU with at least 48G VRAM.
+- If you want to test the Service locally, you need 4xA100 80GB Nvidia GPU with at least 203G VRAM.
 - (Optional) We recommend you create a virtual environment for dependency isolation for this project. See the [Conda documentation](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html) or the [Python documentation](https://docs.python.org/3/library/venv.html) for details.
 
 ## Install dependencies
 
 ```bash
 git clone https://github.com/bentoml/BentoVLLM.git
-cd BentoVLLM/llama3.1-70b-instruct-awq
+cd BentoVLLM/llama3.1-405b-instruct-awq
 pip install -r requirements.txt
 ```
 
@@ -90,7 +89,7 @@ client = OpenAI(base_url='http://localhost:3000/v1', api_key='na')
 client.models.list()
 
 chat_completion = client.chat.completions.create(
-    model="hugging-quants/Meta-Llama-3.1-70B-Instruct-AWQ-INT4",
+    model="hugging-quants/Meta-Llama-3.1-405B-Instruct-AWQ-INT4",
     messages=[
         {
             "role": "user",
@@ -123,7 +122,7 @@ json_schema = {
 }
 
 chat_completion = client.chat.completions.create(
-    model="hugging-quants/Meta-Llama-3.1-70B-Instruct-AWQ-INT4",
+    model="hugging-quants/Meta-Llama-3.1-405B-Instruct-AWQ-INT4",
     messages=[
         {
             "role": "user",

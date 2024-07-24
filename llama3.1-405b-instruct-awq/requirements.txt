@@ -1,0 +1,7 @@
+accelerate==0.29.3
+autoawq==0.2.5
+bentoml>=1.2.17
+bitsandbytes==0.43.1
+fastapi==0.111.1
+openai==1.35.14
+vllm==0.5.3.post1; sys_platform == "linux"
