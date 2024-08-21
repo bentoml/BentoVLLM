@@ -28,7 +28,7 @@ MODEL_ID = "meta-llama/Meta-Llama-3.1-8B-Instruct"
     default_chat_completion_parameters=dict(stop=["<|eot_id|>"]),
 )
 @bentoml.service(
-    name="bentovllm-llama3.1-8b-insruct-service",
+    name="bentovllm-llama3.1-8b-instruct-service",
     traffic={
         "timeout": 300,
         "concurrency": 256, # Matches the default max_num_seqs in the VLLM engine

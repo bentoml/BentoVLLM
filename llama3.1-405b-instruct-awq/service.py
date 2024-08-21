@@ -29,7 +29,7 @@ MODEL_ID = "hugging-quants/Meta-Llama-3.1-405B-Instruct-AWQ-INT4"
     default_chat_completion_parameters=dict(stop=["<|eot_id|>"]),
 )
 @bentoml.service(
-    name="bentovllm-llama3.1-405b-insruct-awq-service",
+    name="bentovllm-llama3.1-405b-instruct-awq-service",
     traffic={
         "timeout": 1200,
         "concurrency": 256,  # Matches the default max_num_seqs in the VLLM engine
