@@ -24,7 +24,7 @@ PROMPT_TEMPLATE = """<|begin_of_text|><|start_header_id|>system<|end_header_id|>
 
 @openai_endpoints(model_id=MODEL_ID)
 @bentoml.service(
-    name="bentovllm-llama3-70b-insruct-awq-service",
+    name="bentovllm-llama3-70b-instruct-awq-service",
     traffic={
         "timeout": 1200,
         "concurrency": 256, # Matches the default max_num_seqs in the VLLM engine

@@ -25,7 +25,7 @@ MODEL_ID = "microsoft/Phi-3-mini-4k-instruct"
 
 @openai_endpoints(model_id=MODEL_ID)
 @bentoml.service(
-    name="bentovllm-phi-3-mini-4k-insruct-service",
+    name="bentovllm-phi-3-mini-4k-instruct-service",
     traffic={
         "timeout": 300,
         "concurrency": 256, # Matches the default max_num_seqs in the VLLM engine
