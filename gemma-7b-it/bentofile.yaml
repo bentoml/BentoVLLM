@@ -10,3 +10,5 @@ python:
   lock_packages: false
 envs:
   - name: "HF_TOKEN"
+docker:
+  python_version: 3.11
