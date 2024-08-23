@@ -11,17 +11,16 @@ See [here](https://github.com/bentoml/BentoML?tab=readme-ov-file#%EF%B8%8F-what-
 
 ## Prerequisites
 
-- You have installed Python 3.8+ and `pip`. See the [Python downloads page](https://www.python.org/downloads/) to learn more.
-- You have a basic understanding of key concepts in BentoML, such as Services. We recommend you read [Quickstart](https://docs.bentoml.com/en/1.2/get-started/quickstart.html) first.
 - You have gained access to Llama 2 7B on [its official website](https://llama.meta.com/) and [Hugging Face](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf).
-- If you want to test the Service locally, you need a Nvidia GPU with at least 16G VRAM.
-- (Optional) We recommend you create a virtual environment for dependency isolation for this project. See the [Conda documentation](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html) or the [Python documentation](https://docs.python.org/3/library/venv.html) for details.
+- If you want to test the Service locally, we recommend you use a Nvidia GPU with at least 16G VRAM.
 
 ## Install dependencies
 
 ```bash
 git clone https://github.com/bentoml/BentoVLLM.git
 cd BentoVLLM/llama2-7b-chat
+
+# Recommend Python 3.11
 pip install -r requirements.txt && pip install -f -U "pydantic>=2.0"
 ```
 
