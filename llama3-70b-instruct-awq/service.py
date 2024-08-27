@@ -45,7 +45,6 @@ class VLLM:
         ENGINE_ARGS = AsyncEngineArgs(
             model=self.bento_model_ref.path,
             max_model_len=MAX_TOKENS,
-            quantization="AWQ",
             enable_prefix_caching=True
         )
 
