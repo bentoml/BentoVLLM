@@ -48,7 +48,6 @@ class VLLM:
         ENGINE_ARGS = AsyncEngineArgs(
             model=MODEL_ID,
             max_model_len=MAX_TOKENS,
-            quantization="AWQ",
             enable_prefix_caching=True,
         )
 

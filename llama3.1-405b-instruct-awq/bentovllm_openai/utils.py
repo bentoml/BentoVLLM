@@ -64,7 +64,7 @@ def openai_endpoints(
                 model_config = self.engine.engine.get_model_config()
 
                 self.openai_serving_completion = OpenAIServingCompletion(
-                    engine=self.engine,
+                    async_engine_client=self.engine,
                     served_model_names=served_model_names,
                     model_config=model_config,
                     lora_modules=None,
@@ -79,7 +79,7 @@ def openai_endpoints(
                     self.chat_template = _tokenizer.chat_template
 
                 self.openai_serving_chat = OpenAIServingChat(
-                    engine=self.engine,
+                    async_engine_client=self.engine,
                     served_model_names=served_model_names,
                     response_role=response_role,
                     chat_template=self.chat_template,
