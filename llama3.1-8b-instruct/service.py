@@ -47,7 +47,8 @@ class VLLM:
         ENGINE_ARGS = AsyncEngineArgs(
             model=MODEL_ID,
             max_model_len=MAX_TOKENS,
-            enable_prefix_caching=True
+            enable_prefix_caching=True,
+            num_scheduler_steps=10,
         )
 
         self.engine = AsyncLLMEngine.from_engine_args(ENGINE_ARGS)
