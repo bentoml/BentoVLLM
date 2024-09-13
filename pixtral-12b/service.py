@@ -1,5 +1,5 @@
 import uuid
-from typing import AsyncGenerator, Optional
+from typing import AsyncGenerator, Optional, List
 
 import bentoml
 import PIL.Image
@@ -8,8 +8,8 @@ from typing_extensions import Annotated
 
 from bentovllm_openai.utils import openai_endpoints
 
-
 MAX_TOKENS = 1024
+MAX_IMAGE_SIZE = 640
 
 SYSTEM_PROMPT = """
 You are a helpful, respectful and honest assistant. Always answer as helpfully as possible, while being safe. Your answers should not include any harmful, unethical, racist, sexist, toxic, dangerous, or illegal content. Please ensure that your responses are socially unbiased and positive in nature.
@@ -22,11 +22,6 @@ PROMPT_TEMPLATE = """<s>[INST]{system_prompt}
 
 MODEL_ID = "mistral-community/pixtral-12b-240910"
 
-# Hardcoded image_token_id and patch_size for now
-IMAGE_TOKEN_ID = 10
-PATCH_SIZE = 16
-MAX_IMAGE_SIZE = 640
-
 
 def resize(image: PIL.Image.Image, max_size: int = MAX_IMAGE_SIZE):
     if image.width > max_size or image.height > max_size:
@@ -36,6 +31,7 @@ def resize(image: PIL.Image.Image, max_size: int = MAX_IMAGE_SIZE):
         image = image.resize((width, height))
 
     return image
+
 
 @openai_endpoints(model_id=MODEL_ID)
 @bentoml.service(
@@ -51,17 +47,17 @@ def resize(image: PIL.Image.Image, max_size: int = MAX_IMAGE_SIZE):
 )
 class VLLM:
     def __init__(self) -> None:
-        from vllm import AsyncEngineArgs, AsyncLLMEngine, LLM
+        from vllm import AsyncEngineArgs, AsyncLLMEngine
         ENGINE_ARGS = AsyncEngineArgs(
             model=MODEL_ID,
             tokenizer_mode="mistral",
-            enable_prefix_caching=False,
-            limit_mm_per_prompt=dict(image=4),
-            max_num_batched_tokens=16384,
+            enable_prefix_caching=True,
+            enable_chunked_prefill=False,
+            limit_mm_per_prompt=dict(image=1),
+            max_model_len=16384,
         )
         
         self.engine = AsyncLLMEngine.from_engine_args(ENGINE_ARGS)
-        self.tokenizer = None
 
     @bentoml.api
     async def generate(
@@ -71,32 +67,62 @@ class VLLM:
         max_tokens: Annotated[int, Ge(128), Le(MAX_TOKENS)] = MAX_TOKENS,
         system_prompt: Optional[str] = SYSTEM_PROMPT,
     ) -> AsyncGenerator[str, None]:
-        from vllm import SamplingParams, TokensPrompt
-        from vllm.multimodal import MultiModalDataBuiltins
+        from vllm import SamplingParams
 
-        tokenizer = await self.engine.get_tokenizer()
-
-        SAMPLING_PARAM = SamplingParams(max_tokens=max_tokens)
+        sampling_params = SamplingParams(max_tokens=max_tokens)
 
         if system_prompt is None:
             system_prompt = SYSTEM_PROMPT
-        prompt = PROMPT_TEMPLATE.format(user_prompt=prompt, system_prompt=system_prompt)
-        token_ids = tokenizer(prompt).input_ids
 
-        engine_inputs = TokensPrompt(prompt_token_ids=token_ids)
-
-        image = resize(image)
-        mm_data = MultiModalDataBuiltins(image=[image])
-        engine_inputs["multi_modal_data"] = mm_data
-        image_size = image.width * image.height
-        image_token_num = image_size // (PATCH_SIZE ** 2)
-        image_token_ids = [IMAGE_TOKEN_ID] * image_token_num
-        engine_inputs["prompt_token_ids"] = image_token_ids + engine_inputs["prompt_token_ids"]
-
-        stream = await self.engine.add_request(uuid.uuid4().hex, engine_inputs, SAMPLING_PARAM)
+        engine_inputs = await self.create_image_input([image], prompt, system_prompt)
+        stream = await self.engine.add_request(uuid.uuid4().hex, engine_inputs, sampling_params)
 
         cursor = 0
         async for request_output in stream:
             text = request_output.outputs[0].text
             yield text[cursor:]
             cursor = len(text)
+
+
+    async def create_image_input(
+            self, images: List[PIL.Image.Image], prompt: str, system_prompt: str
+    ):
+        from vllm import SamplingParams, TokensPrompt
+        from vllm.multimodal import MultiModalDataBuiltins
+        from mistral_common.protocol.instruct.messages import (
+            SystemMessage,
+            UserMessage,
+            TextChunk,
+            ImageChunk,
+        )
+        from mistral_common.protocol.instruct.request import ChatCompletionRequest
+
+        tokenizer = await self.engine.get_tokenizer()
+        tokenizer = tokenizer.mistral
+
+        # tokenize images and text
+        messages = [
+            UserMessage(
+                content=[
+                    TextChunk(text=prompt),
+                ] + [ImageChunk(image=img) for img in images]
+            )
+        ]
+
+        if system_prompt:
+            system_message = SystemMessage(content=[TextChunk(text=system_prompt)])
+            messages = [system_message] + messages
+
+        tokenized = tokenizer.encode_chat_completion(
+            ChatCompletionRequest(
+                messages=messages,
+                model="pixtral",
+            )
+        )
+
+        engine_inputs = TokensPrompt(prompt_token_ids=tokenized.tokens)
+
+        mm_data = MultiModalDataBuiltins(image=images)
+        engine_inputs["multi_modal_data"] = mm_data
+
+        return engine_inputs
