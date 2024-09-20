@@ -22,10 +22,18 @@ def openai_endpoints(
         chat_template_model_id: t.Optional[str] = None,
         default_completion_parameters: t.Optional[t.Dict[str, t.Any]] = None,
         default_chat_completion_parameters: t.Optional[t.Dict[str, t.Any]] = None,
+        extra_completion_serve_parameters: t.Optional[t.Dict[str, t.Any]] = None,
+        extra_chat_completion_serve_parameters: t.Optional[t.Dict[str, t.Any]] = None,
 ):
 
     if served_model_names is None:
         served_model_names = [model_id]
+
+    if extra_completion_serve_parameters is None:
+        extra_completion_serve_parameters = {}
+
+    if extra_chat_completion_serve_parameters is None:
+        extra_chat_completion_serve_parameters = {}
 
     def openai_wrapper(svc: Service[T]):
 
@@ -70,6 +78,7 @@ def openai_endpoints(
                     lora_modules=None,
                     prompt_adapters=None,
                     request_logger=None,
+                    **extra_completion_serve_parameters,
                 )
 
                 self.chat_template = chat_template
@@ -87,6 +96,7 @@ def openai_endpoints(
                     lora_modules=None,
                     prompt_adapters=None,
                     request_logger=None,
+                    **extra_chat_completion_serve_parameters,
                 )
 
                 @app.get("/models")
