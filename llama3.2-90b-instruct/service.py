@@ -41,7 +41,7 @@ def resize(image: PIL.Image.Image, max_size: int = MAX_IMAGE_SIZE):
     default_chat_completion_parameters=dict(stop=["<|eot_id|>"]),
 )
 @bentoml.service(
-    name="bentovllm-llama32-90b-vision-instruct-service",
+    name="bentovllm-llama3.2-90b-vision-instruct-service",
     traffic={
         "timeout": 10000,
         "concurrency": 16,  # Matches the default max_num_seqs in the VLLM engine
