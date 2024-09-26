@@ -30,7 +30,7 @@ def openai_endpoints(
 
     if served_model_names is None:
         served_model_names = [model_id]
-    
+
     base_model_paths = [
         BaseModelPath(name=name, model_path=name)
         for name in served_model_names

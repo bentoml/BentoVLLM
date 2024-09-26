@@ -2,6 +2,7 @@ import uuid
 from typing import AsyncGenerator, Optional
 
 import bentoml
+import PIL.Image
 from annotated_types import Ge, Le
 from typing_extensions import Annotated
 
@@ -17,7 +18,7 @@ PROMPT_TEMPLATE = """<|begin_of_text|><|start_header_id|>system<|end_header_id|>
 
 {system_prompt}<|eot_id|><|start_header_id|>user<|end_header_id|>
 
-{user_prompt}<|eot_id|><|start_header_id|>assistant<|end_header_id|>
+{user_prompt}<|image|><|eot_id|><|start_header_id|>assistant<|end_header_id|>
 
 """
 
@@ -40,7 +41,6 @@ MODEL_ID = "meta-llama/Llama-3.2-11B-Vision-Instruct"
     },
 )
 class VLLM:
-
     def __init__(self) -> None:
         from transformers import AutoTokenizer
         from vllm import AsyncEngineArgs, AsyncLLMEngine
@@ -64,7 +64,8 @@ class VLLM:
     @bentoml.api
     async def generate(
         self,
-        prompt: str = "Explain superconductors in plain English",
+        image: PIL.Image.Image,
+        prompt: str = "Describe this image",
         system_prompt: Optional[str] = SYSTEM_PROMPT,
         max_tokens: Annotated[int, Ge(128), Le(MAX_TOKENS)] = MAX_TOKENS,
     ) -> AsyncGenerator[str, None]:
@@ -77,11 +78,26 @@ class VLLM:
 
         if system_prompt is None:
             system_prompt = SYSTEM_PROMPT
-        prompt = PROMPT_TEMPLATE.format(user_prompt=prompt, system_prompt=system_prompt)
-        stream = await self.engine.add_request(uuid.uuid4().hex, prompt, SAMPLING_PARAM)
+        engine_inputs = await self.create_image_inputs(
+            dict(prompt=prompt, system_prompt=system_prompt, image=image)
+        )
+        stream = await self.engine.add_request(
+            uuid.uuid4().hex, engine_inputs, SAMPLING_PARAM
+        )
 
         cursor = 0
         async for request_output in stream:
             text = request_output.outputs[0].text
             yield text[cursor:]
             cursor = len(text)
+
+    async def create_image_inputs(self, inputs):
+        from vllm import TextPrompt
+        from vllm.multimodal import MultiModalDataBuiltins
+
+        return TextPrompt(
+            prompt=PROMPT_TEMPLATE.format(
+                user_prompt=inputs["prompt"], system_prompt=inputs["system_prompt"]
+            ),
+            multi_modal_data=MultiModalDataBuiltins(image=inputs["image"]),
+        )
