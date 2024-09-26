@@ -46,11 +46,13 @@ The server is now active at [http://localhost:3000](http://localhost:3000/). Yo
 curl -X 'POST' \
   'http://localhost:3000/generate' \
   -H 'accept: text/event-stream' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "prompt": "Explain superconductors like I'\''m five years old",
-  "tokens": null
-}'
+  -H 'Content-Type: multipart/form-data' \
+  -F 'image=@demo.jpg;type=image/jpeg' \
+  -F 'prompt=Describe this image' \
+  -F 'system_prompt=You are a helpful, respectful and honest assistant. Always answer as helpfully as possible, while being safe. Your answers should not include any harmful, unethical, racist, sexist, toxic, dangerous, or illegal content. Please ensure that your responses are socially unbiased and positive in nature.
+
+If a question does not make any sense, or is not factually coherent, explain why instead of answering something not correct. If you don'\''t know the answer to a question, please don'\''t share false information.' \
+  -F 'max_tokens=128'
 ```
 
 </details>
@@ -64,8 +66,8 @@ import bentoml
 
 with bentoml.SyncHTTPClient("http://localhost:3000") as client:
     response_generator = client.generate(
-        prompt="Explain superconductors like I'm five years old",
-        tokens=None
+        image=PIL.Image.open("demo.jpg"),
+        prompt="Describe this image",
     )
     for response in response_generator:
         print(response)
