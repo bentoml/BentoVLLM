@@ -25,14 +25,16 @@ PROMPT_TEMPLATE = """<|begin_of_text|><|start_header_id|>system<|end_header_id|>
 
 MODEL_ID = "meta-llama/Llama-3.2-11B-Vision-Instruct"
 
+
 def resize(image: PIL.Image.Image, max_size: int = MAX_IMAGE_SIZE):
     if image.width > max_size or image.height > max_size:
-        ratio = min(max_size/image.width, max_size/image.height)
+        ratio = min(max_size / image.width, max_size / image.height)
         width = int(image.width * ratio)
         height = int(image.height * ratio)
         image = image.resize((width, height))
 
     return image
+
 
 @openai_endpoints(
     model_id=MODEL_ID,
@@ -42,7 +44,7 @@ def resize(image: PIL.Image.Image, max_size: int = MAX_IMAGE_SIZE):
     name="bentovllm-llama32-11b-vision-instruct-service",
     traffic={
         "timeout": 10000,
-        "concurrency": 256,  # Matches the default max_num_seqs in the VLLM engine
+        "concurrency": 16,  # Matches the default max_num_seqs in the VLLM engine
     },
     resources={
         "gpu": 1,
