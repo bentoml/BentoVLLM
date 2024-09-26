@@ -9,7 +9,8 @@ from typing_extensions import Annotated
 from bentovllm_openai.utils import openai_endpoints
 
 
-MAX_TOKENS = 8192
+MAX_TOKENS = 1024
+MAX_IMAGE_SIZE = 640
 SYSTEM_PROMPT = """You are a helpful, respectful and honest assistant. Always answer as helpfully as possible, while being safe. Your answers should not include any harmful, unethical, racist, sexist, toxic, dangerous, or illegal content. Please ensure that your responses are socially unbiased and positive in nature.
 
 If a question does not make any sense, or is not factually coherent, explain why instead of answering something not correct. If you don't know the answer to a question, please don't share false information."""
@@ -23,6 +24,16 @@ PROMPT_TEMPLATE = """<|begin_of_text|><|start_header_id|>system<|end_header_id|>
 """
 
 MODEL_ID = "meta-llama/Llama-3.2-90B-Vision-Instruct"
+
+
+def resize(image: PIL.Image.Image, max_size: int = MAX_IMAGE_SIZE):
+    if image.width > max_size or image.height > max_size:
+        ratio = min(max_size / image.width, max_size / image.height)
+        width = int(image.width * ratio)
+        height = int(image.height * ratio)
+        image = image.resize((width, height))
+
+    return image
 
 
 @openai_endpoints(
@@ -81,7 +92,7 @@ class VLLM:
         if system_prompt is None:
             system_prompt = SYSTEM_PROMPT
         engine_inputs = await self.create_image_inputs(
-            dict(prompt=prompt, system_prompt=system_prompt, image=image)
+            dict(prompt=prompt, system_prompt=system_prompt, image=resize(image))
         )
         stream = await self.engine.add_request(
             uuid.uuid4().hex, engine_inputs, SAMPLING_PARAM
