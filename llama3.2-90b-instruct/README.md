@@ -1,8 +1,8 @@
 <div align="center">
-    <h1 align="center">Self-host Llama 3.1 11B Vision with vLLM and BentoML</h1>
+    <h1 align="center">Self-host Llama 3.2 90B with vLLM and BentoML</h1>
 </div>
 
-This is a BentoML example project, showing you how to serve and deploy Llama 3.1 11B Vision using [vLLM](https://vllm.ai), a high-throughput and memory-efficient inference engine.
+This is a BentoML example project, showing you how to serve and deploy Llama 3.2 90B using [vLLM](https://vllm.ai), a high-throughput and memory-efficient inference engine.
 
 See [here](https://github.com/bentoml/BentoML?tab=readme-ov-file#%EF%B8%8F-what-you-can-build-with-bentoml) for a full list of BentoML example projects.
 
@@ -17,7 +17,7 @@ If you want to test the Service locally, we recommend you use a Nvidia GPU with 
 
 ```bash
 git clone https://github.com/bentoml/BentoVLLM.git
-cd BentoVLLM/llama3.2-11b-instruct
+cd BentoVLLM/llama3.2-90b-instruct
 
 # Recommend Python 3.11
 pip install -r requirements.txt
@@ -88,7 +88,7 @@ client = OpenAI(base_url='http://localhost:3000/v1', api_key='na')
 client.models.list()
 
 chat_completion = client.chat.completions.create(
-    model="meta-llama/Llama-3.2-11B-Vision-Instruct",
+    model="meta-llama/Llama-3.2-90B-Vision-Instruct",
     messages=[
         {
             "role": "user",
@@ -128,10 +128,7 @@ chat_completion = client.chat.completions.create(
     messages=[
         {
             "role": "user",
-            "content": [
-                {"type": "text", "text": "Describe this image"},
-                {"type": "image", "image_url": "./demo.jpg"}
-          ]
+            "content": "What is the capital of France?"
         }
     ],
     extra_body=dict(guided_json=json_schema),

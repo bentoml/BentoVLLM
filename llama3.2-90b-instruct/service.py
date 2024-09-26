@@ -22,7 +22,7 @@ PROMPT_TEMPLATE = """<|begin_of_text|><|start_header_id|>system<|end_header_id|>
 
 """
 
-MODEL_ID = "meta-llama/Llama-3.2-11B-Vision-Instruct"
+MODEL_ID = "meta-llama/Llama-3.2-90B-Vision-Instruct"
 
 
 @openai_endpoints(
@@ -30,13 +30,13 @@ MODEL_ID = "meta-llama/Llama-3.2-11B-Vision-Instruct"
     default_chat_completion_parameters=dict(stop=["<|eot_id|>"]),
 )
 @bentoml.service(
-    name="bentovllm-llama32-11b-vision-instruct-service",
+    name="bentovllm-llama32-90b-vision-instruct-service",
     traffic={
         "timeout": 10000,
         "concurrency": 256,  # Matches the default max_num_seqs in the VLLM engine
     },
     resources={
-        "gpu": 1,
+        "gpu": 4,
         "gpu_type": "nvidia-a100-80gb",
     },
 )
@@ -52,6 +52,7 @@ class VLLM:
             enforce_eager=True,
             max_num_seqs=16,
             limit_mm_per_prompt=dict(image=1),
+            tensor_parallel_size=4,
         )
 
         self.engine = AsyncLLMEngine.from_engine_args(ENGINE_ARGS)
