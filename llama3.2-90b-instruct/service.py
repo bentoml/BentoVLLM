@@ -44,7 +44,7 @@ def resize(image: PIL.Image.Image, max_size: int = MAX_IMAGE_SIZE):
     name="bentovllm-llama32-90b-vision-instruct-service",
     traffic={
         "timeout": 10000,
-        "concurrency": 256,  # Matches the default max_num_seqs in the VLLM engine
+        "concurrency": 16,  # Matches the default max_num_seqs in the VLLM engine
     },
     resources={
         "gpu": 4,
