@@ -1,8 +1,8 @@
 <div align="center">
-    <h1 align="center">Self-host Llama 3.1 11B Vision with vLLM and BentoML</h1>
+    <h1 align="center">Self-host Llama 3.2 11B Vision with vLLM and BentoML</h1>
 </div>
 
-This is a BentoML example project, showing you how to serve and deploy Llama 3.1 11B Vision using [vLLM](https://vllm.ai), a high-throughput and memory-efficient inference engine.
+This is a BentoML example project, showing you how to serve and deploy Llama 3.2 11B Vision using [vLLM](https://vllm.ai), a high-throughput and memory-efficient inference engine.
 
 See [here](https://github.com/bentoml/BentoML?tab=readme-ov-file#%EF%B8%8F-what-you-can-build-with-bentoml) for a full list of BentoML example projects.
 
@@ -126,7 +126,7 @@ json_schema = {
 }
 
 chat_completion = client.chat.completions.create(
-    model="hugging-quants/Meta-Llama-3.1-70B-Instruct-AWQ-INT4",
+    model="meta-llama/Llama-3.2-11B-Vision-Instruct",
     messages=[
         {
             "role": "user",
