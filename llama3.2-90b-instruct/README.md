@@ -126,7 +126,7 @@ json_schema = {
 }
 
 chat_completion = client.chat.completions.create(
-    model="hugging-quants/Meta-Llama-3.1-70B-Instruct-AWQ-INT4",
+    model="meta-llama/Llama-3.2-90B-Vision-Instruct",
     messages=[
         {
             "role": "user",
