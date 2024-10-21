@@ -21,6 +21,8 @@ cd BentoVLLM/llama3.2-90b-instruct
 
 # Recommend Python 3.11
 pip install -r requirements.txt
+
+export HF_TOEKN=<your-api-key>
 ```
 
 ## Run the BentoML Service
@@ -160,10 +162,18 @@ For detailed explanations of the Service code, see [vLLM inference](https://docs
 
 After the Service is ready, you can deploy the application to BentoCloud for better management and scalability. [Sign up](https://www.bentoml.com/) if you haven't got a BentoCloud account.
 
-Make sure you have [logged in to BentoCloud](https://docs.bentoml.com/en/latest/bentocloud/how-tos/manage-access-token.html), then run the following command to deploy it.
+Make sure you have [logged in to BentoCloud](https://docs.bentoml.com/en/latest/bentocloud/how-tos/manage-access-token.html).
 
 ```bash
-bentoml deploy .
+bentoml cloud login
+```
+
+Create a BentoCloud secret to store the required environment variable and reference it for deployment.
+
+```bash
+bentoml secret create huggingface HF_TOKEN=$HF_TOKEN
+
+bentoml deploy . --secret huggingface
 ```
 
 Once the application is up and running on BentoCloud, you can access it via the exposed URL.
