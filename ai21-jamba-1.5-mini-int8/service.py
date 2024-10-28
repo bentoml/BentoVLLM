@@ -22,7 +22,7 @@ MODEL_ID = "ai21labs/AI21-Jamba-1.5-Mini"
 
 @bentoml.mount_asgi_app(openai_api_app, path="/v1")
 @bentoml.service(
-    name="bentovllm-llama3.1-70b-instruct-awq-service",
+    name="bentovllm-ai21-jamba-1.5-mini-int8-service",
     traffic={
         "timeout": 1200,
         "concurrency": 256,  # Matches the default max_num_seqs in the VLLM engine
@@ -96,9 +96,7 @@ class VLLM:
     ) -> AsyncGenerator[str, None]:
         from vllm import SamplingParams
 
-        SAMPLING_PARAM = SamplingParams(
-            max_tokens=max_tokens,
-        )
+        SAMPLING_PARAM = SamplingParams(max_tokens=max_tokens)
 
         if system_prompt is None:
             system_prompt = SYSTEM_PROMPT
@@ -107,8 +105,12 @@ class VLLM:
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": prompt},
         ]
-        prompt = self.tokenizer.apply_chat_template(messages, tokenize=False)
-        stream = await self.engine.add_request(uuid.uuid4().hex, prompt, SAMPLING_PARAM)
+        prompt = self.tokenizer.apply_chat_template(
+            messages, tokenize=False, add_generation_prompt=True,
+        )
+        stream = await self.engine.add_request(
+            uuid.uuid4().hex, prompt, SAMPLING_PARAM,
+        )
 
         cursor = 0
         async for request_output in stream:
