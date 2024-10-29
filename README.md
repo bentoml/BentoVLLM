@@ -2,16 +2,18 @@
     <h1 align="center">Self-host LLMs with vLLM and BentoML</h1>
 </div>
 
-This is a BentoML example project, showing you how to serve and deploy open-source Large Language Models using [vLLM](https://vllm.ai), a high-throughput and memory-efficient inference engine.
+This repository contains a group of BentoML example projects, showing you how to serve and deploy open-source Large Language Models using [vLLM](https://vllm.ai), a high-throughput and memory-efficient inference engine. Every model directory contains the code to add OpenAI compatible endpoints to the BentoML Service.
 
-See [here](https://github.com/bentoml/BentoML?tab=readme-ov-file#%EF%B8%8F-what-you-can-build-with-bentoml) for a full list of BentoML example projects.
+💡 You can use these examples as bases for advanced code customization, such as custom model, inference logic or vLLM options. For simple LLM hosting with OpenAI compatible endpoints without writing any code, see [OpenLLM](https://github.com/bentoml/OpenLLM).
 
-💡 This example is served as a basis for advanced code customization, such as custom model, inference logic or vLLM options. For simple LLM hosting with OpenAI compatible endpoint without writing any code, see [OpenLLM](https://github.com/bentoml/OpenLLM).
+See [here](https://github.com/bentoml/BentoML/tree/main/examples) for a full list of BentoML example projects.
 
+The following is an example of serving one of the LLMs in this repository: Mistral 7B Instruct.
 
 ## Prerequisites
 
-If you want to test the Service locally, we recommend you use a Nvidia GPU with at least 16G VRAM.
+- If you want to test the Service locally, we recommend you use an Nvidia GPU with at least 16G VRAM.
+- Gain access to the model in [Hugging Face](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.2).
 
 ## Install dependencies
 
@@ -21,6 +23,8 @@ cd BentoVLLM/mistral-7b-instruct
 
 # Recommend Python 3.11
 pip install -r requirements.txt && pip install -f -U "pydantic>=2.0"
+
+export HF_TOEKN=<your-api-key>
 ```
 
 ## Run the BentoML Service
@@ -122,32 +126,32 @@ For detailed explanations of the Service code, see [vLLM inference](https://docs
 
 After the Service is ready, you can deploy the application to BentoCloud for better management and scalability. [Sign up](https://www.bentoml.com/) if you haven't got a BentoCloud account.
 
-Make sure you have [logged in to BentoCloud](https://docs.bentoml.com/en/latest/bentocloud/how-tos/manage-access-token.html), then run the following command to deploy it.
+Make sure you have [logged in to BentoCloud](https://docs.bentoml.com/en/latest/bentocloud/how-tos/manage-access-token.html).
 
 ```bash
-bentoml deploy .
+bentoml cloud login
 ```
 
-Once the application is up and running on BentoCloud, you can access it via the exposed URL.
+Create a BentoCloud secret to store the required environment variable and reference it for deployment.
+
+```bash
+bentoml secret create huggingface HF_TOKEN=$HF_TOKEN
+
+bentoml deploy . --secret huggingface
+```
 
 **Note**: For custom deployment in your own infrastructure, use [BentoML to generate an OCI-compliant image](https://docs.bentoml.com/en/latest/guides/containerization.html).
 
+## Featured models
 
-## Different LLM Models
+In addition to Mistral 7B Instruct, we also have examples for other models in the subdirectories of this repository. Here are some popular ones:
 
-Besides the mistral-7b-instruct model, we have examples for other models in subdirectories of this repository. Below is a list of these models and links to the example subdirectories.
-
+- [ai21-jamba-1.5-mini-int8](ai21-jamba-1.5-mini-int8/)
 - [gemma-7b-it](gemma-7b-it/)
-- [Llama-2-7b-chat-hf](llama2-7b-chat/)
-- [Llama-3-8b-instruct](llama3-8b-instruct/)
-- [Llama-3-70b-instruct with AWQ quantization](llama3-70b-instruct-awq/)
-- [Mistral-7B-Instruct-v0.2](mistral-7b-instruct/)
+- [llama3.1-8b-instruct](llama3.1-8b-instruct/)
+- [llama3.2-11b-instruct](llama3.2-11b-instruct/)
 - [Mixtral-8x7B-Instruct-v0.1 with gptq quantization](mistral-7b-instruct/)
+- [pixtral-12b](pixtral-12b/)
+- [phi-3-mini-4k-instruct](phi-3-mini-4k-instruct/)
 - [Outlines integration](outlines-integration/)
 - [SOLAR-10.7B-v1.0](solar-10.7b-instruct/)
-
-
-## LLM tools integration examples
-
-- Every model directory contains codes to add OpenAI compatible endpoints to the BentoML service.
-- [outlines-integration/](outlines-integration/) contains the code to integrate with [outlines](https://github.com/outlines-dev/outlines) for structured generation.

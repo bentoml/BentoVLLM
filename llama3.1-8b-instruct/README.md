@@ -4,7 +4,7 @@
 
 This is a BentoML example project, showing you how to serve and deploy Llama 3.1 8B using [vLLM](https://vllm.ai), a high-throughput and memory-efficient inference engine.
 
-See [here](https://github.com/bentoml/BentoML?tab=readme-ov-file#%EF%B8%8F-what-you-can-build-with-bentoml) for a full list of BentoML example projects.
+See [here](https://github.com/bentoml/BentoML/tree/main/examples) for a full list of BentoML example projects.
 
 💡 This example is served as a basis for advanced code customization, such as custom model, inference logic or vLLM options. For simple LLM hosting with OpenAI compatible endpoint without writing any code, see [OpenLLM](https://github.com/bentoml/OpenLLM).
 
@@ -12,7 +12,7 @@ See [here](https://github.com/bentoml/BentoML?tab=readme-ov-file#%EF%B8%8F-what-
 ## Prerequisites
 
 - You have gained access to Llama 3.1 8B on [its official website](https://llama.meta.com/) and [Hugging Face](https://huggingface.co/meta-llama/Meta-Llama-3.1-8B-Instruct).
-- If you want to test the Service locally, we recommend you use a Nvidia GPU with at least 16G VRAM.
+- If you want to test the Service locally, we recommend you use an Nvidia GPU with at least 16G VRAM.
 
 ## Install dependencies
 
