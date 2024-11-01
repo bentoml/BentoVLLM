@@ -11,7 +11,7 @@ from typing_extensions import Annotated
 import fastapi
 openai_api_app = fastapi.FastAPI()
 
-MAX_MODEL_LEN = 100*1024
+MAX_MODEL_LEN = 200*1024
 MAX_TOKENS = 4096
 
 SYSTEM_PROMPT = """You are a helpful, respectful and honest assistant. Always answer as helpfully as possible, while being safe. Your answers should not include any harmful, unethical, racist, sexist, toxic, dangerous, or illegal content. Please ensure that your responses are socially unbiased and positive in nature.
@@ -19,17 +19,18 @@ SYSTEM_PROMPT = """You are a helpful, respectful and honest assistant. Always an
 If a question does not make any sense, or is not factually coherent, explain why instead of answering something not correct. If you don't know the answer to a question, please don't share false information."""
 
 MODEL_ID = "ai21labs/AI21-Jamba-1.5-Mini"
+NUM_GPUS = 4
 
 
 @bentoml.mount_asgi_app(openai_api_app, path="/v1")
 @bentoml.service(
-    name="bentovllm-ai21-jamba-1.5-mini-int8-service",
+    name="bentovllm-ai21-jamba-1.5-mini-service",
     traffic={
         "timeout": 1200,
         "concurrency": 256,  # Matches the default max_num_seqs in the VLLM engine
     },
     resources={
-        "gpu": 1,
+        "gpu": NUM_GPUS,
         "gpu_type": "nvidia-a100-80gb",
     },
 )
@@ -43,13 +44,11 @@ class VLLM:
         import vllm.entrypoints.openai.api_server as vllm_api_server
         from vllm.entrypoints.openai.api_server import init_app_state
 
-        os.environ['VLLM_FUSED_MOE_CHUNK_SIZE']='32768'
-
         ENGINE_ARGS = AsyncEngineArgs(
             model=self.model_ref,
             max_model_len=MAX_MODEL_LEN,
-            quantization="experts_int8",
             enable_prefix_caching=False,  # prefix caching on jamba is not supported yet
+            tensor_parallel_size=NUM_GPUS,
         )
 
         self.engine = AsyncLLMEngine.from_engine_args(ENGINE_ARGS)
