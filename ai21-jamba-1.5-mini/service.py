@@ -19,7 +19,7 @@ SYSTEM_PROMPT = """You are a helpful, respectful and honest assistant. Always an
 If a question does not make any sense, or is not factually coherent, explain why instead of answering something not correct. If you don't know the answer to a question, please don't share false information."""
 
 MODEL_ID = "ai21labs/AI21-Jamba-1.5-Mini"
-NUM_GPUS = 4
+NUM_GPUS = 2
 
 
 @bentoml.mount_asgi_app(openai_api_app, path="/v1")
