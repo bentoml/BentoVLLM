@@ -1,8 +1,8 @@
 <div align="center">
-    <h1 align="center">Self-host Llama 3.1 70B with vLLM and BentoML</h1>
+    <h1 align="center">Self-host Llama 3.1 8B with vLLM and BentoML</h1>
 </div>
 
-This is a BentoML example project, showing you how to serve and deploy Llama 3.1 70B (with AWQ quantization) using [vLLM](https://vllm.ai), a high-throughput and memory-efficient inference engine.
+This is a BentoML example project, showing you how to serve and deploy Llama 3.1 8B using [vLLM](https://vllm.ai), a high-throughput and memory-efficient inference engine.
 
 See [here](https://github.com/bentoml/BentoML/tree/main/examples) for a full list of BentoML example projects.
 
@@ -17,7 +17,7 @@ If you want to test the Service locally, we recommend you use an Nvidia GPU with
 
 ```bash
 git clone https://github.com/bentoml/BentoVLLM.git
-cd BentoVLLM/llama3.1-70b-instruct-awq-function-calling
+cd BentoVLLM/llama3.1-8b-instruct-function-calling
 
 # Recommend Python 3.11
 pip install -r requirements.txt
@@ -88,7 +88,7 @@ client = OpenAI(base_url='http://localhost:3000/v1', api_key='na')
 client.models.list()
 
 chat_completion = client.chat.completions.create(
-    model="hugging-quants/Meta-Llama-3.1-70B-Instruct-AWQ-INT4",
+    model="meta-llama/Meta-Llama-3.1-8B-Instruct",
     messages=[
         {
             "role": "user",
@@ -121,7 +121,7 @@ json_schema = {
 }
 
 chat_completion = client.chat.completions.create(
-    model="hugging-quants/Meta-Llama-3.1-70B-Instruct-AWQ-INT4",
+    model="meta-llama/Meta-Llama-3.1-8B-Instruct",
     messages=[
         {
             "role": "user",
@@ -138,11 +138,11 @@ The OpenAI-compatible chat endpoint also support auto function calling. To test,
 ```bash
 $ MESSAGE="What's the weather tomorrow in London?" python test_tool.py
 
-ChatCompletion(id='chat-4fca9bc289f0412796a2b3356d5b6fc2', choices=[Choice(finish_reason='tool_calls', index=0, logprobs=None, message=ChatCompletionMessage(content=None, refusal=None, role='assistant', audio=None, function_call=None, tool_calls=[ChatCompletionMessageToolCall(id='chatcmpl-tool-289dc778b6e74ad3a690ba1569509eac', function=Function(arguments='{"location": "London", "format": "celsius", "num_days": "2"}', name='get_n_day_weather_forecast'), type='function')]), stop_reason=128008)], created=1730153141, model='hugging-quants/Meta-Llama-3.1-70B-Instruct-AWQ-INT4', object='chat.completion', service_tier=None, system_fingerprint=None, usage=CompletionUsage(completion_tokens=35, prompt_tokens=317, total_tokens=352, completion_tokens_details=None, prompt_tokens_details=None), prompt_logprobs=None)
+ChatCompletion(id='chat-4fca9bc289f0412796a2b3356d5b6fc2', choices=[Choice(finish_reason='tool_calls', index=0, logprobs=None, message=ChatCompletionMessage(content=None, refusal=None, role='assistant', audio=None, function_call=None, tool_calls=[ChatCompletionMessageToolCall(id='chatcmpl-tool-289dc778b6e74ad3a690ba1569509eac', function=Function(arguments='{"location": "London", "format": "celsius", "num_days": "2"}', name='get_n_day_weather_forecast'), type='function')]), stop_reason=128008)], created=1730153141, model='meta-llama/Meta-Llama-3.1-8B-Instruct', object='chat.completion', service_tier=None, system_fingerprint=None, usage=CompletionUsage(completion_tokens=35, prompt_tokens=317, total_tokens=352, completion_tokens_details=None, prompt_tokens_details=None), prompt_logprobs=None)
 
 $ MESSAGE="Hi!" python test_tool.py
 
-ChatCompletion(id='chat-fa15164af4a74a929835048bde04118d', choices=[Choice(finish_reason='stop', index=0, logprobs=None, message=ChatCompletionMessage(content='I need more information to provide a function call. Can you please provide the location, format, and number of days for which you would like to get the weather forecast?', refusal=None, role='assistant', audio=None, function_call=None, tool_calls=[]), stop_reason=None)], created=1730153182, model='hugging-quants/Meta-Llama-3.1-70B-Instruct-AWQ-INT4', object='chat.completion', service_tier=None, system_fingerprint=None, usage=CompletionUsage(completion_tokens=35, prompt_tokens=310, total_tokens=345, completion_tokens_details=None, prompt_tokens_details=None), prompt_logprobs=None)
+ChatCompletion(id='chat-fa15164af4a74a929835048bde04118d', choices=[Choice(finish_reason='stop', index=0, logprobs=None, message=ChatCompletionMessage(content='I need more information to provide a function call. Can you please provide the location, format, and number of days for which you would like to get the weather forecast?', refusal=None, role='assistant', audio=None, function_call=None, tool_calls=[]), stop_reason=None)], created=1730153182, model='meta-llama/Meta-Llama-3.1-8B-Instruct', object='chat.completion', service_tier=None, system_fingerprint=None, usage=CompletionUsage(completion_tokens=35, prompt_tokens=310, total_tokens=345, completion_tokens_details=None, prompt_tokens_details=None), prompt_logprobs=None)
 ```
 
 All supported extra parameters are listed in [vLLM documentation](https://docs.vllm.ai/en/latest/serving/openai_compatible_server.html#extra-parameters).
