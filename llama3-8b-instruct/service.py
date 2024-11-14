@@ -4,6 +4,7 @@ from typing import AsyncGenerator, Optional
 import bentoml
 from annotated_types import Ge, Le
 from typing_extensions import Annotated
+from bentoml.models import HuggingFaceModel
 
 from bentovllm_openai.utils import openai_endpoints
 
@@ -39,20 +40,22 @@ MODEL_ID = "meta-llama/Meta-Llama-3-8B-Instruct"
     },
 )
 class VLLM:
+    
+    model_ref = HuggingFaceModel(MODEL_ID)
 
     def __init__(self) -> None:
         from transformers import AutoTokenizer
         from vllm import AsyncEngineArgs, AsyncLLMEngine
 
         ENGINE_ARGS = AsyncEngineArgs(
-            model=MODEL_ID,
+            model=self.model_ref,
             max_model_len=MAX_TOKENS,
             enable_prefix_caching=True
         )
 
         self.engine = AsyncLLMEngine.from_engine_args(ENGINE_ARGS)
 
-        tokenizer = AutoTokenizer.from_pretrained(MODEL_ID)
+        tokenizer = AutoTokenizer.from_pretrained(self.model_ref)
         self.stop_token_ids = [
             tokenizer.eos_token_id,
             tokenizer.convert_tokens_to_ids("<|eot_id|>"),
