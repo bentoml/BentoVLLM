@@ -39,20 +39,21 @@ MODEL_ID = "meta-llama/Meta-Llama-3.1-8B-Instruct"
     },
 )
 class VLLM:
+    model_id = bentoml.models.HuggingFaceModel(MODEL_ID)
 
     def __init__(self) -> None:
         from transformers import AutoTokenizer
         from vllm import AsyncEngineArgs, AsyncLLMEngine
 
         ENGINE_ARGS = AsyncEngineArgs(
-            model=MODEL_ID,
+            model=self.model_id,
             max_model_len=MAX_TOKENS,
             enable_prefix_caching=True
         )
 
         self.engine = AsyncLLMEngine.from_engine_args(ENGINE_ARGS)
 
-        tokenizer = AutoTokenizer.from_pretrained(MODEL_ID)
+        tokenizer = AutoTokenizer.from_pretrained(self.model_id)
         self.stop_token_ids = [
             tokenizer.eos_token_id,
             tokenizer.convert_tokens_to_ids("<|eot_id|>"),
