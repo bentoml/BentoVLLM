@@ -33,7 +33,8 @@ MODEL_ID = "meta-llama/Meta-Llama-3.1-8B-Instruct"
     },
 )
 class VLLM:
-
+    model = bentoml.models.HuggingFaceModel(MODEL_ID)
+    
     def __init__(self) -> None:
         from transformers import AutoTokenizer
         from vllm import AsyncEngineArgs, AsyncLLMEngine
@@ -41,13 +42,13 @@ class VLLM:
         from vllm.entrypoints.openai.api_server import init_app_state
 
         ENGINE_ARGS = AsyncEngineArgs(
-            model=MODEL_ID,
+            model=self.model,
             max_model_len=MAX_MODEL_LEN,
             enable_prefix_caching=True,
         )
 
         self.engine = AsyncLLMEngine.from_engine_args(ENGINE_ARGS)
-        self.tokenizer = AutoTokenizer.from_pretrained(MODEL_ID)
+        self.tokenizer = AutoTokenizer.from_pretrained(self.model)
 
         OPENAI_ENDPOINTS = [
             ["/chat/completions", vllm_api_server.create_chat_completion, ["POST"]],
