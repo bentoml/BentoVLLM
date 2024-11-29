@@ -48,7 +48,7 @@ class VLLM:
         )
 
         self.engine = AsyncLLMEngine.from_engine_args(ENGINE_ARGS)
-        self.tokenizer = AutoTokenizer.from_pretrained(MODEL_ID)
+        self.tokenizer = AutoTokenizer.from_pretrained(self.model)
 
         OPENAI_ENDPOINTS = [
             ["/chat/completions", vllm_api_server.create_chat_completion, ["POST"]],
