@@ -1,4 +1,5 @@
 import uuid
+from argparse import Namespace
 from typing import AsyncGenerator, Optional
 
 import bentoml
@@ -6,25 +7,17 @@ import PIL.Image
 from annotated_types import Ge, Le
 from typing_extensions import Annotated
 
-from bentovllm_openai.utils import openai_endpoints
-
-
 MAX_TOKENS = 1024
-MAX_IMAGE_SIZE = 640
+MAX_MODEL_LEN = 2048
+MAX_IMAGE_SIZE = 2048
 SYSTEM_PROMPT = """You are a helpful, respectful and honest assistant. Always answer as helpfully as possible, while being safe. Your answers should not include any harmful, unethical, racist, sexist, toxic, dangerous, or illegal content. Please ensure that your responses are socially unbiased and positive in nature.
 
 If a question does not make any sense, or is not factually coherent, explain why instead of answering something not correct. If you don't know the answer to a question, please don't share false information."""
 
-PROMPT_TEMPLATE = """<|begin_of_text|><|start_header_id|>system<|end_header_id|>
-
-{system_prompt}<|eot_id|><|start_header_id|>user<|end_header_id|>
-
-{user_prompt}<|image|><|eot_id|><|start_header_id|>assistant<|end_header_id|>
-
-"""
-
 MODEL_ID = "meta-llama/Llama-3.2-11B-Vision-Instruct"
 
+import fastapi
+openai_api_app = fastapi.FastAPI()
 
 def resize(image: PIL.Image.Image, max_size: int = MAX_IMAGE_SIZE):
     if image.width > max_size or image.height > max_size:
@@ -36,10 +29,7 @@ def resize(image: PIL.Image.Image, max_size: int = MAX_IMAGE_SIZE):
     return image
 
 
-@openai_endpoints(
-    model_id=MODEL_ID,
-    default_chat_completion_parameters=dict(stop=["<|eot_id|>"]),
-)
+@bentoml.mount_asgi_app(openai_api_app, path="/v1")
 @bentoml.service(
     name="bentovllm-llama3.2-11b-vision-instruct-service",
     traffic={
@@ -55,10 +45,11 @@ class VLLM:
     def __init__(self) -> None:
         from transformers import AutoTokenizer
         from vllm import AsyncEngineArgs, AsyncLLMEngine
+        import vllm.entrypoints.openai.api_server as vllm_api_server
 
         ENGINE_ARGS = AsyncEngineArgs(
             model=MODEL_ID,
-            max_model_len=MAX_TOKENS,
+            max_model_len=MAX_MODEL_LEN,
             enable_prefix_caching=True,
             enforce_eager=True,
             max_num_seqs=16,
@@ -66,12 +57,43 @@ class VLLM:
         )
 
         self.engine = AsyncLLMEngine.from_engine_args(ENGINE_ARGS)
+        self.tokenizer = AutoTokenizer.from_pretrained(MODEL_ID)
 
-        tokenizer = AutoTokenizer.from_pretrained(MODEL_ID)
-        self.stop_token_ids = [
-            tokenizer.eos_token_id,
-            tokenizer.convert_tokens_to_ids("<|eot_id|>"),
+        OPENAI_ENDPOINTS = [
+            ["/chat/completions", vllm_api_server.create_chat_completion, ["POST"]],
+            ["/completions", vllm_api_server.create_completion, ["POST"]],
+            ["/models", vllm_api_server.show_available_models, ["GET"]],
         ]
+
+        for route, endpoint, methods in OPENAI_ENDPOINTS:
+            openai_api_app.add_api_route(
+                path=route,
+                endpoint=endpoint,
+                methods=methods,
+            )
+
+        model_config = self.engine.engine.get_model_config()
+        args = Namespace()
+        args.model = MODEL_ID
+        args.disable_log_requests = True
+        args.max_log_len = 1000
+        args.response_role = "assistant"
+        args.served_model_name = None
+        args.chat_template = None
+        args.lora_modules = None
+        args.prompt_adapters = None
+        args.request_logger = None
+        args.disable_log_stats = True
+        args.return_tokens_as_token_ids = False
+        args.enable_tool_call_parser = True
+        args.enable_auto_tool_choice = True
+        args.tool_call_parser = "llama3_json"
+        args.enable_prompt_tokens_details = False
+
+        vllm_api_server.init_app_state(
+            self.engine, model_config, openai_api_app.state, args
+        )
+
 
     @bentoml.api
     async def generate(
@@ -85,13 +107,19 @@ class VLLM:
 
         SAMPLING_PARAM = SamplingParams(
             max_tokens=max_tokens,
-            stop_token_ids=self.stop_token_ids,
+            skip_special_tokens=True,
         )
 
         if system_prompt is None:
             system_prompt = SYSTEM_PROMPT
+
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": prompt},
+        ]
+
         engine_inputs = await self.create_image_inputs(
-            dict(prompt=prompt, system_prompt=system_prompt, image=resize(image))
+            dict(messages=messages, image=resize(image))
         )
         stream = await self.engine.add_request(
             uuid.uuid4().hex, engine_inputs, SAMPLING_PARAM
@@ -108,8 +136,10 @@ class VLLM:
         from vllm.multimodal import MultiModalDataBuiltins
 
         return TextPrompt(
-            prompt=PROMPT_TEMPLATE.format(
-                user_prompt=inputs["prompt"], system_prompt=inputs["system_prompt"]
+            prompt=self.tokenizer.apply_chat_template(
+                inputs["messages"],
+                tokenize=False,
+                add_generation_prompt=True
             ),
             multi_modal_data=MultiModalDataBuiltins(image=inputs["image"]),
         )
