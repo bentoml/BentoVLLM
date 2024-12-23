@@ -4,7 +4,7 @@
 
 This is a BentoML example project, showing you how to serve and deploy Llama 3.1 70B (with AWQ quantization) using [vLLM](https://vllm.ai), a high-throughput and memory-efficient inference engine.
 
-See [here](https://github.com/bentoml/BentoML/tree/main/examples) for a full list of BentoML example projects.
+See [here](https://docs.bentoml.com/en/latest/examples/overview.html) for a full list of BentoML example projects.
 
 💡 This example is served as a basis for advanced code customization, such as custom model, inference logic or vLLM options. For simple LLM hosting with OpenAI compatible endpoint without writing any code, see [OpenLLM](https://github.com/bentoml/OpenLLM).
 

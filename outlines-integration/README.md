@@ -4,7 +4,7 @@
 
 [Outlines](https://github.com/outlines-dev/outlines) is an open-source Python package for structured text generation, integrating with various models to produce controlled, format-specific outputs​. It offers capabilities like fast regex-structured generation, JSON generation following a JSON schema or a Pydantic model, and grammar-structured generation. 
 
-This is a BentoML example project, demonstrating how to output structured data from an LLM using Outlines and BentoML. See [here](https://github.com/bentoml/BentoML/tree/main/examples) for a full list of BentoML example projects.
+This is a BentoML example project, demonstrating how to output structured data from an LLM using Outlines and BentoML. See [here](https://docs.bentoml.com/en/latest/examples/overview.html) for a full list of BentoML example projects.
 
 ## Prerequisites
 
