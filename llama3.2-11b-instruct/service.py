@@ -80,6 +80,7 @@ class VLLM:
         args.response_role = "assistant"
         args.served_model_name = None
         args.chat_template = None
+        args.chat_template_content_format = "auto"
         args.lora_modules = None
         args.prompt_adapters = None
         args.request_logger = None
