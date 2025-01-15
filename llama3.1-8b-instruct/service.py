@@ -1,37 +1,31 @@
+import os
 import uuid
+from argparse import Namespace
 from typing import AsyncGenerator, Optional
 
 import bentoml
 from annotated_types import Ge, Le
 from typing_extensions import Annotated
 
-from bentovllm_openai.utils import openai_endpoints
+import fastapi
+openai_api_app = fastapi.FastAPI()
 
-
+MAX_MODEL_LEN = 4192
 MAX_TOKENS = 1024
+
 SYSTEM_PROMPT = """You are a helpful, respectful and honest assistant. Always answer as helpfully as possible, while being safe. Your answers should not include any harmful, unethical, racist, sexist, toxic, dangerous, or illegal content. Please ensure that your responses are socially unbiased and positive in nature.
 
 If a question does not make any sense, or is not factually coherent, explain why instead of answering something not correct. If you don't know the answer to a question, please don't share false information."""
 
-PROMPT_TEMPLATE = """<|begin_of_text|><|start_header_id|>system<|end_header_id|>
-
-{system_prompt}<|eot_id|><|start_header_id|>user<|end_header_id|>
-
-{user_prompt}<|eot_id|><|start_header_id|>assistant<|end_header_id|>
-
-"""
-
 MODEL_ID = "meta-llama/Meta-Llama-3.1-8B-Instruct"
 
-@openai_endpoints(
-    model_id=MODEL_ID,
-    default_chat_completion_parameters=dict(stop=["<|eot_id|>"]),
-)
+
+@bentoml.mount_asgi_app(openai_api_app, path="/v1")
 @bentoml.service(
     name="bentovllm-llama3.1-8b-instruct-service",
     traffic={
-        "timeout": 300,
-        "concurrency": 256, # Matches the default max_num_seqs in the VLLM engine
+        "timeout": 1200,
+        "concurrency": 256,  # Matches the default max_num_seqs in the VLLM engine
     },
     resources={
         "gpu": 1,
@@ -39,25 +33,59 @@ MODEL_ID = "meta-llama/Meta-Llama-3.1-8B-Instruct"
     },
 )
 class VLLM:
-    model_id = bentoml.models.HuggingFaceModel(MODEL_ID)
+    model = bentoml.models.HuggingFaceModel(MODEL_ID)
 
     def __init__(self) -> None:
         from transformers import AutoTokenizer
         from vllm import AsyncEngineArgs, AsyncLLMEngine
+        import vllm.entrypoints.openai.api_server as vllm_api_server
+        from vllm.entrypoints.openai.api_server import init_app_state
 
         ENGINE_ARGS = AsyncEngineArgs(
-            model=self.model_id,
-            max_model_len=MAX_TOKENS,
-            enable_prefix_caching=True
+            model=self.model,
+            max_model_len=MAX_MODEL_LEN,
+            enable_prefix_caching=True,
         )
 
         self.engine = AsyncLLMEngine.from_engine_args(ENGINE_ARGS)
+        self.tokenizer = AutoTokenizer.from_pretrained(self.model)
 
-        tokenizer = AutoTokenizer.from_pretrained(self.model_id)
-        self.stop_token_ids = [
-            tokenizer.eos_token_id,
-            tokenizer.convert_tokens_to_ids("<|eot_id|>"),
+        OPENAI_ENDPOINTS = [
+            ["/chat/completions", vllm_api_server.create_chat_completion, ["POST"]],
+            ["/completions", vllm_api_server.create_completion, ["POST"]],
+            ["/models", vllm_api_server.show_available_models, ["GET"]],
         ]
+
+        for route, endpoint, methods in OPENAI_ENDPOINTS:
+            openai_api_app.add_api_route(
+                path=route,
+                endpoint=endpoint,
+                methods=methods,
+            )
+
+        model_config = self.engine.engine.get_model_config()
+        args = Namespace()
+        args.model = MODEL_ID
+        args.disable_log_requests = True
+        args.max_log_len = 1000
+        args.response_role = "assistant"
+        args.served_model_name = None
+        args.chat_template = None
+        args.chat_template_content_format = "auto"
+        args.lora_modules = None
+        args.prompt_adapters = None
+        args.request_logger = None
+        args.disable_log_stats = True
+        args.return_tokens_as_token_ids = False
+        args.enable_tool_call_parser = False
+        args.enable_auto_tool_choice = False
+        args.tool_call_parser = None
+        args.enable_prompt_tokens_details = False
+
+        vllm_api_server.init_app_state(
+            self.engine, model_config, openai_api_app.state, args
+        )
+
 
     @bentoml.api
     async def generate(
@@ -68,13 +96,16 @@ class VLLM:
     ) -> AsyncGenerator[str, None]:
         from vllm import SamplingParams
 
-        SAMPLING_PARAM = SamplingParams(
-            max_tokens=max_tokens, stop_token_ids=self.stop_token_ids,
-        )
+        SAMPLING_PARAM = SamplingParams(max_tokens=max_tokens)
 
         if system_prompt is None:
             system_prompt = SYSTEM_PROMPT
-        prompt = PROMPT_TEMPLATE.format(user_prompt=prompt, system_prompt=system_prompt)
+
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": prompt},
+        ]
+        prompt = self.tokenizer.apply_chat_template(messages, tokenize=False)
         stream = await self.engine.add_request(uuid.uuid4().hex, prompt, SAMPLING_PARAM)
 
         cursor = 0

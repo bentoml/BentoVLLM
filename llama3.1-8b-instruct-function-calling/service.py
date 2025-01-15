@@ -34,7 +34,7 @@ MODEL_ID = "meta-llama/Meta-Llama-3.1-8B-Instruct"
 )
 class VLLM:
     model = bentoml.models.HuggingFaceModel(MODEL_ID)
-    
+
     def __init__(self) -> None:
         from transformers import AutoTokenizer
         from vllm import AsyncEngineArgs, AsyncLLMEngine
@@ -71,6 +71,7 @@ class VLLM:
         args.response_role = "assistant"
         args.served_model_name = None
         args.chat_template = None
+        args.chat_template_content_format = "auto"
         args.lora_modules = None
         args.prompt_adapters = None
         args.request_logger = None
@@ -79,6 +80,7 @@ class VLLM:
         args.enable_tool_call_parser = True
         args.enable_auto_tool_choice = True
         args.tool_call_parser = "llama3_json"
+        args.enable_prompt_tokens_details = False
 
         vllm_api_server.init_app_state(
             self.engine, model_config, openai_api_app.state, args
