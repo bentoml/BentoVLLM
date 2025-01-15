@@ -1,13 +1,12 @@
 <div align="center">
-    <h1 align="center">Self-host Phi 3 mini with vLLM and BentoML</h1>
+    <h1 align="center">Self-host Phi 4 mini with vLLM and BentoML</h1>
 </div>
 
-This is a BentoML example project, showing you how to serve and deploy Phi 3 mini using [vLLM](https://vllm.ai), a high-throughput and memory-efficient inference engine.
+This is a BentoML example project, showing you how to serve and deploy Phi 4 mini using [vLLM](https://vllm.ai), a high-throughput and memory-efficient inference engine.
 
 See [here](https://docs.bentoml.com/en/latest/examples/overview.html) for a full list of BentoML example projects.
 
 💡 This example is served as a basis for advanced code customization, such as custom model, inference logic or vLLM options. For simple LLM hosting with OpenAI compatible endpoint without writing any code, see [OpenLLM](https://github.com/bentoml/OpenLLM).
-
 
 ## Prerequisites
 
@@ -17,7 +16,7 @@ If you want to test the Service locally, we recommend you use an Nvidia GPU with
 
 ```bash
 git clone https://github.com/bentoml/BentoVLLM.git
-cd BentoVLLM/phi-3-mini-4k-instruct
+cd BentoVLLM/phi-4
 
 # Recommend Python 3.11
 pip install -r requirements.txt
@@ -88,7 +87,7 @@ client = OpenAI(base_url='http://localhost:3000/v1', api_key='na')
 client.models.list()
 
 chat_completion = client.chat.completions.create(
-    model="microsoft/Phi-3-mini-4k-instruct",
+    model="microsoft/phi-4",
     messages=[
         {
             "role": "user",
@@ -120,7 +119,7 @@ json_schema = {
 }
 
 chat_completion = client.chat.completions.create(
-    model="microsoft/Phi-3-mini-4k-instruct",
+    model="microsoft/phi-4",
     messages=[
         {
             "role": "user",
