@@ -1,7 +1,7 @@
 service: 'service:VLLM'
 labels:
-  owner: bentoml-team
-  stage: demo
+  owner: Kunal Parkhade
+  stage: Phi-3
 include:
   - '*.py'
   - 'bentovllm_openai/*.py'
@@ -10,3 +10,5 @@ python:
   lock_packages: false
 docker:
   python_version: "3.11"
+envs:
+  - name: HF_TOKEN
