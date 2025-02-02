@@ -1,3 +1,4 @@
+import asyncio
 import os
 import uuid
 from argparse import Namespace
@@ -10,8 +11,8 @@ from typing_extensions import Annotated
 import fastapi
 openai_api_app = fastapi.FastAPI()
 
-MAX_MODEL_LEN = 4192
-MAX_TOKENS = 1024
+MAX_MODEL_LEN = int(os.environ.get("MAX_MODEL_LEN", 4096))
+MAX_TOKENS = int(os.environ.get("MAX_TOKENS", 1024))
 
 SYSTEM_PROMPT = """You are a helpful, respectful and honest assistant. Always answer as helpfully as possible, while being safe. Your answers should not include any harmful, unethical, racist, sexist, toxic, dangerous, or illegal content. Please ensure that your responses are socially unbiased and positive in nature.
 
@@ -81,10 +82,13 @@ class VLLM:
         args.enable_auto_tool_choice = False
         args.tool_call_parser = None
         args.enable_prompt_tokens_details = False
+        args.enable_reasoning = False
+        args.reasoning_parser = None
 
-        vllm_api_server.init_app_state(
+        co = vllm_api_server.init_app_state(
             self.engine, model_config, openai_api_app.state, args
         )
+        asyncio.create_task(co)
 
 
     @bentoml.api
