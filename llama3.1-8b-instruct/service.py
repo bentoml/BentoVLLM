@@ -20,10 +20,15 @@ If a question does not make any sense, or is not factually coherent, explain why
 
 MODEL_ID = "meta-llama/Meta-Llama-3.1-8B-Instruct"
 
+runtime_image = bentoml.images.PythonImage(python_version="3.11")\
+                            .requirements_file("requirements.txt")
 
-@bentoml.mount_asgi_app(openai_api_app, path="/v1")
+
+@bentoml.asgi_app(openai_api_app, path="/v1")
 @bentoml.service(
     name="bentovllm-llama3.1-8b-instruct-service",
+    image=runtime_image,
+    envs=[{"name": "HF_TOKEN"}],
     traffic={
         "timeout": 1200,
         "concurrency": 256,  # Matches the default max_num_seqs in the VLLM engine

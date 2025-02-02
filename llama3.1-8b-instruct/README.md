@@ -31,7 +31,7 @@ export HF_TOEKN=<your-api-key>
 We have defined a BentoML Service in `service.py`. Run `bentoml serve` in your project directory to start the Service.
 
 ```python
-$ bentoml serve .
+$ bentoml serve service:VLLM
 
 2024-01-18T07:51:30+0800 [INFO] [cli] Starting production HTTP BentoServer from "service:VLLM" listening on http://localhost:3000 (Press CTRL+C to quit)
 INFO 01-18 07:51:40 model_runner.py:501] Capturing the model for CUDA graphs. This may lead to unexpected consequences if the model is not static. To run the model in eager mode, set 'enforce_eager=True' or use '--enforce-eager' in the CLI.
@@ -168,7 +168,7 @@ Create a BentoCloud secret to store the required environment variable and refere
 ```bash
 bentoml secret create huggingface HF_TOKEN=$HF_TOKEN
 
-bentoml deploy . --secret huggingface
+bentoml deploy service:VLLM --secret huggingface
 ```
 
 Once the application is up and running on BentoCloud, you can access it via the exposed URL.
