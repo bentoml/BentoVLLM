@@ -28,7 +28,7 @@ pip install -r requirements.txt
 We have defined a BentoML Service in `service.py`. Run `bentoml serve` in your project directory to start the Service.
 
 ```python
-$ bentoml serve .
+$ bentoml serve service:VLLM
 
 2024-01-18T07:51:30+0800 [INFO] [cli] Starting production HTTP BentoServer from "service:VLLM" listening on http://localhost:3000 (Press CTRL+C to quit)
 INFO 01-18 07:51:40 model_runner.py:501] Capturing the model for CUDA graphs. This may lead to unexpected consequences if the model is not static. To run the model in eager mode, set 'enforce_eager=True' or use '--enforce-eager' in the CLI.
@@ -170,7 +170,7 @@ After the Service is ready, you can deploy the application to BentoCloud for bet
 Make sure you have [logged in to BentoCloud](https://docs.bentoml.com/en/latest/bentocloud/how-tos/manage-access-token.html), then run the following command to deploy it.
 
 ```bash
-bentoml deploy .
+bentoml deploy service:VLLM --secret huggingface
 ```
 
 Once the application is up and running on BentoCloud, you can access it via the exposed URL.
