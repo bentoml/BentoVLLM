@@ -72,16 +72,20 @@ def generate_cookiecutter_context(model_name, config):
   engine_config_struct = model_config.get("engine_config", {"model": "deepseek-ai/DeepSeek-R1-Distill-Llama-8B"})
 
   # Convert configs to YAML strings to preserve types
-  return {
+  context = {
     "model_name": model_name,
     "model_id": engine_config_struct["model"],
     "vision": str(model_config.get("vision", False)).lower(),
-    "service_config": json.dumps(model_config.get("service_config", {})),
-    "engine_config": json.dumps(engine_config_struct),
-    "server_config": json.dumps(model_config.get("server_config", {})),
-    "requirements": json.dumps(model_config.get("requirements", [])),
-    "engine_config_struct": engine_config_struct,
+    "service_config": model_config.get("service_config", {}),
+    "engine_config": engine_config_struct,
+    "server_config": model_config.get("server_config", {}),
   }
+
+  requirements = model_config.get("requirements", [])
+  if len(requirements) > 0:
+    context["requirements"] = requirements
+
+  return context
 
 
 def generate_readme(config, template_dir):

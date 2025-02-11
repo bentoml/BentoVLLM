@@ -10,7 +10,7 @@ See [here](https://docs.bentoml.com/en/latest/examples/overview.html) for a full
 
 ## Prerequisites
 
-- You have gained access to {{cookiecutter.model_id}} on [Hugging Face](https://huggingface.co/{{cookiecutter.engine_config_struct['model']}}).
+- You have gained access to {{cookiecutter.model_id}} on [Hugging Face](https://huggingface.co/{{cookiecutter.engine_config['model']}}).
 - If you want to test the Service locally, we recommend you use an Nvidia GPU with at least 16G VRAM.
 
 ## Install dependencies
@@ -86,7 +86,7 @@ client = OpenAI(base_url='http://localhost:3000/v1', api_key='na')
 client.models.list()
 
 chat_completion = client.chat.completions.create(
-    model="{{cookiecutter.engine_config_struct['model']}}",
+    model="{{cookiecutter.engine_config['model']}}",
     messages=[
         {
             "role": "user",
@@ -118,7 +118,7 @@ json_schema = {
 }
 
 chat_completion = client.chat.completions.create(
-    model="{{cookiecutter.engine_config_struct['model']}}",
+    model="{{cookiecutter.engine_config['model']}}",
     messages=[
         {
             "role": "user",

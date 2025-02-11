@@ -13,18 +13,13 @@ SERVICE_CONFIG = {
     "resources": {"gpu": 1, "gpu_type": "nvidia-a100-80gb"},
 }
 SERVER_CONFIG = {}
-REQUIREMENTS_TXT = []
-
 
 openai_api_app = fastapi.FastAPI()
 
 
 @bentoml.asgi_app(openai_api_app, path="/v1")
 @bentoml.service(
-    **SERVICE_CONFIG,
-    image=bentoml.images.PythonImage(python_version="3.11")
-    .requirements_file("requirements.txt")
-    .python_packages(*REQUIREMENTS_TXT),
+    **SERVICE_CONFIG, image=bentoml.images.PythonImage(python_version="3.11").requirements_file("requirements.txt")
 )
 class VLLM:
     model_id = ENGINE_CONFIG["model"]
@@ -82,7 +77,6 @@ class VLLM:
         from openai import AsyncOpenAI
 
         client = AsyncOpenAI(base_url="http://127.0.0.1:3000/v1", api_key="dummy")
-
         try:
             completion = await client.chat.completions.create(
                 model=self.model_id,
