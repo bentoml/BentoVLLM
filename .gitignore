@@ -161,3 +161,5 @@ cython_debug/
 *.whl
 
 bentocloud-homepage-news
+uv.lock
+successful_builds.txt

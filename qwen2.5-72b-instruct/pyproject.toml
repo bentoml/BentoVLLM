@@ -26,3 +26,8 @@ Tracker = "https://github.com/bentoml/BentoVLLM"
 [tool.bentoml.build]
 service = "service:VLLM"
 include = ["LICENCE", "*.py", "*.toml", "*.md"]
+
+[tool.bentoml.build.labels]
+owner = "bentoml-team"
+stage = "prebuilt"
+registry = "huggingface"

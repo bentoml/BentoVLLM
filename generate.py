@@ -25,31 +25,36 @@ def update_model_descriptions(config, template_dir):
 
   with certified_repos_path.open("r") as f:
     certified_repos_struct = json.load(f)
-    certified_bentos = certified_repos_struct['certified_bentos']
+    certified_bentos = certified_repos_struct["certified_bentos"]
 
   # Create a mapping of model names to their certified repo data
   certified_list = [repo["repo_name"] for repo in certified_bentos]
 
-  image_url="https://raw.githubusercontent.com/bentoml/bentocloud-homepage-news/main/imgs/llama3-8b.png"
+  image_url = "https://raw.githubusercontent.com/bentoml/bentocloud-homepage-news/main/imgs/llama3-8b.png"
 
   # Update descriptions for each model
   for model_name, model_config in config.items():
-    repo_name = f'bentovllm-{model_name}-service'
+    repo_name = f"bentovllm-{model_name}-service"
 
     labels = ["✍️ Text Generation"]
     if model_config.get("vision", False):
       labels.append("👁️ Image-to-Text")
 
-    metadata = model_config['metadata']
+    metadata = model_config["metadata"]
     bentos = dict(
-        org_name="bentoml",
-        repo_name=repo_name,
-        description=dict(name=metadata['description'], text=f'{metadata["description"]} developed by {metadata["provider"]} and served using vLLM and BentoML. It offers capabilities for streaming and compatibility with OpenAI\'s API',
-                         link="https://github.com/bentoml/BentoVLLM", image=image_url, label=labels
-                         ))
+      org_name="bentoml",
+      repo_name=repo_name,
+      description=dict(
+        name=metadata["description"],
+        text=f"{metadata['description']} developed by {metadata['provider']} and served using vLLM and BentoML. It offers capabilities for streaming and compatibility with OpenAI's API",
+        link="https://github.com/bentoml/BentoVLLM",
+        image=image_url,
+        label=labels,
+      ),
+    )
     certified_bentos.append(bentos)
 
-  with certified_repos_path.open('w', encoding='utf-8') as f:
+  with certified_repos_path.open("w", encoding="utf-8") as f:
     json_str = json.dumps(dict(certified_bentos=certified_bentos), indent=2, ensure_ascii=False)
     f.write(json_str)
   print("Updated prebuilt bentos list")
@@ -129,7 +134,8 @@ def main() -> int:
   parser.add_argument("--force", action="store_true", help="Force regeneration even if directory exists")
   args = parser.parse_args()
 
-  with open("config.yaml", "r") as f: config = yaml.safe_load(f)
+  with open("config.yaml", "r") as f:
+    config = yaml.safe_load(f)
   template_dir = Path(__file__).parent
 
   if args.model_name:
@@ -165,5 +171,6 @@ def main() -> int:
   update_model_descriptions(config, template_dir)
 
   return 0
+
 
 if __name__ == "__main__": raise SystemExit(main())
