@@ -20,10 +20,10 @@ class PushResult:
   error: str = ""
 
 
-def push_bento(bento_tag: str, context: str, console: Console) -> PushResult:
+def push_bento(bento_tag: str, context: str, progress: Progress, task_id: int) -> PushResult:
   """Push a single bento to the registry."""
   try:
-    console.print(f"[yellow]Pushing {bento_tag} to {context}...[/]")
+    progress.update(task_id, description=f"[blue]Pushing {bento_tag} to {context}...[/]")
 
     # Run bentoml push with output capture
     result = subprocess.run(
@@ -35,7 +35,7 @@ def push_bento(bento_tag: str, context: str, console: Console) -> PushResult:
     return PushResult(bento_tag, True)
 
   except subprocess.CalledProcessError as e:
-    return PushResult(bento_tag, False, f"Push failed: {e.stderr}")
+    return PushResult(bento_tag, False, f"[red]Push failed: {e.stderr}[/]")
   except Exception as e:
     return PushResult(bento_tag, False, str(e))
 
@@ -46,24 +46,28 @@ def push_all_bentos(bento_tags: List[str], context: str, workers: int) -> List[P
   results = []
 
   with Progress(
-    SpinnerColumn(),
+    SpinnerColumn(spinner_name="bouncingBar"),
     TextColumn("[progress.description]{task.description}"),
     console=console,
   ) as progress:
-    task = progress.add_task("Pushing bentos...", total=len(bento_tags))
+    overall_task = progress.add_task("[yellow]Pushing bentos...[/]", total=len(bento_tags))
+    push_tasks = {tag: progress.add_task(f"[cyan]Waiting to push {tag}...[/]", total=1) for tag in bento_tags}
 
     with ThreadPoolExecutor(max_workers=workers) as executor:
-      future_to_bento = {executor.submit(push_bento, tag, context, console): tag for tag in bento_tags}
+      future_to_bento = {
+        executor.submit(push_bento, tag, context, progress, push_tasks[tag]): tag for tag in bento_tags
+      }
 
       for future in as_completed(future_to_bento):
         result = future.result()
         results.append(result)
-        progress.advance(task)
+        progress.advance(overall_task)
+        tag_task = push_tasks[result.bento_tag]
 
         if result.success:
-          console.print(f"[green]✓ {result.bento_tag}[/]")
+          progress.update(tag_task, description=f"[green]✓ {result.bento_tag}[/]", completed=1)
         else:
-          console.print(f"[red]✗ {result.bento_tag}: {result.error}[/]")
+          progress.update(tag_task, description=f"[red]✗ {result.bento_tag}: {result.error}[/]", completed=1)
 
   return results
 
@@ -109,11 +113,6 @@ def main() -> int:
   console.print(f"Total bentos: {len(bento_tags)}")
   console.print(f"Successful pushes: {len(successful_pushes)}")
   console.print(f"Failed pushes: {len(results) - len(successful_pushes)}")
-
-  if successful_pushes:
-    console.print("\n[bold]Successfully pushed bentos:[/]")
-    for result in successful_pushes:
-      console.print(f"- {result.bento_tag}")
 
   return 0 if len(successful_pushes) == len(bento_tags) else 1
 

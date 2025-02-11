@@ -29,16 +29,16 @@ def load_config() -> Dict:
     return yaml.safe_load(f)
 
 
-def build_model(model_name: str, template_dir: Path, console: Console) -> BuildResult:
+def build_model(model_name: str, template_dir: Path, progress: Progress, task_id: int) -> BuildResult:
   """Build a single model's bento."""
   model_dir = template_dir / model_name
   if not model_dir.exists():
     return BuildResult(model_name, "", False, f"Directory {model_dir} does not exist")
 
   try:
-    # Change to model directory
     os.chdir(model_dir)
-    console.print(f"[yellow]Building {model_name}...[/]")
+
+    progress.update(task_id, description=f"[blue]Building {model_name}...[/]")
 
     # Run bentoml build with output capture
     result = subprocess.run(
@@ -85,24 +85,28 @@ def build_bentos(models: List[str], template_dir: Path, workers: int) -> List[Bu
   results = []
 
   with Progress(
-    SpinnerColumn(),
+    SpinnerColumn(spinner_name="bouncingBar"),
     TextColumn("[progress.description]{task.description}"),
     console=console,
   ) as progress:
-    task = progress.add_task("Building bentos...", total=len(models))
+    overall_task = progress.add_task("[yellow]Building bentos...[/]", total=len(models))
+    build_tasks = {model: progress.add_task(f"[cyan]Waiting to build {model}...[/]", total=1) for model in models}
 
     with ThreadPoolExecutor(max_workers=workers) as executor:
-      future_to_model = {executor.submit(build_model, model, template_dir, console): model for model in models}
+      future_to_model = {
+        executor.submit(build_model, model, template_dir, progress, build_tasks[model]): model for model in models
+      }
 
       for future in as_completed(future_to_model):
         result = future.result()
         results.append(result)
-        progress.advance(task)
+        progress.advance(overall_task)
+        model_task = build_tasks[result.model_name]
 
         if result.success:
-          console.print(f"[green]✓ {result.model_name}: {result.bento_tag}[/]")
+          progress.update(model_task, description=f"[green]✓ {result.model_name}: {result.bento_tag}[/]", completed=1)
         else:
-          console.print(f"[red]✗ {result.model_name}: {result.error}[/]")
+          progress.update(model_task, description=f"[red]✗ {result.model_name}: {result.error}[/]", completed=1)
 
   return results
 
@@ -132,11 +136,6 @@ def main() -> int:
   console.print(f"Total bentos: {len(models)}")
   console.print(f"Successful builds: {len(successful_builds)}")
   console.print(f"Failed builds: {len(results) - len(successful_builds)}")
-
-  if successful_builds:
-    console.print("\n[bold]Successfully built bentos:[/]")
-    for result in successful_builds:
-      console.print(f"- {result.bento_tag}")
 
   # Save successful bento tags to file for later use
   if successful_builds:
