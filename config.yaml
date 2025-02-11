@@ -235,7 +235,7 @@
       - name: HF_TOKEN
   engine_config:
     model: meta-llama/Llama-3.2-1B-Instruct
-    max_model_len: 16384
+    max_model_len: 8192
   server_config:
     tool_call_parser: "pythonic"
 "llama3.2-3b-instruct":
@@ -253,7 +253,7 @@
       - name: HF_TOKEN
   engine_config:
     model: meta-llama/Llama-3.2-3B-Instruct
-    max_model_len: 16384
+    max_model_len: 8192
   server_config:
     tool_call_parser: "pythonic"
 "llama3.2-11b-vision-instruct":
@@ -372,6 +372,7 @@
     model: mistralai/Ministral-8B-Instruct-2410
     dtype: half
     tokenizer_mode: mistral
+    max_model_len: 4096
 "mistral-small-24b-instruct-2501":
   metadata:
     description: Mistral Small 24B Instruct 2501
@@ -388,6 +389,7 @@
   engine_config:
     model: mistralai/Mistral-Small-24B-Instruct-2501
     tokenizer_mode: mistral
+    max_model_len: 4096
 "mistral-large-123b-instruct-2407":
   metadata:
     description: Mistral Large 123B Instruct 2407
