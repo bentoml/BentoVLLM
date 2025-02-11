@@ -63,7 +63,7 @@ def build_model(model_name: str, template_dir: Path, console: Console) -> BuildR
     os.chdir(template_dir)
 
 
-def build_all_models(models: List[str], template_dir: Path, workers: int) -> List[BuildResult]:
+def build_bentos(models: List[str], template_dir: Path, workers: int) -> List[BuildResult]:
   """Build all models in parallel using a thread pool."""
   console = Console()
   results = []
@@ -73,7 +73,7 @@ def build_all_models(models: List[str], template_dir: Path, workers: int) -> Lis
     TextColumn("[progress.description]{task.description}"),
     console=console,
   ) as progress:
-    task = progress.add_task("Building models...", total=len(models))
+    task = progress.add_task("Building bentos...", total=len(models))
 
     with ThreadPoolExecutor(max_workers=workers) as executor:
       future_to_model = {executor.submit(build_model, model, template_dir, console): model for model in models}
@@ -106,14 +106,14 @@ def main() -> int:
   models = list(config.keys())
 
   console = Console()
-  console.print(f"[bold]Building {len(models)} models with {args.workers} workers[/]")
+  console.print(f"[bold]Building {len(models)} bentos with {args.workers} workers[/]")
 
-  results = build_all_models(models, template_dir, args.workers)
+  results = build_bentos(models, template_dir, args.workers)
   successful_builds = [r for r in results if r.success]
 
   # Print summary
   console.print("\n[bold]Build Summary:[/]")
-  console.print(f"Total models: {len(models)}")
+  console.print(f"Total bentos: {len(models)}")
   console.print(f"Successful builds: {len(successful_builds)}")
   console.print(f"Failed builds: {len(results) - len(successful_builds)}")
 

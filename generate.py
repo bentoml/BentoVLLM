@@ -7,7 +7,7 @@
 #     "ruff",
 # ]
 # ///
-import yaml, shutil, subprocess, json, argparse
+import yaml, shutil, subprocess, json, argparse, typing
 from pathlib import Path
 from jinja2 import Template
 
@@ -17,7 +17,7 @@ def load_config():
     return yaml.safe_load(f)
 
 
-def update_model_descriptions(config, template_dir):
+def update_model_descriptions(config: dict[str, dict[str, typing.Any]], template_dir):
   certified_repos_path = template_dir / "bentocloud-homepage-news" / "certified-bento-repositories.json"
   if not certified_repos_path.exists():
     print("Warning: certified-bento-repositories.json not found, skipping description updates")
@@ -35,6 +35,12 @@ def update_model_descriptions(config, template_dir):
   # Update descriptions for each model
   for model_name, model_config in config.items():
     repo_name = f"bentovllm-{model_name}-service"
+
+    # handle aliases
+    if model_name.startswith("deepseek-r1-distill"): repo_name = f"bentovllm-r1{model_name.removeprefix('deepseek-r1-distill')}-service"
+
+    if repo_name in certified_list:
+      continue
 
     labels = ["✍️ Text Generation"]
     if model_config.get("vision", False):
@@ -164,6 +170,10 @@ def main() -> int:
     "\\{\\{cookiecutter.*\\}\\}",
     "--exclude",
     "generate.py",
+    "--exclude",
+    "build.py",
+    "--exclude",
+    "push.py",
     ".",
   ])
 

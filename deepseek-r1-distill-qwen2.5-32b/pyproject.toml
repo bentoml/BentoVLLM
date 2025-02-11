@@ -1,5 +1,5 @@
 [project]
-name = "bentovllm-deepseek-r1-distill-qwen2.5-32b-service"
+name = "bentovllm-r1-qwen2.5-32b-service"
 description = "Self-host deepseek-ai/DeepSeek-R1-Distill-Qwen-32B with vLLM and BentoML"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -31,3 +31,5 @@ include = ["LICENCE", "*.py", "*.toml", "*.md"]
 owner = "bentoml-team"
 stage = "prebuilt"
 registry = "huggingface"
+type = "deepseek-r1-distill"
+
