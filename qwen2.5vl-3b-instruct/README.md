@@ -10,7 +10,7 @@ See [here](https://docs.bentoml.com/en/latest/examples/overview.html) for a full
 
 ## Prerequisites
 
-- You have gained access to Qwen/Qwen2.5-VL-3B-Instruct on [Hugging Face](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.3).
+- You have gained access to Qwen/Qwen2.5-VL-3B-Instruct on [Hugging Face](https://huggingface.co/Qwen/Qwen2.5-VL-3B-Instruct).
 - If you want to test the Service locally, we recommend you use an Nvidia GPU with at least 16G VRAM.
 
 ## Install dependencies
@@ -19,19 +19,19 @@ See [here](https://docs.bentoml.com/en/latest/examples/overview.html) for a full
 git clone https://github.com/bentoml/BentoVLLM.git
 cd BentoVLLM/qwen2.5vl-3b-instruct
 
-# Recommend UV, and Python 3.11
-uv venv
-uv pip install .
+# Recommend Python 3.11
 
-export HF_TOEKN=<your-api-key>
+pip install -r requirements.txt
+
+export HF_TOKEN=<your-api-key>
 ```
 
 ## Run the BentoML Service
 
-We have defined a BentoML Service in `service.py`. Run `bentoml serve` in your project directory to start the Service.
+We have defined a BentoML Service in `service.py`. Run `bentoml serve service:VLLM` in your project directory to start the Service.
 
 ```python
-$ bentoml serve .
+$ bentoml serve service:VLLM
 ```
 
 The server is now active at [http://localhost:3000](http://localhost:3000/). You can interact with it using the Swagger UI or in other different ways.
@@ -163,7 +163,7 @@ Create a BentoCloud secret to store the required environment variable and refere
 ```bash
 bentoml secret create huggingface HF_TOKEN=$HF_TOKEN
 
-bentoml deploy . --secret huggingface
+bentoml deploy service:VLLM --secret huggingface
 ```
 
 Once the application is up and running on BentoCloud, you can access it via the exposed URL.
