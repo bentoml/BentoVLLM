@@ -6,7 +6,7 @@ import bentoml, fastapi, PIL.Image
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-ENGINE_CONFIG = {"model": "Qwen/Qwen2.5-Coder-7B-Instruct", "max_model_len": 20480}
+ENGINE_CONFIG = {"model": "Qwen/Qwen2.5-Coder-7B-Instruct", "max_model_len": 8192}
 SERVICE_CONFIG = {
     "name": "qwen2.5-coder",
     "resources": {"gpu": 1, "gpu_type": "nvidia-l4"},

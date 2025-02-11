@@ -6,7 +6,7 @@ import bentoml, fastapi, PIL.Image
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-ENGINE_CONFIG = {"model": "deepseek-ai/DeepSeek-R1-Distill-Qwen-7B"}
+ENGINE_CONFIG = {"model": "deepseek-ai/DeepSeek-R1-Distill-Qwen-7B", "max_model_len": 8192}
 SERVICE_CONFIG = {
     "name": "deepseek-r1-distill",
     "traffic": {"timeout": 300},

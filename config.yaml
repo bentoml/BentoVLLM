@@ -51,6 +51,7 @@
   engine_config:
     model: deepseek-ai/DeepSeek-R1-Distill-Llama-70B
     tensor_parallel_size: 2
+    max_model_len: 8192
 "deepseek-r1-distill-qwen2.5-32b":
   metadata:
     description: DeepSeek R1 Distill Qwen 2.5 32B
@@ -66,6 +67,7 @@
       - name: HF_TOKEN
   engine_config:
     model: deepseek-ai/DeepSeek-R1-Distill-Qwen-32B
+    max_model_len: 8192
 "deepseek-r1-distill-qwen2.5-14b":
   metadata:
     description: DeepSeek R1 Distill Qwen 2.5 14B
@@ -81,6 +83,7 @@
       - name: HF_TOKEN
   engine_config:
     model: deepseek-ai/DeepSeek-R1-Distill-Qwen-14B
+    max_model_len: 8192
 "deepseek-r1-distill-qwen2.5-7b-math":
   metadata:
     description: DeepSeek R1 Distill Qwen 2.5 Math 7B
@@ -96,6 +99,7 @@
       - name: HF_TOKEN
   engine_config:
     model: deepseek-ai/DeepSeek-R1-Distill-Qwen-7B
+    max_model_len: 8192
 "deepseek-r1-distill-llama3.1-8b":
   metadata:
     description: DeepSeek R1 Distill Llama 3.1 8B
@@ -111,6 +115,7 @@
       - name: HF_TOKEN
   engine_config:
     model: deepseek-ai/DeepSeek-R1-Distill-Llama-8B
+    max_model_len: 4096
 "deepseek-r1-distill-llama3.1-8b-tool-calling":
   metadata:
     description: DeepSeek R1 Distill Llama 3.1 8B Tool Calling
@@ -126,6 +131,7 @@
       - name: HF_TOKEN
   engine_config:
     model: deepseek-ai/DeepSeek-R1-Distill-Llama-8B
+    max_model_len: 4096
   server_config:
     enable_auto_tool_choice: True
     enable_tool_call_parser: True
@@ -491,7 +497,7 @@
       timeout: 300
   engine_config:
     model: Qwen/Qwen2.5-Coder-7B-Instruct
-    max_model_len: 20480
+    max_model_len: 8192
   server_config:
     enable_auto_tool_choice: True
     enable_tool_call_parser: True
@@ -509,7 +515,7 @@
       timeout: 300
   engine_config:
     model: Qwen/Qwen2.5-Coder-32B-Instruct
-    max_model_len: 20480
+    max_model_len: 8192
   server_config:
     enable_auto_tool_choice: True
     enable_tool_call_parser: True
