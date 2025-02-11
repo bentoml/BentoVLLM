@@ -1,8 +1,8 @@
 <div align="center">
-    <h1 align="center">Self-host meta-llama/Meta-Llama-3.1-8B-Instruct with vLLM and BentoML</h1>
+    <h1 align="center">Self-host google/gemma-2-2b-it with vLLM and BentoML</h1>
 </div>
 
-This is a BentoML example project, showing you how to serve and deploy meta-llama/Meta-Llama-3.1-8B-Instruct using [vLLM](https://vllm.ai), a high-throughput and memory-efficient inference engine.
+This is a BentoML example project, showing you how to serve and deploy google/gemma-2-2b-it using [vLLM](https://vllm.ai), a high-throughput and memory-efficient inference engine.
 
 See [here](https://docs.bentoml.com/en/latest/examples/overview.html) for a full list of BentoML example projects.
 
@@ -10,14 +10,14 @@ See [here](https://docs.bentoml.com/en/latest/examples/overview.html) for a full
 
 ## Prerequisites
 
-- You have gained access to meta-llama/Meta-Llama-3.1-8B-Instruct on [Hugging Face](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.3).
+- You have gained access to google/gemma-2-2b-it on [Hugging Face](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.3).
 - If you want to test the Service locally, we recommend you use an Nvidia GPU with at least 16G VRAM.
 
 ## Install dependencies
 
 ```bash
 git clone https://github.com/bentoml/BentoVLLM.git
-cd BentoVLLM/llama3.1-8b
+cd BentoVLLM/gemma2-2b
 
 # Recommend UV, and Python 3.11
 uv venv
@@ -86,7 +86,7 @@ client = OpenAI(base_url='http://localhost:3000/v1', api_key='na')
 client.models.list()
 
 chat_completion = client.chat.completions.create(
-    model="meta-llama/Meta-Llama-3.1-8B-Instruct",
+    model="google/gemma-2-2b-it",
     messages=[
         {
             "role": "user",
@@ -118,7 +118,7 @@ json_schema = {
 }
 
 chat_completion = client.chat.completions.create(
-    model="meta-llama/Meta-Llama-3.1-8B-Instruct",
+    model="google/gemma-2-2b-it",
     messages=[
         {
             "role": "user",

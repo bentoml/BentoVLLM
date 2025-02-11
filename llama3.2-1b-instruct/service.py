@@ -6,14 +6,14 @@ import bentoml, fastapi, PIL.Image
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-ENGINE_CONFIG = {"model": "meta-llama/Meta-Llama-3.1-8B-Instruct", "max_model_len": 2048, "dtype": "half"}
+ENGINE_CONFIG = {"model": "meta-llama/Llama-3.2-1B-Instruct", "max_model_len": 16384}
 SERVICE_CONFIG = {
-    "name": "llama3.1",
+    "name": "llama3.2",
     "traffic": {"timeout": 300},
-    "resources": {"gpu": 1, "gpu_type": "nvidia-tesla-l4"},
+    "resources": {"gpu": 1, "gpu_type": "nvidia-l4"},
     "envs": [{"name": "HF_TOKEN"}],
 }
-SERVER_CONFIG = {}
+SERVER_CONFIG = {"tool_call_parser": "pythonic"}
 REQUIREMENTS_TXT = []
 
 

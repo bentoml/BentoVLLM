@@ -6,15 +6,10 @@ import bentoml, fastapi, PIL.Image
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-ENGINE_CONFIG = {"model": "meta-llama/Meta-Llama-3.1-8B-Instruct", "max_model_len": 2048, "dtype": "half"}
-SERVICE_CONFIG = {
-    "name": "llama3.1",
-    "traffic": {"timeout": 300},
-    "resources": {"gpu": 1, "gpu_type": "nvidia-tesla-l4"},
-    "envs": [{"name": "HF_TOKEN"}],
-}
+ENGINE_CONFIG = {"max_model_len": 2048, "model": "Qwen/Qwen2.5-VL-7B-Instruct"}
+SERVICE_CONFIG = {"name": "qwen2.5vl", "resources": {"gpu": 1, "gpu_type": "nvidia-l4"}, "traffic": {"timeout": 300}}
 SERVER_CONFIG = {}
-REQUIREMENTS_TXT = []
+REQUIREMENTS_TXT = ["qwen-vl-utils[decord]==0.0.8"]
 
 
 openai_api_app = fastapi.FastAPI()
@@ -33,7 +28,7 @@ openai_api_app = fastapi.FastAPI()
 )
 class VLLM:
     model_id = ENGINE_CONFIG["model"]
-    model = bentoml.models.HuggingFaceModel(model_id, exclude=['*.pth'])
+    model = bentoml.models.HuggingFaceModel(model_id)
 
     def __init__(self) -> None:
         from vllm import AsyncEngineArgs, AsyncLLMEngine
@@ -92,6 +87,37 @@ class VLLM:
             completion = await client.chat.completions.create(
                 model=self.model_id,
                 messages=[dict(role="user", content=[dict(type="text", text=prompt)])],
+                stream=True,
+            )
+            async for chunk in completion:
+                yield chunk.choices[0].delta.content or ""
+        except Exception:
+            yield traceback.format_exc()
+
+    @bentoml.api
+    async def sights(
+        self, prompt: str = "what is this?", image: typing.Optional[PIL.Image.Image] = None
+    ) -> typing.AsyncGenerator[str, None]:
+        from openai import AsyncOpenAI
+
+        client = AsyncOpenAI(base_url="http://127.0.0.1:3000/v1", api_key="dummy")
+        if image:
+            buffered = io.BytesIO()
+            image.save(buffered, format="PNG")
+            img_str = base64.b64encode(buffered.getvalue()).decode()
+            buffered.close()
+            image_url = f"data:image/png;base64,{img_str}"
+            content = [
+                dict(type="image_url", image_url=dict(url=image_url)),
+                dict(type="text", text=prompt),
+            ]
+        else:
+            content = [dict(type="text", text=prompt)]
+
+        try:
+            completion = await client.chat.completions.create(
+                model=self.model_id,
+                messages=[dict(role="user", content=content)],
                 stream=True,
             )
             async for chunk in completion:

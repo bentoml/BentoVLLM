@@ -6,11 +6,11 @@ import bentoml, fastapi, PIL.Image
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-ENGINE_CONFIG = {"model": "meta-llama/Meta-Llama-3.1-8B-Instruct", "max_model_len": 2048, "dtype": "half"}
+ENGINE_CONFIG = {"model": "deepseek-ai/DeepSeek-R1-Distill-Qwen-7B"}
 SERVICE_CONFIG = {
-    "name": "llama3.1",
+    "name": "deepseek-r1-distill",
     "traffic": {"timeout": 300},
-    "resources": {"gpu": 1, "gpu_type": "nvidia-tesla-l4"},
+    "resources": {"gpu": 1, "gpu_type": "nvidia-l4"},
     "envs": [{"name": "HF_TOKEN"}],
 }
 SERVER_CONFIG = {}
@@ -33,7 +33,7 @@ openai_api_app = fastapi.FastAPI()
 )
 class VLLM:
     model_id = ENGINE_CONFIG["model"]
-    model = bentoml.models.HuggingFaceModel(model_id, exclude=['*.pth'])
+    model = bentoml.models.HuggingFaceModel(model_id)
 
     def __init__(self) -> None:
         from vllm import AsyncEngineArgs, AsyncLLMEngine

@@ -6,11 +6,16 @@ import bentoml, fastapi, PIL.Image
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-ENGINE_CONFIG = {"model": "meta-llama/Meta-Llama-3.1-8B-Instruct", "max_model_len": 2048, "dtype": "half"}
+ENGINE_CONFIG = {
+    "model": "mistralai/Mistral-Large-Instruct-2407",
+    "max_model_len": 4096,
+    "tensor_parallel_size": 4,
+    "tokenizer_mode": "mistral",
+}
 SERVICE_CONFIG = {
-    "name": "llama3.1",
+    "name": "mistral-large",
     "traffic": {"timeout": 300},
-    "resources": {"gpu": 1, "gpu_type": "nvidia-tesla-l4"},
+    "resources": {"gpu": 4, "gpu_type": "nvidia-a100-80gb"},
     "envs": [{"name": "HF_TOKEN"}],
 }
 SERVER_CONFIG = {}
@@ -33,7 +38,7 @@ openai_api_app = fastapi.FastAPI()
 )
 class VLLM:
     model_id = ENGINE_CONFIG["model"]
-    model = bentoml.models.HuggingFaceModel(model_id, exclude=['*.pth'])
+    model = bentoml.models.HuggingFaceModel(model_id)
 
     def __init__(self) -> None:
         from vllm import AsyncEngineArgs, AsyncLLMEngine
@@ -63,7 +68,7 @@ class VLLM:
         args.max_log_len = 1000
         args.response_role = "assistant"
         args.served_model_name = [self.model_id]
-        args.chat_template = None
+        args.chat_template = "{% if messages[0]['role'] == 'system' %}\n    {% set loop_messages = messages[1:] %}\n    {% set system_message = messages[0]['content'].strip() + '\\n\\n' %}\n{% else %}\n    {% set loop_messages = messages %}\n    {% set system_message = '' %}\n{% endif %}\n\n{{ bos_token }}\n{% for message in loop_messages %}\n    {% if (message['role'] == 'user') != (loop.index0 % 2 == 0) %}\n        {{ raise_exception('Conversation roles must alternate user/assistant/user/assistant/...') }}\n    {% endif %}\n\n    {% if loop.index0 == 0 %}\n        {% set content = system_message + message['content'] %}\n    {% else %}\n        {% set content = message['content'] %}\n    {% endif %}\n\n    {% if message['role'] == 'user' %}\n        {{ '[INST] ' + content.strip() + ' [/INST]' }}\n    {% elif message['role'] == 'assistant' %}\n        {{ ' ' + content.strip() + eos_token }}\n    {% endif %}\n{% endfor %}\n"
         args.chat_template_content_format = "auto"
         args.lora_modules = None
         args.prompt_adapters = None

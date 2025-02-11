@@ -6,20 +6,13 @@ import bentoml, fastapi, PIL.Image
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-ENGINE_CONFIG = {"model": "meta-llama/Meta-Llama-3.1-8B-Instruct", "max_model_len": 2048, "dtype": "half"}
-SERVICE_CONFIG = {
-    "name": "llama3.1",
-    "traffic": {"timeout": 300},
-    "resources": {"gpu": 1, "gpu_type": "nvidia-tesla-l4"},
-    "envs": [{"name": "HF_TOKEN"}],
-}
-SERVER_CONFIG = {}
-REQUIREMENTS_TXT = []
+ENGINE_CONFIG = {{cookiecutter.engine_config}}
+SERVICE_CONFIG = {{cookiecutter.service_config}}
+SERVER_CONFIG = {{cookiecutter.server_config}}
+REQUIREMENTS_TXT = {{cookiecutter.requirements}}
 
 
 openai_api_app = fastapi.FastAPI()
-
-
 @bentoml.asgi_app(openai_api_app, path="/v1")
 @bentoml.service(
     **SERVICE_CONFIG,
@@ -33,7 +26,7 @@ openai_api_app = fastapi.FastAPI()
 )
 class VLLM:
     model_id = ENGINE_CONFIG["model"]
-    model = bentoml.models.HuggingFaceModel(model_id, exclude=['*.pth'])
+    model = bentoml.models.HuggingFaceModel(model_id)
 
     def __init__(self) -> None:
         from vllm import AsyncEngineArgs, AsyncLLMEngine
@@ -77,8 +70,7 @@ class VLLM:
         args.enable_reasoning = False
         args.reasoning_parser = None
 
-        for key, value in SERVER_CONFIG.items():
-            setattr(args, key, value)
+        for key, value in SERVER_CONFIG.items(): setattr(args, key, value)
 
         asyncio.create_task(vllm_api_server.init_app_state(self.engine, model_config, openai_api_app.state, args))
 
@@ -98,3 +90,36 @@ class VLLM:
                 yield chunk.choices[0].delta.content or ""
         except Exception:
             yield traceback.format_exc()
+
+    {% if cookiecutter.vision | lower == "true" %}
+    @bentoml.api
+    async def sights(
+        self, prompt: str = "what is this?", image: typing.Optional[PIL.Image.Image] = None
+    ) -> typing.AsyncGenerator[str, None]:
+        from openai import AsyncOpenAI
+
+        client = AsyncOpenAI(base_url="http://127.0.0.1:3000/v1", api_key="dummy")
+        if image:
+            buffered = io.BytesIO()
+            image.save(buffered, format="PNG")
+            img_str = base64.b64encode(buffered.getvalue()).decode()
+            buffered.close()
+            image_url = f"data:image/png;base64,{img_str}"
+            content = [
+                dict(type="image_url", image_url=dict(url=image_url)),
+                dict(type="text", text=prompt),
+            ]
+        else:
+            content = [dict(type="text", text=prompt)]
+
+        try:
+            completion = await client.chat.completions.create(
+                model=self.model_id,
+                messages=[dict(role="user", content=content)],
+                stream=True,
+            )
+            async for chunk in completion:
+                yield chunk.choices[0].delta.content or ""
+        except Exception:
+            yield traceback.format_exc()
+    {% endif %}

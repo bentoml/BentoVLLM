@@ -6,12 +6,12 @@ import bentoml, fastapi, PIL.Image
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-ENGINE_CONFIG = {"model": "meta-llama/Meta-Llama-3.1-8B-Instruct", "max_model_len": 2048, "dtype": "half"}
+ENGINE_CONFIG = {"model": "google/gemma-2-9b-it", "max_model_len": 2048, "dtype": "half"}
 SERVICE_CONFIG = {
-    "name": "llama3.1",
+    "name": "gemma2",
     "traffic": {"timeout": 300},
-    "resources": {"gpu": 1, "gpu_type": "nvidia-tesla-l4"},
-    "envs": [{"name": "HF_TOKEN"}],
+    "resources": {"gpu": 1, "gpu_type": "nvidia-l4"},
+    "envs": [{"name": "VLLM_ATTENTION_BACKEND", "value": "FLASHINFER"}, {"name": "HF_TOKEN"}],
 }
 SERVER_CONFIG = {}
 REQUIREMENTS_TXT = []
@@ -33,7 +33,7 @@ openai_api_app = fastapi.FastAPI()
 )
 class VLLM:
     model_id = ENGINE_CONFIG["model"]
-    model = bentoml.models.HuggingFaceModel(model_id, exclude=['*.pth'])
+    model = bentoml.models.HuggingFaceModel(model_id)
 
     def __init__(self) -> None:
         from vllm import AsyncEngineArgs, AsyncLLMEngine
@@ -63,7 +63,7 @@ class VLLM:
         args.max_log_len = 1000
         args.response_role = "assistant"
         args.served_model_name = [self.model_id]
-        args.chat_template = None
+        args.chat_template = "{% if messages[0]['role'] == 'system' %}\n    {% set offset = 1 %}\n{% else %}\n    {% set offset = 0 %}\n{% endif %}\n\n{% for message in messages %}\n    {% if (message['role'] == 'user') != (loop.index0 % 2 == offset) %}\n        {{ raise_exception('Conversation roles must alternate user/assistant/user/assistant/...') }}\n    {% endif %}\n\n    {{ '<|' + message['role'] + '|>\\n' + message['content'].strip() + '<|end|>' + '\\n' }}\n\n    {% if loop.last and message['role'] == 'user' and add_generation_prompt %}\n        {{ '<|assistant|>\\n' }}\n    {% endif %}\n{% endfor %}\n"
         args.chat_template_content_format = "auto"
         args.lora_modules = None
         args.prompt_adapters = None

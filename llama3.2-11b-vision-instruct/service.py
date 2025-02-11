@@ -6,11 +6,17 @@ import bentoml, fastapi, PIL.Image
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-ENGINE_CONFIG = {"model": "meta-llama/Meta-Llama-3.1-8B-Instruct", "max_model_len": 2048, "dtype": "half"}
+ENGINE_CONFIG = {
+    "model": "meta-llama/Llama-3.2-11B-Vision-Instruct",
+    "enforce_eager": True,
+    "limit_mm_per_prompt": {"image": 1},
+    "max_model_len": 16384,
+    "max_num_seqs": 16,
+}
 SERVICE_CONFIG = {
-    "name": "llama3.1",
+    "name": "llama3.2",
     "traffic": {"timeout": 300},
-    "resources": {"gpu": 1, "gpu_type": "nvidia-tesla-l4"},
+    "resources": {"gpu": 1, "gpu_type": "nvidia-a100-80gb"},
     "envs": [{"name": "HF_TOKEN"}],
 }
 SERVER_CONFIG = {}
@@ -92,6 +98,37 @@ class VLLM:
             completion = await client.chat.completions.create(
                 model=self.model_id,
                 messages=[dict(role="user", content=[dict(type="text", text=prompt)])],
+                stream=True,
+            )
+            async for chunk in completion:
+                yield chunk.choices[0].delta.content or ""
+        except Exception:
+            yield traceback.format_exc()
+
+    @bentoml.api
+    async def sights(
+        self, prompt: str = "what is this?", image: typing.Optional[PIL.Image.Image] = None
+    ) -> typing.AsyncGenerator[str, None]:
+        from openai import AsyncOpenAI
+
+        client = AsyncOpenAI(base_url="http://127.0.0.1:3000/v1", api_key="dummy")
+        if image:
+            buffered = io.BytesIO()
+            image.save(buffered, format="PNG")
+            img_str = base64.b64encode(buffered.getvalue()).decode()
+            buffered.close()
+            image_url = f"data:image/png;base64,{img_str}"
+            content = [
+                dict(type="image_url", image_url=dict(url=image_url)),
+                dict(type="text", text=prompt),
+            ]
+        else:
+            content = [dict(type="text", text=prompt)]
+
+        try:
+            completion = await client.chat.completions.create(
+                model=self.model_id,
+                messages=[dict(role="user", content=content)],
                 stream=True,
             )
             async for chunk in completion:

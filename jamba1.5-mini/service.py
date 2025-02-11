@@ -6,11 +6,16 @@ import bentoml, fastapi, PIL.Image
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-ENGINE_CONFIG = {"model": "meta-llama/Meta-Llama-3.1-8B-Instruct", "max_model_len": 2048, "dtype": "half"}
+ENGINE_CONFIG = {
+    "model": "ai21labs/AI21-Jamba-1.5-Mini",
+    "max_model_len": 2048,
+    "dtype": "half",
+    "tensor_parallel_size": 4,
+}
 SERVICE_CONFIG = {
-    "name": "llama3.1",
+    "name": "jamba1.5",
     "traffic": {"timeout": 300},
-    "resources": {"gpu": 1, "gpu_type": "nvidia-tesla-l4"},
+    "resources": {"gpu": 4, "gpu_type": "nvidia-a100-80gb"},
     "envs": [{"name": "HF_TOKEN"}],
 }
 SERVER_CONFIG = {}
@@ -33,7 +38,7 @@ openai_api_app = fastapi.FastAPI()
 )
 class VLLM:
     model_id = ENGINE_CONFIG["model"]
-    model = bentoml.models.HuggingFaceModel(model_id, exclude=['*.pth'])
+    model = bentoml.models.HuggingFaceModel(model_id)
 
     def __init__(self) -> None:
         from vllm import AsyncEngineArgs, AsyncLLMEngine
