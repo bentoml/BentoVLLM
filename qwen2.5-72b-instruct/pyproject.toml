@@ -1,5 +1,5 @@
 [project]
-name = "qwen2.5-72b-instruct"
+name = "bentovllm-qwen2.5-72b-instruct-service"
 description = "Self-host Qwen/Qwen2.5-72B-Instruct with vLLM and BentoML"
 readme = "README.md"
 requires-python = ">=3.10"

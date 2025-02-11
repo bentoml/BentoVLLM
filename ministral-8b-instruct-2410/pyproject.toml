@@ -1,5 +1,5 @@
 [project]
-name = "ministral-8b-instruct-2410"
+name = "bentovllm-ministral-8b-instruct-2410-service"
 description = "Self-host mistralai/Ministral-8B-Instruct-2410 with vLLM and BentoML"
 readme = "README.md"
 requires-python = ">=3.10"

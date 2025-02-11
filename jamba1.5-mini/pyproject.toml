@@ -1,5 +1,5 @@
 [project]
-name = "jamba1.5-mini"
+name = "bentovllm-jamba1.5-mini-service"
 description = "Self-host ai21labs/AI21-Jamba-1.5-Mini with vLLM and BentoML"
 readme = "README.md"
 requires-python = ">=3.10"

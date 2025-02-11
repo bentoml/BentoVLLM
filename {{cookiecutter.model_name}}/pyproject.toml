@@ -1,5 +1,5 @@
 [project]
-name = "{{cookiecutter.model_name}}"
+name = "bentovllm-{{cookiecutter.model_name}}-service"
 description = "Self-host {{cookiecutter.model_id}} with vLLM and BentoML"
 readme = "README.md"
 requires-python = ">=3.10"

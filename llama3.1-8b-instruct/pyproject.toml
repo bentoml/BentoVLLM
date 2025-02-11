@@ -1,5 +1,5 @@
 [project]
-name = "llama3.1-8b"
+name = "bentovllm-llama3.1-8b-instruct-service"
 description = "Self-host meta-llama/Meta-Llama-3.1-8B-Instruct with vLLM and BentoML"
 readme = "README.md"
 requires-python = ">=3.10"

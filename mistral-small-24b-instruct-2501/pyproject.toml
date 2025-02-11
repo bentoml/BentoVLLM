@@ -1,5 +1,5 @@
 [project]
-name = "mistral-small-24b-instruct-2501"
+name = "bentovllm-mistral-small-24b-instruct-2501-service"
 description = "Self-host mistralai/Mistral-Small-24B-Instruct-2501 with vLLM and BentoML"
 readme = "README.md"
 requires-python = ">=3.10"

@@ -1,5 +1,5 @@
 [project]
-name = "deepseek-r1-distill-qwen2.5-7b-math"
+name = "bentovllm-deepseek-r1-distill-qwen2.5-7b-math-service"
 description = "Self-host deepseek-ai/DeepSeek-R1-Distill-Qwen-7B with vLLM and BentoML"
 readme = "README.md"
 requires-python = ">=3.10"

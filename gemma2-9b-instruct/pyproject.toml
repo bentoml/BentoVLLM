@@ -1,5 +1,5 @@
 [project]
-name = "gemma2-9b"
+name = "bentovllm-gemma2-9b-instruct-service"
 description = "Self-host google/gemma-2-9b-it with vLLM and BentoML"
 readme = "README.md"
 requires-python = ">=3.10"

@@ -1,5 +1,5 @@
 [project]
-name = "pixtral-12b-2409"
+name = "bentovllm-pixtral-12b-2409-service"
 description = "Self-host mistral-community/pixtral-12b-240910 with vLLM and BentoML"
 readme = "README.md"
 requires-python = ">=3.10"

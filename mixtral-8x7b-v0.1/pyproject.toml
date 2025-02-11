@@ -1,5 +1,5 @@
 [project]
-name = "mixtral-8x7b-v0.1"
+name = "bentovllm-mixtral-8x7b-v0.1-service"
 description = "Self-host mistralai/Mixtral-8x7B-Instruct-v0.1 with vLLM and BentoML"
 readme = "README.md"
 requires-python = ">=3.10"

@@ -1,5 +1,5 @@
 [project]
-name = "deepseek-r1-distill-llama3.1-8b"
+name = "bentovllm-deepseek-r1-distill-llama3.1-8b-service"
 description = "Self-host deepseek-ai/DeepSeek-R1-Distill-Llama-8B with vLLM and BentoML"
 readme = "README.md"
 requires-python = ">=3.10"
