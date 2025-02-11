@@ -12,6 +12,49 @@ from pathlib import Path
 from jinja2 import Template
 
 
+def load_config():
+  with open("config.yaml", "r") as f:
+    return yaml.safe_load(f)
+
+
+def update_model_descriptions(config, template_dir):
+  certified_repos_path = template_dir / "bentocloud-homepage-news" / "certified-bento-repositories.json"
+  if not certified_repos_path.exists():
+    print("Warning: certified-bento-repositories.json not found, skipping description updates")
+    return
+
+  with certified_repos_path.open("r") as f:
+    certified_repos_struct = json.load(f)
+    certified_bentos = certified_repos_struct['certified_bentos']
+
+  # Create a mapping of model names to their certified repo data
+  certified_list = [repo["repo_name"] for repo in certified_bentos]
+
+  image_url="https://raw.githubusercontent.com/bentoml/bentocloud-homepage-news/main/imgs/llama3-8b.png"
+
+  # Update descriptions for each model
+  for model_name, model_config in config.items():
+    repo_name = f'bentovllm-{model_name}-service'
+
+    labels = ["✍️ Text Generation"]
+    if model_config.get("vision", False):
+      labels.append("👁️ Image-to-Text")
+
+    metadata = model_config['metadata']
+    bentos = dict(
+        org_name="bentoml",
+        repo_name=repo_name,
+        description=dict(name=metadata['description'], text=f'{metadata["description"]} developed by {metadata["provider"]} and served using vLLM and BentoML. It offers capabilities for streaming and compatibility with OpenAI\'s API',
+                         link="https://github.com/bentoml/BentoVLLM", image=image_url, label=labels
+                         ))
+    certified_bentos.append(bentos)
+
+  with certified_repos_path.open('w', encoding='utf-8') as f:
+    json_str = json.dumps(dict(certified_bentos=certified_bentos), indent=2, ensure_ascii=False)
+    f.write(json_str)
+  print("Updated prebuilt bentos list")
+
+
 def generate_cookiecutter_context(model_name, config):
   model_config = config[model_name]
   engine_config_struct = model_config.get("engine_config", {"model": "deepseek-ai/DeepSeek-R1-Distill-Llama-8B"})
@@ -117,6 +160,10 @@ def main() -> int:
     "generate.py",
     ".",
   ])
+
+  # Update model descriptions before generation
+  update_model_descriptions(config, template_dir)
+
   return 0
 
 if __name__ == "__main__": raise SystemExit(main())

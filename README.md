@@ -168,7 +168,7 @@ In addition to Llama 3.1 8B Instruct, we also have examples for other models in 
 - [mixtral-8x7b-v0.1](mixtral-8x7b-v0.1/)
 - [ministral-8b-instruct-2410](ministral-8b-instruct-2410/)
 - [mistral-small-24b-instruct-2501](mistral-small-24b-instruct-2501/)
-- [mistral-large-123b-instruct](mistral-large-123b-instruct/)
+- [mistral-large-123b-instruct-2407](mistral-large-123b-instruct-2407/)
 - [phi4-14b](phi4-14b/)
 - [qwen2.5-7b-instruct](qwen2.5-7b-instruct/)
 - [qwen2.5-14b-instruct](qwen2.5-14b-instruct/)
