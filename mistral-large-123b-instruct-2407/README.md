@@ -17,7 +17,7 @@ See [here](https://docs.bentoml.com/en/latest/examples/overview.html) for a full
 
 ```bash
 git clone https://github.com/bentoml/BentoVLLM.git
-cd BentoVLLM/mistral-large-123b-instruct
+cd BentoVLLM/mistral-large-123b-instruct-2407
 
 # Recommend UV, and Python 3.11
 uv venv

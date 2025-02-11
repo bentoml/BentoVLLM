@@ -17,7 +17,7 @@ See [here](https://docs.bentoml.com/en/latest/examples/overview.html) for a full
 
 ```bash
 git clone https://github.com/bentoml/BentoVLLM.git
-cd BentoVLLM/llama3.2-11b-vision
+cd BentoVLLM/llama3.2-11b-vision-instruct
 
 # Recommend UV, and Python 3.11
 uv venv

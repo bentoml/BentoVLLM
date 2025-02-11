@@ -13,7 +13,7 @@ ENGINE_CONFIG = {
     "max_model_len": 4096,
 }
 SERVICE_CONFIG = {
-    "name": "mistral-mini",
+    "name": "bentovllm-ministral-8b-instruct-2410-service",
     "traffic": {"timeout": 300},
     "resources": {"gpu": 1, "gpu_type": "nvidia-l4"},
     "envs": [{"name": "HF_TOKEN"}],
@@ -29,11 +29,7 @@ openai_api_app = fastapi.FastAPI()
 @bentoml.service(
     **SERVICE_CONFIG,
     image=bentoml.images.PythonImage(python_version="3.11")
-    .python_packages("vllm==0.7.1\n")
-    .python_packages("pyyaml\n")
-    .python_packages("Pillow\n")
-    .python_packages("openai\n")
-    .python_packages("bentoml>=1.3.20\n")
+    .requirements_file("requirements.txt")
     .python_packages(*REQUIREMENTS_TXT),
 )
 class VLLM:
@@ -68,7 +64,7 @@ class VLLM:
         args.max_log_len = 1000
         args.response_role = "assistant"
         args.served_model_name = [self.model_id]
-        args.chat_template = "{% if messages[0]['role'] == 'system' %}\n    {% set loop_messages = messages[1:] %}\n    {% set system_message = messages[0]['content'].strip() + '\\n\\n' %}\n{% else %}\n    {% set loop_messages = messages %}\n    {% set system_message = '' %}\n{% endif %}\n\n{{ bos_token }}\n{% for message in loop_messages %}\n    {% if (message['role'] == 'user') != (loop.index0 % 2 == 0) %}\n        {{ raise_exception('Conversation roles must alternate user/assistant/user/assistant/...') }}\n    {% endif %}\n\n    {% if loop.index0 == 0 %}\n        {% set content = system_message + message['content'] %}\n    {% else %}\n        {% set content = message['content'] %}\n    {% endif %}\n\n    {% if message['role'] == 'user' %}\n        {{ '[INST] ' + content.strip() + ' [/INST]' }}\n    {% elif message['role'] == 'assistant' %}\n        {{ ' ' + content.strip() + eos_token }}\n    {% endif %}\n{% endfor %}\n"
+        args.chat_template = None
         args.chat_template_content_format = "auto"
         args.lora_modules = None
         args.prompt_adapters = None

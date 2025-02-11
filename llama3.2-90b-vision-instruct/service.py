@@ -14,7 +14,7 @@ ENGINE_CONFIG = {
     "max_num_seqs": 16,
 }
 SERVICE_CONFIG = {
-    "name": "llama3.2",
+    "name": "bentovllm-llama3.2-90b-v-instruct-service",
     "traffic": {"timeout": 300},
     "resources": {"gpu": 2, "gpu_type": "nvidia-a100-80gb"},
     "envs": [{"name": "HF_TOKEN"}],
@@ -30,11 +30,7 @@ openai_api_app = fastapi.FastAPI()
 @bentoml.service(
     **SERVICE_CONFIG,
     image=bentoml.images.PythonImage(python_version="3.11")
-    .python_packages("vllm==0.7.1\n")
-    .python_packages("pyyaml\n")
-    .python_packages("Pillow\n")
-    .python_packages("openai\n")
-    .python_packages("bentoml>=1.3.20\n")
+    .requirements_file("requirements.txt")
     .python_packages(*REQUIREMENTS_TXT),
 )
 class VLLM:

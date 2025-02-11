@@ -8,7 +8,7 @@ logger.setLevel(logging.INFO)
 
 ENGINE_CONFIG = {"model": "meta-llama/Meta-Llama-3.1-8B-Instruct", "max_model_len": 2048, "dtype": "half"}
 SERVICE_CONFIG = {
-    "name": "llama3.1",
+    "name": "bentovllm-llama3.1-8b-instruct-service",
     "traffic": {"timeout": 300},
     "resources": {"gpu": 1, "gpu_type": "nvidia-tesla-l4"},
     "envs": [{"name": "HF_TOKEN"}],
@@ -24,16 +24,12 @@ openai_api_app = fastapi.FastAPI()
 @bentoml.service(
     **SERVICE_CONFIG,
     image=bentoml.images.PythonImage(python_version="3.11")
-    .python_packages("vllm==0.7.1\n")
-    .python_packages("pyyaml\n")
-    .python_packages("Pillow\n")
-    .python_packages("openai\n")
-    .python_packages("bentoml>=1.3.20\n")
+    .requirements_file("requirements.txt")
     .python_packages(*REQUIREMENTS_TXT),
 )
 class VLLM:
     model_id = ENGINE_CONFIG["model"]
-    model = bentoml.models.HuggingFaceModel(model_id, exclude=["*.pth"])
+    model = bentoml.models.HuggingFaceModel(model_id)
 
     def __init__(self) -> None:
         from vllm import AsyncEngineArgs, AsyncLLMEngine

@@ -7,7 +7,11 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 ENGINE_CONFIG = {"max_model_len": 2048, "model": "Qwen/Qwen2.5-VL-7B-Instruct"}
-SERVICE_CONFIG = {"name": "qwen2.5vl", "resources": {"gpu": 1, "gpu_type": "nvidia-l4"}, "traffic": {"timeout": 300}}
+SERVICE_CONFIG = {
+    "name": "bentovllm-qwen2.5vl-7b-instruct-service",
+    "resources": {"gpu": 1, "gpu_type": "nvidia-l4"},
+    "traffic": {"timeout": 300},
+}
 SERVER_CONFIG = {}
 REQUIREMENTS_TXT = ["qwen-vl-utils[decord]==0.0.8"]
 
@@ -19,11 +23,7 @@ openai_api_app = fastapi.FastAPI()
 @bentoml.service(
     **SERVICE_CONFIG,
     image=bentoml.images.PythonImage(python_version="3.11")
-    .python_packages("vllm==0.7.1\n")
-    .python_packages("pyyaml\n")
-    .python_packages("Pillow\n")
-    .python_packages("openai\n")
-    .python_packages("bentoml>=1.3.20\n")
+    .requirements_file("requirements.txt")
     .python_packages(*REQUIREMENTS_TXT),
 )
 class VLLM:

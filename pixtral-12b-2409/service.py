@@ -15,7 +15,7 @@ ENGINE_CONFIG = {
     "max_model_len": 16384,
 }
 SERVICE_CONFIG = {
-    "name": "pixtral",
+    "name": "bentovllm-pixtral-12b-2409-service",
     "traffic": {"timeout": 300},
     "resources": {"gpu": 1, "gpu_type": "nvidia-a100-80gb"},
 }
@@ -30,11 +30,7 @@ openai_api_app = fastapi.FastAPI()
 @bentoml.service(
     **SERVICE_CONFIG,
     image=bentoml.images.PythonImage(python_version="3.11")
-    .python_packages("vllm==0.7.1\n")
-    .python_packages("pyyaml\n")
-    .python_packages("Pillow\n")
-    .python_packages("openai\n")
-    .python_packages("bentoml>=1.3.20\n")
+    .requirements_file("requirements.txt")
     .python_packages(*REQUIREMENTS_TXT),
 )
 class VLLM:

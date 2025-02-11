@@ -16,13 +16,7 @@ openai_api_app = fastapi.FastAPI()
 @bentoml.asgi_app(openai_api_app, path="/v1")
 @bentoml.service(
     **SERVICE_CONFIG,
-    image=bentoml.images.PythonImage(python_version="3.11")
-    .python_packages("vllm==0.7.1\n")
-    .python_packages("pyyaml\n")
-    .python_packages("Pillow\n")
-    .python_packages("openai\n")
-    .python_packages("bentoml>=1.3.20\n")
-    .python_packages(*REQUIREMENTS_TXT),
+    image=bentoml.images.PythonImage(python_version="3.11").requirements_file("requirements.txt").python_packages(*REQUIREMENTS_TXT)
 )
 class VLLM:
     model_id = ENGINE_CONFIG["model"]

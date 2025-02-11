@@ -13,7 +13,7 @@ ENGINE_CONFIG = {
     "tensor_parallel_size": 4,
 }
 SERVICE_CONFIG = {
-    "name": "jamba1.5",
+    "name": "bentovllm-jamba1.5-mini-service",
     "traffic": {"timeout": 300},
     "resources": {"gpu": 4, "gpu_type": "nvidia-a100-80gb"},
     "envs": [{"name": "HF_TOKEN"}],
@@ -29,11 +29,7 @@ openai_api_app = fastapi.FastAPI()
 @bentoml.service(
     **SERVICE_CONFIG,
     image=bentoml.images.PythonImage(python_version="3.11")
-    .python_packages("vllm==0.7.1\n")
-    .python_packages("pyyaml\n")
-    .python_packages("Pillow\n")
-    .python_packages("openai\n")
-    .python_packages("bentoml>=1.3.20\n")
+    .requirements_file("requirements.txt")
     .python_packages(*REQUIREMENTS_TXT),
 )
 class VLLM:

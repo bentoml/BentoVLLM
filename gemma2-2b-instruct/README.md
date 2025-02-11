@@ -17,7 +17,7 @@ See [here](https://docs.bentoml.com/en/latest/examples/overview.html) for a full
 
 ```bash
 git clone https://github.com/bentoml/BentoVLLM.git
-cd BentoVLLM/gemma2-2b
+cd BentoVLLM/gemma2-2b-instruct
 
 # Recommend UV, and Python 3.11
 uv venv
