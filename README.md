@@ -13,7 +13,7 @@ The following is an example of serving one of the LLMs in this repository: Mistr
 ## Prerequisites
 
 - If you want to test the Service locally, we recommend you use an Nvidia GPU with at least 16G VRAM.
-- Gain access to the model in [Hugging Face](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.2).
+- Gain access to the model in [Hugging Face](https://huggingface.co/meta-llama/Llama-3.2-1B-Instruct).
 
 ## Install dependencies
 
@@ -29,7 +29,7 @@ export HF_TOEKN=<your-api-key>
 
 ## Run the BentoML Service
 
-We have defined a BentoML Service in `service.py`. Run `bentoml serve` in your project directory to start the Service.
+We have defined a BentoML Service in `service.py`. Run `bentoml serve` in your project directory to start the Service.
 
 ```bash
 $ bentoml serve .
@@ -40,7 +40,7 @@ INFO 01-18 07:51:40 model_runner.py:505] CUDA graphs can take additional 1~3 GiB
 INFO 01-18 07:51:46 model_runner.py:547] Graph capturing finished in 6 secs.
 ```
 
-The server is now active at [http://localhost:3000](http://localhost:3000/). You can interact with it using the Swagger UI or in other different ways.
+The server is now active at [http://localhost:3000](http://localhost:3000/). You can interact with it using the Swagger UI or in other different ways.
 
 <details>
 
@@ -144,37 +144,39 @@ bentoml deploy . --secret huggingface
 
 ## Featured models
 
-In addition to Llama 3.1 8B Instruct, we also have examples for other models in the subdirectories of this repository. Here are some popular ones:
+In addition to Llama 3.1 8B Instruct, we also have examples for other models in the subdirectories of this repository:
 
-- [deepseek-v3-671b](deepseek-v3-671b/)
-- [deepseek-r1-671b](deepseek-r1-671b/)
-- [deepseek-r1-distill-llama3.3-70b](deepseek-r1-distill-llama3.3-70b/)
-- [deepseek-r1-distill-qwen2.5-32b](deepseek-r1-distill-qwen2.5-32b/)
-- [deepseek-r1-distill-qwen2.5-14b](deepseek-r1-distill-qwen2.5-14b/)
-- [deepseek-r1-distill-qwen2.5-7b-math](deepseek-r1-distill-qwen2.5-7b-math/)
-- [deepseek-r1-distill-llama3.1-8b](deepseek-r1-distill-llama3.1-8b/)
-- [deepseek-r1-distill-llama3.1-8b-tool-calling](deepseek-r1-distill-llama3.1-8b-tool-calling/)
-- [gemma2-2b-instruct](gemma2-2b-instruct/)
-- [gemma2-9b-instruct](gemma2-9b-instruct/)
-- [gemma2-27b-instruct](gemma2-27b-instruct/)
-- [jamba1.5-mini](jamba1.5-mini/)
-- [llama3.1-8b-instruct](llama3.1-8b-instruct/)
-- [llama3.2-1b-instruct](llama3.2-1b-instruct/)
-- [llama3.2-3b-instruct](llama3.2-3b-instruct/)
-- [llama3.2-11b-vision-instruct](llama3.2-11b-vision-instruct/)
-- [llama3.2-90b-vision-instruct](llama3.2-90b-vision-instruct/)
-- [llama3.3-70b-instruct](llama3.3-70b-instruct/)
-- [pixtral-12b-2409](pixtral-12b-2409/)
-- [mixtral-8x7b-v0.1](mixtral-8x7b-v0.1/)
-- [ministral-8b-instruct-2410](ministral-8b-instruct-2410/)
-- [mistral-small-24b-instruct-2501](mistral-small-24b-instruct-2501/)
-- [mistral-large-123b-instruct-2407](mistral-large-123b-instruct-2407/)
-- [phi4-14b](phi4-14b/)
-- [qwen2.5-7b-instruct](qwen2.5-7b-instruct/)
-- [qwen2.5-14b-instruct](qwen2.5-14b-instruct/)
-- [qwen2.5-32b-instruct](qwen2.5-32b-instruct/)
-- [qwen2.5-72b-instruct](qwen2.5-72b-instruct/)
-- [qwen2.5-coder-7b-instruct](qwen2.5-coder-7b-instruct/)
-- [qwen2.5-coder-32b-instruct](qwen2.5-coder-32b-instruct/)
-- [qwen2.5vl-3b-instruct](qwen2.5vl-3b-instruct/)
-- [qwen2.5vl-7b-instruct](qwen2.5vl-7b-instruct/)
+| Model | Links |
+|-------|-------|
+| deepseek-v3-671b | [GitHub](deepseek-v3-671b/) • [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-V3) |
+| deepseek-r1-671b | [GitHub](deepseek-r1-671b/) • [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-R1) |
+| deepseek-r1-distill-llama3.3-70b | [GitHub](deepseek-r1-distill-llama3.3-70b/) • [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Llama-70B) |
+| deepseek-r1-distill-qwen2.5-32b | [GitHub](deepseek-r1-distill-qwen2.5-32b/) • [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-32B) |
+| deepseek-r1-distill-qwen2.5-14b | [GitHub](deepseek-r1-distill-qwen2.5-14b/) • [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-14B) |
+| deepseek-r1-distill-qwen2.5-7b-math | [GitHub](deepseek-r1-distill-qwen2.5-7b-math/) • [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-7B) |
+| deepseek-r1-distill-llama3.1-8b | [GitHub](deepseek-r1-distill-llama3.1-8b/) • [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Llama-8B) |
+| deepseek-r1-distill-llama3.1-8b-tool-calling | [GitHub](deepseek-r1-distill-llama3.1-8b-tool-calling/) • [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Llama-8B) |
+| gemma2-2b-instruct | [GitHub](gemma2-2b-instruct/) • [Hugging Face](https://huggingface.co/google/gemma-2-2b-it) |
+| gemma2-9b-instruct | [GitHub](gemma2-9b-instruct/) • [Hugging Face](https://huggingface.co/google/gemma-2-9b-it) |
+| gemma2-27b-instruct | [GitHub](gemma2-27b-instruct/) • [Hugging Face](https://huggingface.co/google/gemma-2-27b-it) |
+| jamba1.5-mini | [GitHub](jamba1.5-mini/) • [Hugging Face](https://huggingface.co/ai21labs/AI21-Jamba-1.5-Mini) |
+| llama3.1-8b-instruct | [GitHub](llama3.1-8b-instruct/) • [Hugging Face](https://huggingface.co/meta-llama/Meta-Llama-3.1-8B-Instruct) |
+| llama3.2-1b-instruct | [GitHub](llama3.2-1b-instruct/) • [Hugging Face](https://huggingface.co/meta-llama/Llama-3.2-1B-Instruct) |
+| llama3.2-3b-instruct | [GitHub](llama3.2-3b-instruct/) • [Hugging Face](https://huggingface.co/meta-llama/Llama-3.2-3B-Instruct) |
+| llama3.2-11b-vision-instruct | [GitHub](llama3.2-11b-vision-instruct/) • [Hugging Face](https://huggingface.co/meta-llama/Llama-3.2-11B-Vision-Instruct) |
+| llama3.2-90b-vision-instruct | [GitHub](llama3.2-90b-vision-instruct/) • [Hugging Face](https://huggingface.co/meta-llama/Llama-3.2-90B-Vision-Instruct) |
+| llama3.3-70b-instruct | [GitHub](llama3.3-70b-instruct/) • [Hugging Face](https://huggingface.co/meta-llama/Llama-3.3-70B-Instruct) |
+| pixtral-12b-2409 | [GitHub](pixtral-12b-2409/) • [Hugging Face](https://huggingface.co/mistral-community/pixtral-12b-240910) |
+| mixtral-8x7b-v0.1 | [GitHub](mixtral-8x7b-v0.1/) • [Hugging Face](https://huggingface.co/mistralai/Mixtral-8x7B-Instruct-v0.1) |
+| ministral-8b-instruct-2410 | [GitHub](ministral-8b-instruct-2410/) • [Hugging Face](https://huggingface.co/mistralai/Ministral-8B-Instruct-2410) |
+| mistral-small-24b-instruct-2501 | [GitHub](mistral-small-24b-instruct-2501/) • [Hugging Face](https://huggingface.co/mistralai/Mistral-Small-24B-Instruct-2501) |
+| mistral-large-123b-instruct-2407 | [GitHub](mistral-large-123b-instruct-2407/) • [Hugging Face](https://huggingface.co/mistralai/Mistral-Large-Instruct-2407) |
+| phi4-14b | [GitHub](phi4-14b/) • [Hugging Face](https://huggingface.co/microsoft/phi-4) |
+| qwen2.5-7b-instruct | [GitHub](qwen2.5-7b-instruct/) • [Hugging Face](https://huggingface.co/Qwen/Qwen2.5-7B-Instruct) |
+| qwen2.5-14b-instruct | [GitHub](qwen2.5-14b-instruct/) • [Hugging Face](https://huggingface.co/Qwen/Qwen2.5-14B-Instruct) |
+| qwen2.5-32b-instruct | [GitHub](qwen2.5-32b-instruct/) • [Hugging Face](https://huggingface.co/Qwen/Qwen2.5-32B-Instruct) |
+| qwen2.5-72b-instruct | [GitHub](qwen2.5-72b-instruct/) • [Hugging Face](https://huggingface.co/Qwen/Qwen2.5-72B-Instruct) |
+| qwen2.5-coder-7b-instruct | [GitHub](qwen2.5-coder-7b-instruct/) • [Hugging Face](https://huggingface.co/Qwen/Qwen2.5-Coder-7B-Instruct) |
+| qwen2.5-coder-32b-instruct | [GitHub](qwen2.5-coder-32b-instruct/) • [Hugging Face](https://huggingface.co/Qwen/Qwen2.5-Coder-32B-Instruct) |
+| qwen2.5vl-3b-instruct | [GitHub](qwen2.5vl-3b-instruct/) • [Hugging Face](https://huggingface.co/Qwen/Qwen2.5-VL-3B-Instruct) |
+| qwen2.5vl-7b-instruct | [GitHub](qwen2.5vl-7b-instruct/) • [Hugging Face](https://huggingface.co/Qwen/Qwen2.5-VL-7B-Instruct) |

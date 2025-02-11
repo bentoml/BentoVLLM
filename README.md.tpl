@@ -13,7 +13,7 @@ The following is an example of serving one of the LLMs in this repository: Mistr
 ## Prerequisites
 
 - If you want to test the Service locally, we recommend you use an Nvidia GPU with at least 16G VRAM.
-- Gain access to the model in [Hugging Face](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.2).
+- Gain access to the model in [Hugging Face](https://huggingface.co/meta-llama/Llama-3.2-1B-Instruct).
 
 ## Install dependencies
 
@@ -29,7 +29,7 @@ export HF_TOEKN=<your-api-key>
 
 ## Run the BentoML Service
 
-We have defined a BentoML Service in `service.py`. Run `bentoml serve` in your project directory to start the Service.
+We have defined a BentoML Service in `service.py`. Run `bentoml serve` in your project directory to start the Service.
 
 ```bash
 $ bentoml serve .
@@ -40,7 +40,7 @@ INFO 01-18 07:51:40 model_runner.py:505] CUDA graphs can take additional 1~3 GiB
 INFO 01-18 07:51:46 model_runner.py:547] Graph capturing finished in 6 secs.
 ```
 
-The server is now active at [http://localhost:3000](http://localhost:3000/). You can interact with it using the Swagger UI or in other different ways.
+The server is now active at [http://localhost:3000](http://localhost:3000/). You can interact with it using the Swagger UI or in other different ways.
 
 <details>
 
@@ -144,7 +144,10 @@ bentoml deploy . --secret huggingface
 
 ## Featured models
 
-In addition to Llama 3.1 8B Instruct, we also have examples for other models in the subdirectories of this repository. Here are some popular ones:
-{% for model in models %}
-- [{{ model.name }}]({{ model.name }}/)
+In addition to Llama 3.1 8B Instruct, we also have examples for other models in the subdirectories of this repository:
+
+| Model | Links |
+|-------|-------|
+{%- for model in models %}
+| {{ model.name }} | [GitHub]({{ model.name }}/) • [Hugging Face](https://huggingface.co/{{ model.engine_config.model }}) |
 {%- endfor %}

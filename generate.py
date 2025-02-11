@@ -90,7 +90,7 @@ def generate_cookiecutter_context(model_name, config):
 
 def generate_readme(config, template_dir):
   # Prepare model data for the template
-  models = [{"name": name} for name, cfg in config.items()]
+  models = [{"name": name, "engine_config": cfg.get("engine_config", {})} for name, cfg in config.items()]
 
   # Read the template
   with open(template_dir / "README.md.tpl", "r") as f:
