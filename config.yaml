@@ -268,7 +268,7 @@
     provider: Meta
   vision: true
   service_config:
-    name: bentovllm-llama3.2-11b-v-instruct-service
+    name: bentovllm-llama3.2-11b-vision-instruct-service
     traffic:
       timeout: 300
     resources:
@@ -289,7 +289,7 @@
     provider: Meta
   vision: true
   service_config:
-    name: bentovllm-llama3.2-90b-v-instruct-service
+    name: bentovllm-llama3.2-90b-vision-instruct-service
     traffic:
       timeout: 300
     resources:

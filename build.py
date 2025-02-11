@@ -3,6 +3,8 @@
 # dependencies = [
 #     "pyyaml",
 #     "rich",
+#     "bentoml",
+#     "uv",
 # ]
 # ///
 import yaml, subprocess, os, argparse, multiprocessing
@@ -40,7 +42,17 @@ def build_model(model_name: str, template_dir: Path, console: Console) -> BuildR
 
     # Run bentoml build with output capture
     result = subprocess.run(
-      ["uv", "run", "bentoml", "build", "--output", "tag"],
+      [
+        "uv",
+        "run",
+        "--with-requirements",
+        str(model_dir / "requirements.txt"),
+        "bentoml",
+        "build",
+        "service:VLLM",
+        "--output",
+        "tag",
+      ],
       capture_output=True,
       text=True,
       check=True,
@@ -132,4 +144,5 @@ def main() -> int:
   return 0 if len(successful_builds) == len(models) else 1
 
 
-if __name__ == "__main__": raise SystemExit(main())
+if __name__ == "__main__":
+  raise SystemExit(main())

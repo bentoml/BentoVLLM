@@ -14,7 +14,7 @@ ENGINE_CONFIG = {
     "max_num_seqs": 16,
 }
 SERVICE_CONFIG = {
-    "name": "bentovllm-llama3.2-11b-v-instruct-service",
+    "name": "bentovllm-llama3.2-11b-vision-instruct-service",
     "traffic": {"timeout": 300},
     "resources": {"gpu": 1, "gpu_type": "nvidia-a100-80gb"},
     "envs": [{"name": "HF_TOKEN"}],

@@ -37,7 +37,8 @@ def update_model_descriptions(config: dict[str, dict[str, typing.Any]], template
     repo_name = f"bentovllm-{model_name}-service"
 
     # handle aliases
-    if model_name.startswith("deepseek-r1-distill"): repo_name = f"bentovllm-r1{model_name.removeprefix('deepseek-r1-distill')}-service"
+    if model_name.startswith("deepseek-r1-distill"):
+      repo_name = f"bentovllm-r1{model_name.removeprefix('deepseek-r1-distill')}-service"
 
     if repo_name in certified_list:
       continue
@@ -183,4 +184,5 @@ def main() -> int:
   return 0
 
 
-if __name__ == "__main__": raise SystemExit(main())
+if __name__ == "__main__":
+  raise SystemExit(main())
