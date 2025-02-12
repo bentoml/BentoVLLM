@@ -3,8 +3,6 @@
 # dependencies = [
 #     "pyyaml",
 #     "rich",
-#     "bentoml",
-#     "uv",
 # ]
 # ///
 import yaml, subprocess, os, argparse, multiprocessing
@@ -43,8 +41,7 @@ def build_model(model_name: str, template_dir: Path, progress: Progress, task_id
     # Run bentoml build with output capture
     result = subprocess.run(
       [
-        "uv",
-        "run",
+        "uvx",
         "--with-requirements",
         str(model_dir / "requirements.txt"),
         "--with-editable",
