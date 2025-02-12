@@ -33,7 +33,6 @@ def update_model_descriptions(config, template_dir):
   # Create a mapping of model names to their certified repo data
   certified_list = [repo["repo_name"] for repo in certified_bentos]
 
-  image_url = "https://raw.githubusercontent.com/bentoml/bentocloud-homepage-news/main/imgs/llama3-8b.png"
 
   # Update descriptions for each model
   for model_name, model_config in config.items():
@@ -51,13 +50,15 @@ def update_model_descriptions(config, template_dir):
       labels.append("👁️ Image-to-Text")
 
     metadata = model_config["metadata"]
+
+    image_url = f"https://raw.githubusercontent.com/bentoml/bentocloud-homepage-news/main/imgs/{metadata['provider'].lower().replace(' ', '-')}.png"
     bentos = dict(
       org_name="bentoml",
       repo_name=repo_name,
       description=dict(
         name=metadata["description"],
         text=f"{metadata['description']} developed by {metadata['provider']} and served using vLLM and BentoML. It offers capabilities for streaming and compatibility with OpenAI's API",
-        link="https://github.com/bentoml/BentoVLLM",
+        link=f"github.com/bentoml/BentoVLLM/tree/main/{model_name}",
         image=image_url,
         label=labels,
       ),
