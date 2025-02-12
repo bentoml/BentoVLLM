@@ -47,12 +47,14 @@ def build_model(model_name: str, template_dir: Path, progress: Progress, task_id
         "run",
         "--with-requirements",
         str(model_dir / "requirements.txt"),
+        "--with-editable",
+        str(template_dir.parent / "bentoml"),
         "bentoml",
         "build",
-        # "--label",
-        # "owner=bentoml-team",
-        # "--label",
-        # "stage=prebuilt",
+        "--label",
+        "owner=bentoml-team",
+        "--label",
+        "stage=prebuilt",
         "service:VLLM",
         "--output",
         "tag",
@@ -60,6 +62,7 @@ def build_model(model_name: str, template_dir: Path, progress: Progress, task_id
       capture_output=True,
       text=True,
       check=True,
+      env={"BENTOML_BUNDLE_LOCAL_BUILD": str(True)}
     )
 
     # Extract bento tag from output - format: __tag__:bentovllm-model-name-service:hash
