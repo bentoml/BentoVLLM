@@ -165,8 +165,6 @@
       gpu: 1
       gpu_type: nvidia-l4
     envs:
-      - name: VLLM_ATTENTION_BACKEND
-        value: FLASHINFER
       - name: HF_TOKEN
   engine_config:
     model: google/gemma-2-9b-it
@@ -184,8 +182,6 @@
       gpu: 1
       gpu_type: nvidia-a100-80gb
     envs:
-      - name: VLLM_ATTENTION_BACKEND
-        value: FLASHINFER
       - name: HF_TOKEN
   engine_config:
     model: google/gemma-2-27b-it

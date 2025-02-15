@@ -11,11 +11,7 @@ SERVICE_CONFIG = {
     "name": "bentovllm-gemma2-9b-instruct-service",
     "traffic": {"timeout": 300},
     "resources": {"gpu": 1, "gpu_type": "nvidia-l4"},
-    "envs": [
-        {"name": "VLLM_ATTENTION_BACKEND", "value": "FLASHINFER"},
-        {"name": "HF_TOKEN"},
-        {"name": "UV_COMPILE_BYTECODE", "value": 1},
-    ],
+    "envs": [{"name": "HF_TOKEN"}, {"name": "UV_COMPILE_BYTECODE", "value": 1}],
 }
 SERVER_CONFIG = {}
 REQUIREMENTS = []
