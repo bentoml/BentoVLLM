@@ -23,7 +23,7 @@ openai_api_app = fastapi.FastAPI()
     resources={"gpu": 8, "gpu_type": "nvidia-a100-80gb"},
     envs=[{"name": "HF_TOKEN"}, {"name": "UV_COMPILE_BYTECODE", "value": 1}],
     labels={"owner": "bentoml-team", "type": "prebuilt"},
-    image=bentoml.images.PythonImage(python_version="3.11", lock_python_packages=False).requirements_file(
+    image=bentoml.images.PythonImage(python_version="3.11", lock_python_packages=True).requirements_file(
         "requirements.txt"
     ),
 )
@@ -54,11 +54,6 @@ class VLLM:
             except ValueError:
                 logger.warning(f"Invalid MAX_MODEL_LEN value: {max_model_len}. Must be an integer.")
 
-        # reasoning
-        if (reasoning := os.getenv("REASONING")) is not None:
-            SERVER_CONFIG["enable_reasoning"] = reasoning.lower() in ("1", "true", "y", "yes")
-            logger.info("Enable reasoning. This might not work with structured decoding.")
-
         ENGINE_ARGS = AsyncEngineArgs(**dict(ENGINE_CONFIG, model=self.model, enable_prefix_caching=True))
         self.engine = AsyncLLMEngine.from_engine_args(ENGINE_ARGS)
 
@@ -82,6 +77,12 @@ class VLLM:
         args.enable_prompt_tokens_details = False
         args.enable_reasoning = False
         args.reasoning_parser = None
+
+        # reasoning
+        if (reasoning := os.getenv("REASONING")) is not None:
+            args.enable_reasoning = reasoning.lower() in ("1", "true", "y", "yes")
+            if args.enable_reasoning:
+                logger.info("Reasoning mode enabled. This might not work with structured decoding.")
 
         asyncio.create_task(vllm_api_server.init_app_state(self.engine, model_config, openai_api_app.state, args))
 

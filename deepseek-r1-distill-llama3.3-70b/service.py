@@ -53,11 +53,6 @@ class VLLM:
             except ValueError:
                 logger.warning(f"Invalid MAX_MODEL_LEN value: {max_model_len}. Must be an integer.")
 
-        # reasoning
-        if (reasoning := os.getenv("REASONING")) is not None:
-            SERVER_CONFIG["enable_reasoning"] = reasoning.lower() in ("1", "true", "y", "yes")
-            logger.info("Enable reasoning. This might not work with structured decoding.")
-
         ENGINE_ARGS = AsyncEngineArgs(**dict(ENGINE_CONFIG, model=self.model, enable_prefix_caching=True))
         self.engine = AsyncLLMEngine.from_engine_args(ENGINE_ARGS)
 
@@ -82,6 +77,12 @@ class VLLM:
         args.enable_reasoning = False
         args.reasoning_parser = None
         args.reasoning_parser = "deepseek_r1"
+
+        # reasoning
+        if (reasoning := os.getenv("REASONING")) is not None:
+            args.enable_reasoning = reasoning.lower() in ("1", "true", "y", "yes")
+            if args.enable_reasoning:
+                logger.info("Reasoning mode enabled. This might not work with structured decoding.")
 
         asyncio.create_task(vllm_api_server.init_app_state(self.engine, model_config, openai_api_app.state, args))
 

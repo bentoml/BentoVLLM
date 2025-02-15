@@ -8,11 +8,13 @@
 #     "pathspec",
 # ]
 # ///
-import yaml, shutil, subprocess, json, argparse
+import yaml, shutil, subprocess, json, argparse, multiprocessing
 from pathlib import Path
 from jinja2 import Template
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from dataclasses import dataclass
 
 GIT_DIRECTORY = Path(__file__).parent
 
@@ -152,7 +154,17 @@ def compare_directories(dir1: Path, dir2: Path) -> bool:
   return True
 
 
-def generate_model(model_name: str, config: dict, template_dir: Path, progress: Progress, task_id: int) -> bool:
+@dataclass
+class GenerateResult:
+  model_name: str
+  success: bool
+  error: str = ""
+  no_changes: bool = False
+
+
+def generate_model(
+  model_name: str, config: dict, template_dir: Path, progress: Progress, task_id: int
+) -> GenerateResult:
   """Generate a single model's project."""
   output_dir = template_dir / model_name
   try:
@@ -201,7 +213,7 @@ def generate_model(model_name: str, config: dict, template_dir: Path, progress: 
         # Compare the existing directory with the newly generated one
         if compare_directories(output_dir, temp_output_dir):
           progress.update(task_id, description=f"[yellow]Skipping {model_name} - no changes[/]")
-          return True
+          return GenerateResult(model_name, True, no_changes=True)
         else:
           progress.update(task_id, description=f"[blue]Updating {model_name} - changes detected[/]")
           shutil.rmtree(output_dir)
@@ -211,18 +223,18 @@ def generate_model(model_name: str, config: dict, template_dir: Path, progress: 
         shutil.copytree(temp_output_dir, output_dir)
 
     progress.update(task_id, description=f"[green]✓ {model_name}[/]", completed=1)
-    return True
+    return GenerateResult(model_name, True)
 
   except Exception as e:
     progress.update(task_id, description=f"[red]✗ {model_name}: {str(e)}[/]", completed=1)
-    return False
+    return GenerateResult(model_name, False, str(e))
 
 
-def generate_all_models(config: dict, template_dir: Path, force: bool = False) -> bool:
+def generate_all_models(config: dict, template_dir: Path, force: bool = False, workers: int = 1) -> bool:
   """Generate all model projects in parallel."""
   console = Console()
   models = list(config.keys())
-  success = True
+  results = []
 
   with Progress(
     SpinnerColumn(spinner_name="bouncingBar"),
@@ -232,16 +244,30 @@ def generate_all_models(config: dict, template_dir: Path, force: bool = False) -
     overall_task = progress.add_task("[yellow]Generating models...[/]", total=len(models))
     gen_tasks = {model: progress.add_task(f"[cyan]Waiting to generate {model}...[/]", total=1) for model in models}
 
-    for model_name in models:
-      if force and (template_dir / model_name).exists():
-        progress.update(gen_tasks[model_name], description=f"[blue]Removing existing {model_name}...[/]")
-        shutil.rmtree(template_dir / model_name)
+    with ThreadPoolExecutor(max_workers=workers) as executor:
+      future_to_model = {
+        executor.submit(generate_model, model_name, config, template_dir, progress, gen_tasks[model_name]): model_name
+        for model_name in models
+      }
 
-      result = generate_model(model_name, config, template_dir, progress, gen_tasks[model_name])
-      success = success and result
-      progress.advance(overall_task)
+      for future in as_completed(future_to_model):
+        result = future.result()
+        results.append(result)
+        progress.advance(overall_task)
 
-  return success
+    successful = [r for r in results if r.success]
+    no_changes = [r for r in successful if r.no_changes]
+    updated = [r for r in successful if not r.no_changes]
+
+    # Print summary
+    console.print("\n[bold]Generation Summary:[/]")
+    console.print(f"Total models: {len(models)}")
+    console.print(f"Successful generations: {len(successful)}")
+    console.print(f"  - Updated: {len(updated)}")
+    console.print(f"  - No changes needed: {len(no_changes)}")
+    console.print(f"Failed generations: {len(results) - len(successful)}")
+
+    return len(successful) == len(models)
 
 
 def main() -> int:
@@ -250,6 +276,12 @@ def main() -> int:
     "model_name", nargs="?", help="Specific model name to generate. If not provided, generates all models."
   )
   parser.add_argument("--force", action="store_true", help="Force regeneration even if directory exists")
+  parser.add_argument(
+    "--workers",
+    type=int,
+    default=multiprocessing.cpu_count(),
+    help="Number of parallel workers (default: number of CPU cores)",
+  )
   args = parser.parse_args()
 
   with open("config.yaml", "r") as f:
@@ -265,7 +297,7 @@ def main() -> int:
   else:
     filtered_config = config
 
-  success = generate_all_models(filtered_config, template_dir, args.force)
+  success = generate_all_models(filtered_config, template_dir, args.force, args.workers)
 
   # Generate README.md after all models are processed
   console.print("\n[yellow]Generating README.md...[/]")
@@ -289,11 +321,11 @@ def main() -> int:
       "--exclude",
       "generate.py",
       "--exclude",
+      "deploy.py",
+      "--exclude",
       "build.py",
       "--exclude",
       "push.py",
-      "--exclude",
-      "deploy.py",
       ".",
     ],
     check=True,
@@ -310,9 +342,9 @@ def main() -> int:
       "--config",
       "preview=true",
       "generate.py",
+      "deploy.py",
       "build.py",
       "push.py",
-      "deploy.py",
     ],
     check=True,
     capture_output=True,
