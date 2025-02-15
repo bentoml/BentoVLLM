@@ -1,16 +1,15 @@
 <div align="center">
-    <h1 align="center">Self-host deepseek-ai/DeepSeek-R1 with vLLM and BentoML</h1>
+    <h1 align="center">Self-host DeepSeek R1 671B with vLLM and BentoML</h1>
 </div>
 
-This is a BentoML example project, showing you how to serve and deploy deepseek-ai/DeepSeek-R1 using [vLLM](https://vllm.ai), a high-throughput and memory-efficient inference engine.
+This is a BentoML example project, showing you how to serve and deploy DeepSeek R1 671B using [vLLM](https://vllm.ai), a high-throughput and memory-efficient inference engine.
 
 See [here](https://docs.bentoml.com/en/latest/examples/overview.html) for a full list of BentoML example projects.
 
 💡 This example is served as a basis for advanced code customization, such as custom model, inference logic or vLLM options. For simple LLM hosting with OpenAI compatible endpoint without writing any code, see [OpenLLM](https://github.com/bentoml/OpenLLM).
 
 ## Prerequisites
-
-- You have gained access to deepseek-ai/DeepSeek-R1 on [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-R1).
+- You have gained access to `deepseek-ai/DeepSeek-R1` on [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-R1).
 - If you want to test the Service locally, we recommend you use an Nvidia GPU with at least 16G VRAM.
 
 ## Install dependencies
@@ -28,17 +27,20 @@ export HF_TOKEN=<your-api-key>
 
 ## Run the BentoML Service
 
-We have defined a BentoML Service in `service.py`. Run `bentoml serve service:VLLM` in your project directory to start the Service.
+We have defined a BentoML Service in `service.py`. To run the service do the following:
 
 ```python
-$ bentoml serve service:VLLM
+$ bentoml serve service.py:VLLM
 ```
 
-The server is now active at [http://localhost:3000](http://localhost:3000/). You can interact with it using the Swagger UI or in other different ways.
+The server is now active at [http://localhost:3000](http://localhost:3000/). You can interact with it using the Swagger UI or in other different ways.
+
+> [!NOTE]
+> This ships with a default `max_model_len=8192`. If you wish to change this value, set `MAX_MODEL_LEN=<target_context_len>`. Make sure that you have enough VRAM to use this context length. BentoVLLM will only set a conservative value based on this model configuration.
 
 <details>
 
-<summary>CURL</summary>
+<summary>cURL</summary>
 
 ```bash
 curl -X 'POST' \
@@ -46,8 +48,7 @@ curl -X 'POST' \
   -H 'accept: text/event-stream' \
   -H 'Content-Type: application/json' \
   -d '{
-  "prompt": "Explain superconductors like I'\''m five years old",
-  "tokens": null
+  "prompt": "Who are you? Please respond in pirate speak!",
 }'
 ```
 
@@ -62,11 +63,10 @@ import bentoml
 
 with bentoml.SyncHTTPClient("http://localhost:3000") as client:
     response_generator = client.generate(
-        prompt="Explain superconductors like I'm five years old",
-        tokens=None
+        prompt="Who are you? Please respond in pirate speak!",
     )
     for response in response_generator:
-        print(response)
+        print(response, end='')
 ```
 
 </details>
@@ -88,7 +88,7 @@ chat_completion = client.chat.completions.create(
     messages=[
         {
             "role": "user",
-            "content": "Explain superconductors like I'm five years old"
+            "content": "Who are you? Please respond in pirate speak!"
         }
     ],
     stream=True,

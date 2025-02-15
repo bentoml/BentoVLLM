@@ -76,6 +76,8 @@ def generate_jinja_context(model_name, config):
     service_config["envs"] = []
   service_config["envs"].append(dict(name="UV_COMPILE_BYTECODE", value=1))
 
+  requires_hf_tokens = any(it["name"] == "HF_TOKEN" for it in service_config["envs"])
+
   context = {
     "model_name": model_name,
     "model_id": engine_config_struct["model"],
@@ -84,6 +86,8 @@ def generate_jinja_context(model_name, config):
     "engine_config": engine_config_struct,
     "server_config": model_config.get("server_config", {}),
     "labels": dict(owner="bentoml-team", type="prebuilt"),
+    "metadata": model_config["metadata"],
+    "requires_hf_tokens": requires_hf_tokens,
   }
 
   requirements = model_config.get("requirements", [])

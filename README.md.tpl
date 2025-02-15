@@ -24,7 +24,7 @@ cd BentoVLLM/llama3.2-1b-instruct
 # Recommend UV and Python 3.11
 uv venv && pip install .
 
-export HF_TOEKN=<your-api-key>
+export HF_TOKEN=<your-api-key>
 ```
 
 ## Run the BentoML Service

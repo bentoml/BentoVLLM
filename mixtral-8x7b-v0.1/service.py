@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import base64, io, logging, traceback, typing, argparse, asyncio
+import base64, io, logging, traceback, typing, argparse, asyncio, os
 import bentoml, fastapi, PIL.Image
 
 logger = logging.getLogger(__name__)
@@ -19,16 +19,16 @@ SERVICE_CONFIG = {
     "envs": [{"name": "HF_TOKEN"}, {"name": "UV_COMPILE_BYTECODE", "value": 1}],
 }
 SERVER_CONFIG = {}
-REQUIREMENTS = []
 
 openai_api_app = fastapi.FastAPI()
-image = bentoml.images.PythonImage(python_version="3.11").requirements_file("requirements.txt")
-if len(REQUIREMENTS) > 0:
-    image = image.python_packages(*REQUIREMENTS)
 
 
 @bentoml.asgi_app(openai_api_app, path="/v1")
-@bentoml.service(**SERVICE_CONFIG, image=image, labels={"owner": "bentoml-team", "type": "prebuilt"})
+@bentoml.service(
+    **SERVICE_CONFIG,
+    labels={"owner": "bentoml-team", "type": "prebuilt"},
+    image=bentoml.images.PythonImage(python_version="3.11").requirements_file("requirements.txt"),
+)
 class VLLM:
     model_id = ENGINE_CONFIG["model"]
     model = bentoml.models.HuggingFaceModel(model_id)
@@ -44,14 +44,24 @@ class VLLM:
             ["/models", vllm_api_server.show_available_models, ["GET"]],
         ]
         for route, endpoint, methods in OPENAI_ENDPOINTS:
-            openai_api_app.add_api_route(
-                path=route,
-                endpoint=endpoint,
-                methods=methods,
-                include_in_schema=True,
-            )
+            openai_api_app.add_api_route(path=route, endpoint=endpoint, methods=methods, include_in_schema=True)
 
-        ENGINE_ARGS = AsyncEngineArgs(**dict(ENGINE_CONFIG, model=self.model))
+        # max_model_len
+        if (max_model_len := os.getenv("MAX_MODEL_LEN")) is not None:
+            try:
+                ENGINE_CONFIG["max_model_len"] = int(max_model_len)
+                logger.info(
+                    f"Updated `max_model_len` to {max_model_len} from environment variable. Make sure that you have enough VRAM to use this given context windows."
+                )
+            except ValueError:
+                logger.warning(f"Invalid MAX_MODEL_LEN value: {max_model_len}. Must be an integer.")
+
+        # reasoning
+        if (reasoning := os.getenv("REASONING")) is not None:
+            SERVER_CONFIG["enable_reasoning"] = reasoning.lower() in ("1", "true", "y", "yes")
+            logger.info("Enable reasoning. This might not work with structured decoding.")
+
+        ENGINE_ARGS = AsyncEngineArgs(**dict(ENGINE_CONFIG, model=self.model, enable_prefix_caching=True))
         self.engine = AsyncLLMEngine.from_engine_args(ENGINE_ARGS)
 
         model_config = self.engine.engine.get_model_config()
@@ -81,7 +91,9 @@ class VLLM:
         asyncio.create_task(vllm_api_server.init_app_state(self.engine, model_config, openai_api_app.state, args))
 
     @bentoml.api
-    async def generate(self, prompt: str = "what is this?") -> typing.AsyncGenerator[str, None]:
+    async def generate(
+        self, prompt: str = "Who are you? Please respond in pirate speak!"
+    ) -> typing.AsyncGenerator[str, None]:
         from openai import AsyncOpenAI
 
         client = AsyncOpenAI(base_url="http://127.0.0.1:3000/v1", api_key="dummy")

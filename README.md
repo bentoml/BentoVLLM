@@ -24,7 +24,7 @@ cd BentoVLLM/llama3.2-1b-instruct
 # Recommend UV and Python 3.11
 uv venv && pip install .
 
-export HF_TOEKN=<your-api-key>
+export HF_TOKEN=<your-api-key>
 ```
 
 ## Run the BentoML Service
@@ -149,6 +149,10 @@ In addition to Llama 3.1 8B Instruct, we also have examples for other models in 
 | deepseek-v3-671b | [GitHub](deepseek-v3-671b/) • [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-V3) |
 | deepseek-r1-671b | [GitHub](deepseek-r1-671b/) • [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-R1) |
 | deepseek-r1-distill-llama3.3-70b | [GitHub](deepseek-r1-distill-llama3.3-70b/) • [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Llama-70B) |
+| deepseek-r1-distill-llama3.3-70b-w8a8 | [GitHub](deepseek-r1-distill-llama3.3-70b-w8a8/) • [Hugging Face](https://huggingface.co/neuralmagic/DeepSeek-R1-Distill-Llama-70B-quantized.w8a8) |
+| deepseek-r1-distill-llama3.3-70b-w4a16 | [GitHub](deepseek-r1-distill-llama3.3-70b-w4a16/) • [Hugging Face](https://huggingface.co/neuralmagic/DeepSeek-R1-Distill-Llama-70B-quantized.w4a16) |
+| deepseek-r1-distill-qwen2.5-32b-w8a8 | [GitHub](deepseek-r1-distill-qwen2.5-32b-w8a8/) • [Hugging Face](https://huggingface.co/neuralmagic/DeepSeek-R1-Distill-Qwen-32B-quantized.w8a8) |
+| deepseek-r1-distill-qwen2.5-32b-w4a16 | [GitHub](deepseek-r1-distill-qwen2.5-32b-w4a16/) • [Hugging Face](https://huggingface.co/neuralmagic/DeepSeek-R1-Distill-Qwen-32B-quantized.w4a16) |
 | deepseek-r1-distill-qwen2.5-32b | [GitHub](deepseek-r1-distill-qwen2.5-32b/) • [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-32B) |
 | deepseek-r1-distill-qwen2.5-14b | [GitHub](deepseek-r1-distill-qwen2.5-14b/) • [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-14B) |
 | deepseek-r1-distill-qwen2.5-7b-math | [GitHub](deepseek-r1-distill-qwen2.5-7b-math/) • [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-7B) |
@@ -164,7 +168,11 @@ In addition to Llama 3.1 8B Instruct, we also have examples for other models in 
 | llama3.2-11b-vision-instruct | [GitHub](llama3.2-11b-vision-instruct/) • [Hugging Face](https://huggingface.co/meta-llama/Llama-3.2-11B-Vision-Instruct) |
 | llama3.2-90b-vision-instruct | [GitHub](llama3.2-90b-vision-instruct/) • [Hugging Face](https://huggingface.co/meta-llama/Llama-3.2-90B-Vision-Instruct) |
 | llama3.3-70b-instruct | [GitHub](llama3.3-70b-instruct/) • [Hugging Face](https://huggingface.co/meta-llama/Llama-3.3-70B-Instruct) |
+| hermes-3-llama3.1-405b | [GitHub](hermes-3-llama3.1-405b/) • [Hugging Face](https://huggingface.co/NousResearch/Hermes-3-Llama-3.1-405B-FP8) |
+| deephermes-3-llama3-8b | [GitHub](deephermes-3-llama3-8b/) • [Hugging Face](https://huggingface.co/NousResearch/DeepHermes-3-Llama-3-8B-Preview) |
 | pixtral-12b-2409 | [GitHub](pixtral-12b-2409/) • [Hugging Face](https://huggingface.co/mistralai/Pixtral-12B-2409) |
+| pixtral-12b-fp8-2409 | [GitHub](pixtral-12b-fp8-2409/) • [Hugging Face](https://huggingface.co/neuralmagic/pixtral-12b-FP8-dynamic) |
+| pixtral-large-2411 | [GitHub](pixtral-large-2411/) • [Hugging Face](https://huggingface.co/mistralai/Pixtral-Large-Instruct-2411) |
 | mixtral-8x7b-v0.1 | [GitHub](mixtral-8x7b-v0.1/) • [Hugging Face](https://huggingface.co/mistralai/Mixtral-8x7B-Instruct-v0.1) |
 | ministral-8b-instruct-2410 | [GitHub](ministral-8b-instruct-2410/) • [Hugging Face](https://huggingface.co/mistralai/Ministral-8B-Instruct-2410) |
 | mistral-small-24b-instruct-2501 | [GitHub](mistral-small-24b-instruct-2501/) • [Hugging Face](https://huggingface.co/mistralai/Mistral-Small-24B-Instruct-2501) |
