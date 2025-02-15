@@ -10,7 +10,7 @@ ENGINE_CONFIG = {"model": "meta-llama/Meta-Llama-3.1-8B-Instruct", "max_model_le
 SERVICE_CONFIG = {
     "name": "bentovllm-llama3.1-8b-instruct-service",
     "traffic": {"timeout": 300},
-    "resources": {"gpu": 1, "gpu_type": "nvidia-tesla-l4"},
+    "resources": {"gpu": 1, "gpu_type": "nvidia-l4"},
     "envs": [{"name": "HF_TOKEN"}, {"name": "UV_COMPILE_BYTECODE", "value": 1}],
 }
 SERVER_CONFIG = {}

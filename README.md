@@ -164,7 +164,7 @@ In addition to Llama 3.1 8B Instruct, we also have examples for other models in 
 | llama3.2-11b-vision-instruct | [GitHub](llama3.2-11b-vision-instruct/) • [Hugging Face](https://huggingface.co/meta-llama/Llama-3.2-11B-Vision-Instruct) |
 | llama3.2-90b-vision-instruct | [GitHub](llama3.2-90b-vision-instruct/) • [Hugging Face](https://huggingface.co/meta-llama/Llama-3.2-90B-Vision-Instruct) |
 | llama3.3-70b-instruct | [GitHub](llama3.3-70b-instruct/) • [Hugging Face](https://huggingface.co/meta-llama/Llama-3.3-70B-Instruct) |
-| pixtral-12b-2409 | [GitHub](pixtral-12b-2409/) • [Hugging Face](https://huggingface.co/mistral-community/pixtral-12b-240910) |
+| pixtral-12b-2409 | [GitHub](pixtral-12b-2409/) • [Hugging Face](https://huggingface.co/mistralai/Pixtral-12B-2409) |
 | mixtral-8x7b-v0.1 | [GitHub](mixtral-8x7b-v0.1/) • [Hugging Face](https://huggingface.co/mistralai/Mixtral-8x7B-Instruct-v0.1) |
 | ministral-8b-instruct-2410 | [GitHub](ministral-8b-instruct-2410/) • [Hugging Face](https://huggingface.co/mistralai/Ministral-8B-Instruct-2410) |
 | mistral-small-24b-instruct-2501 | [GitHub](mistral-small-24b-instruct-2501/) • [Hugging Face](https://huggingface.co/mistralai/Mistral-Small-24B-Instruct-2501) |

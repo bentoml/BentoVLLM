@@ -1,8 +1,8 @@
 <div align="center">
-    <h1 align="center">Self-host mistral-community/pixtral-12b-240910 with vLLM and BentoML</h1>
+    <h1 align="center">Self-host mistralai/Pixtral-12B-2409 with vLLM and BentoML</h1>
 </div>
 
-This is a BentoML example project, showing you how to serve and deploy mistral-community/pixtral-12b-240910 using [vLLM](https://vllm.ai), a high-throughput and memory-efficient inference engine.
+This is a BentoML example project, showing you how to serve and deploy mistralai/Pixtral-12B-2409 using [vLLM](https://vllm.ai), a high-throughput and memory-efficient inference engine.
 
 See [here](https://docs.bentoml.com/en/latest/examples/overview.html) for a full list of BentoML example projects.
 
@@ -10,7 +10,7 @@ See [here](https://docs.bentoml.com/en/latest/examples/overview.html) for a full
 
 ## Prerequisites
 
-- You have gained access to mistral-community/pixtral-12b-240910 on [Hugging Face](https://huggingface.co/mistral-community/pixtral-12b-240910).
+- You have gained access to mistralai/Pixtral-12B-2409 on [Hugging Face](https://huggingface.co/mistralai/Pixtral-12B-2409).
 - If you want to test the Service locally, we recommend you use an Nvidia GPU with at least 16G VRAM.
 
 ## Install dependencies
@@ -84,7 +84,7 @@ client = OpenAI(base_url='http://localhost:3000/v1', api_key='na')
 client.models.list()
 
 chat_completion = client.chat.completions.create(
-    model="mistral-community/pixtral-12b-240910",
+    model="mistralai/Pixtral-12B-2409",
     messages=[
         {
             "role": "user",
@@ -116,7 +116,7 @@ json_schema = {
 }
 
 chat_completion = client.chat.completions.create(
-    model="mistral-community/pixtral-12b-240910",
+    model="mistralai/Pixtral-12B-2409",
     messages=[
         {
             "role": "user",

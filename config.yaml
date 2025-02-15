@@ -110,7 +110,7 @@
       timeout: 300
     resources:
       gpu: 1
-      gpu_type: nvidia-tesla-l4
+      gpu_type: nvidia-l4
     envs:
       - name: HF_TOKEN
   engine_config:
@@ -126,7 +126,7 @@
       timeout: 300
     resources:
       gpu: 1
-      gpu_type: nvidia-tesla-l4
+      gpu_type: nvidia-l4
     envs:
       - name: HF_TOKEN
   engine_config:
@@ -219,7 +219,7 @@
       timeout: 300
     resources:
       gpu: 1
-      gpu_type: nvidia-tesla-l4
+      gpu_type: nvidia-l4
     envs:
       - name: HF_TOKEN
   engine_config:
@@ -333,14 +333,16 @@
     resources:
       gpu: 1
       gpu_type: nvidia-a100-80gb
+    envs:
+      - name: HF_TOKEN
   engine_config:
-    model: mistral-community/pixtral-12b-240910
+    model: mistralai/Pixtral-12B-2409
     tokenizer_mode: mistral
     enable_prefix_caching: true
     enable_chunked_prefill: false
     limit_mm_per_prompt:
-      image: 1
-    max_model_len: 16384
+      image: 5
+    max_model_len: 32768
   requirements:
     - mistral_common[opencv]
 "mixtral-8x7b-v0.1":

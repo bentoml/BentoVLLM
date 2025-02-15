@@ -7,18 +7,18 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 ENGINE_CONFIG = {
-    "model": "mistral-community/pixtral-12b-240910",
+    "model": "mistralai/Pixtral-12B-2409",
     "tokenizer_mode": "mistral",
     "enable_prefix_caching": True,
     "enable_chunked_prefill": False,
-    "limit_mm_per_prompt": {"image": 1},
-    "max_model_len": 16384,
+    "limit_mm_per_prompt": {"image": 5},
+    "max_model_len": 32768,
 }
 SERVICE_CONFIG = {
     "name": "bentovllm-pixtral-12b-2409-service",
     "traffic": {"timeout": 300},
     "resources": {"gpu": 1, "gpu_type": "nvidia-a100-80gb"},
-    "envs": [{"name": "UV_COMPILE_BYTECODE", "value": 1}],
+    "envs": [{"name": "HF_TOKEN"}, {"name": "UV_COMPILE_BYTECODE", "value": 1}],
 }
 SERVER_CONFIG = {}
 REQUIREMENTS = ["mistral_common[opencv]"]

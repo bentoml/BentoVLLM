@@ -10,7 +10,7 @@ ENGINE_CONFIG = {"model": "deepseek-ai/DeepSeek-R1-Distill-Llama-8B", "max_model
 SERVICE_CONFIG = {
     "name": "bentovllm-r1-llama3.1-8b-service",
     "traffic": {"timeout": 300},
-    "resources": {"gpu": 1, "gpu_type": "nvidia-tesla-l4"},
+    "resources": {"gpu": 1, "gpu_type": "nvidia-l4"},
     "envs": [{"name": "HF_TOKEN"}, {"name": "UV_COMPILE_BYTECODE", "value": 1}],
 }
 SERVER_CONFIG = {}
