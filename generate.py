@@ -5,6 +5,7 @@
 #     "pyyaml",
 #     "ruff",
 #     "rich",
+#     "pathspec",
 # ]
 # ///
 import yaml, shutil, subprocess, json, argparse
@@ -12,6 +13,8 @@ from pathlib import Path
 from jinja2 import Template
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
+
+GIT_DIRECTORY = Path(__file__).parent
 
 
 def load_config():
@@ -88,6 +91,7 @@ def generate_jinja_context(model_name, config):
     "labels": dict(owner="bentoml-team", type="prebuilt"),
     "metadata": model_config["metadata"],
     "requires_hf_tokens": requires_hf_tokens,
+    "lock_python_packages": config.get("build", {}).get("lock_python_packages", True),
   }
 
   requirements = model_config.get("requirements", [])
@@ -110,20 +114,40 @@ def generate_readme(config, template_dir):
 
 
 def compare_directories(dir1: Path, dir2: Path) -> bool:
-  """Compare two directories recursively to check if they have the same content."""
+  """Compare two directories recursively to check if they have the same content, respecting .gitignore."""
   if not dir1.exists() or not dir2.exists():
     return False
 
-  files1 = sorted([f.relative_to(dir1) for f in dir1.rglob("*") if f.is_file()])
-  files2 = sorted([f.relative_to(dir2) for f in dir2.rglob("*") if f.is_file()])
+  # Use pathspec to parse .gitignore rules
+  from pathspec import PathSpec
+  from pathspec.patterns import GitWildMatchPattern
+
+  # Read .gitignore if it exists
+  gitignore_path = GIT_DIRECTORY / ".gitignore"
+  ignore_patterns = []
+  if gitignore_path.exists():
+    with gitignore_path.open("r") as f:
+      ignore_patterns = f.readlines()
+  spec = PathSpec.from_lines(GitWildMatchPattern, ignore_patterns)
+
+  # Get files while respecting .gitignore
+  def get_tracked_files(path: Path) -> list:
+    return sorted([
+      f.relative_to(path) for f in path.rglob("*") if f.is_file() and not spec.match_file(str(f.relative_to(path)))
+    ])
+
+  files1 = get_tracked_files(dir1)
+  files2 = get_tracked_files(dir2)
 
   if files1 != files2:
     return False
 
+  # Use filecmp for faster file comparison
+  import filecmp
+
   for f1, f2 in zip(files1, files2):
-    with open(dir1 / f1, "rb") as file1, open(dir2 / f2, "rb") as file2:
-      if file1.read() != file2.read():
-        return False
+    if not filecmp.cmp(dir1 / f1, dir2 / f2, shallow=False):
+      return False
 
   return True
 

@@ -7,22 +7,20 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 ENGINE_CONFIG = {"model": "Qwen/Qwen2.5-Coder-32B-Instruct", "max_model_len": 8192}
-SERVICE_CONFIG = {
-    "name": "bentovllm-qwen2.5-coder-32b-instruct-service",
-    "resources": {"gpu": 1, "gpu_type": "nvidia-a100-80gb"},
-    "traffic": {"timeout": 300},
-    "envs": [{"name": "UV_COMPILE_BYTECODE", "value": 1}],
-}
-SERVER_CONFIG = {"enable_auto_tool_choice": True, "enable_tool_call_parser": True, "tool_call_parser": "llama3_json"}
 
 openai_api_app = fastapi.FastAPI()
 
 
 @bentoml.asgi_app(openai_api_app, path="/v1")
 @bentoml.service(
-    **SERVICE_CONFIG,
+    name="bentovllm-qwen2.5-coder-32b-instruct-service",
+    resources={"gpu": 1, "gpu_type": "nvidia-a100-80gb"},
+    traffic={"timeout": 300},
+    envs=[{"name": "UV_COMPILE_BYTECODE", "value": 1}],
     labels={"owner": "bentoml-team", "type": "prebuilt"},
-    image=bentoml.images.PythonImage(python_version="3.11").requirements_file("requirements.txt"),
+    image=bentoml.images.PythonImage(python_version="3.11", lock_python_packages=True).requirements_file(
+        "requirements.txt"
+    ),
 )
 class VLLM:
     model_id = ENGINE_CONFIG["model"]
@@ -79,9 +77,9 @@ class VLLM:
         args.enable_prompt_tokens_details = False
         args.enable_reasoning = False
         args.reasoning_parser = None
-
-        for key, value in SERVER_CONFIG.items():
-            setattr(args, key, value)
+        args.enable_auto_tool_choice = True
+        args.enable_tool_call_parser = True
+        args.tool_call_parser = "llama3_json"
 
         asyncio.create_task(vllm_api_server.init_app_state(self.engine, model_config, openai_api_app.state, args))
 

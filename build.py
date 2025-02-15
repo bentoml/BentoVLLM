@@ -5,10 +5,9 @@
 #     "rich",
 # ]
 # ///
-import yaml, subprocess, os, argparse, multiprocessing
-from pathlib import Path
+import yaml, subprocess, os, argparse, multiprocessing, hashlib, pathlib
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import List, Dict
+from typing import List, Dict, Any
 from dataclasses import dataclass
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
@@ -27,24 +26,86 @@ def load_config() -> Dict:
     return yaml.safe_load(f)
 
 
-def build_model(model_name: str, template_dir: Path, progress: Progress, task_id: int) -> BuildResult:
+def hash_file(file_path):
+  hasher = hashlib.sha256()
+  with file_path.open("rb") as f:
+    for chunk in iter(lambda: f.read(4096), b""):
+      hasher.update(chunk)
+  return hasher.hexdigest()
+
+
+def ensure_venv(req_txt, venv_dir, cfg):
+  build = cfg.get("build", {})
+  build_args = build.get("args", [])
+
+  if not venv_dir.exists():
+    subprocess.run(
+      [
+        "uv",
+        "venv",
+        venv_dir,
+        "-p",
+        "3.11",
+      ],
+      check=True,
+      capture_output=True,
+    )
+    subprocess.run(
+      [
+        "uv",
+        "pip",
+        "install",
+        "--compile-bytecode",
+        "bentoml==1.4.0a2",
+        "-p",
+        venv_dir / "bin" / "python",
+      ],
+      check=True,
+      capture_output=True,
+    )
+    if "pre" in build:
+      subprocess.run([*build["pre"].split(), "-p", venv_dir / "bin" / "python"], check=True, capture_output=True)
+    subprocess.run(
+      [
+        "uv",
+        "pip",
+        "install",
+        "--compile-bytecode",
+        "-r",
+        req_txt,
+        *build_args,
+        "-p",
+        venv_dir / "bin" / "python",
+      ],
+      check=True,
+      capture_output=True,
+    )
+  return venv_dir
+
+
+def build_model(
+  model_name: str, cfg: Dict[str, Any], template_dir: pathlib.Path, progress: Progress, task_id: int
+) -> BuildResult:
   """Build a single model's bento."""
   model_dir = template_dir / model_name
   if not model_dir.exists():
     return BuildResult(model_name, "", False, f"Directory {model_dir} does not exist")
 
-  try:
-    os.chdir(model_dir)
+  req_txt_file = model_dir / "requirements.txt"
+  venv_dir = model_dir / "venv" / f"{model_name}-{hash_file(req_txt_file)[:7]}"
+  version_path = ensure_venv(req_txt_file, venv_dir, cfg)
 
+  build = cfg.get("build", {})
+  build_args = build.get("args", [])
+
+  try:
     progress.update(task_id, description=f"[blue]Building {model_name}...[/]")
 
     # Run bentoml build with output capture
     result = subprocess.run(
       [
-        "uv",
-        "run",
-        "--with-requirements",
-        str(model_dir / "requirements.txt"),
+        version_path / "bin" / "python",
+        "-m",
         "bentoml",
         "build",
         "service:VLLM",
@@ -54,6 +115,8 @@ def build_model(model_name: str, template_dir: Path, progress: Progress, task_id
       capture_output=True,
       text=True,
       check=True,
+      cwd=model_dir,
+      env=os.environ,
     )
 
     # Extract bento tag from output - format: __tag__:bentovllm-model-name-service:hash
@@ -68,12 +131,9 @@ def build_model(model_name: str, template_dir: Path, progress: Progress, task_id
     return BuildResult(model_name, "", False, f"Build failed: {e.stderr}")
   except Exception as e:
     return BuildResult(model_name, "", False, str(e))
-  finally:
-    # Return to original directory
-    os.chdir(template_dir)
 
 
-def build_bentos(models: List[str], template_dir: Path, workers: int) -> List[BuildResult]:
+def build_bentos(config: Dict[str, Any], template_dir: pathlib.Path, workers: int) -> List[BuildResult]:
   """Build all models in parallel using a thread pool."""
   console = Console()
   results = []
@@ -83,12 +143,13 @@ def build_bentos(models: List[str], template_dir: Path, workers: int) -> List[Bu
     TextColumn("[progress.description]{task.description}"),
     console=console,
   ) as progress:
-    overall_task = progress.add_task("[yellow]Building bentos...[/]", total=len(models))
-    build_tasks = {model: progress.add_task(f"[cyan]Waiting to build {model}...[/]", total=1) for model in models}
+    overall_task = progress.add_task("[yellow]Building bentos...[/]", total=len(config))
+    build_tasks = {model: progress.add_task(f"[cyan]Waiting to build {model}...[/]", total=1) for model in config}
 
     with ThreadPoolExecutor(max_workers=workers) as executor:
       future_to_model = {
-        executor.submit(build_model, model, template_dir, progress, build_tasks[model]): model for model in models
+        executor.submit(build_model, model, cfg, template_dir, progress, build_tasks[model]): model
+        for model, cfg in config.items()
       }
 
       for future in as_completed(future_to_model):
@@ -98,9 +159,9 @@ def build_bentos(models: List[str], template_dir: Path, workers: int) -> List[Bu
         model_task = build_tasks[result.model_name]
 
         if result.success:
-          progress.update(model_task, description=f"[green]✓ {result.model_name}: {result.bento_tag}[/]", completed=1)
+          progress.update(model_task, description=f"[green]✓: {result.bento_tag}[/]", completed=1)
         else:
-          progress.update(model_task, description=f"[red]✗ {result.model_name}: {result.error}[/]", completed=1)
+          progress.update(model_task, description=f"[red]✗: {result.error}[/]", completed=1)
 
   return results
 
@@ -115,19 +176,18 @@ def main() -> int:
   )
   args = parser.parse_args()
 
-  template_dir = Path(__file__).parent
+  template_dir = pathlib.Path(__file__).parent
   config = load_config()
-  models = list(config.keys())
 
   console = Console()
-  console.print(f"[bold]Building {len(models)} bentos with {args.workers} workers[/]")
+  console.print(f"[bold]Building {len(config)} bentos with {args.workers} workers[/]")
 
-  results = build_bentos(models, template_dir, args.workers)
+  results = build_bentos(config, template_dir, args.workers)
   successful_builds = [r for r in results if r.success]
 
   # Print summary
   console.print("\n[bold]Build Summary:[/]")
-  console.print(f"Total bentos: {len(models)}")
+  console.print(f"Total bentos: {len(config)}")
   console.print(f"Successful builds: {len(successful_builds)}")
   console.print(f"Failed builds: {len(results) - len(successful_builds)}")
 
@@ -138,7 +198,7 @@ def main() -> int:
       f.write("\n".join(bento_tags))
     console.print("\n[green]Saved successful build tags to successful_builds.txt[/]")
 
-  return 0 if len(successful_builds) == len(models) else 1
+  return 0 if len(successful_builds) == len(config) else 1
 
 
 if __name__ == "__main__":

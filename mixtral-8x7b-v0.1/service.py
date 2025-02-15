@@ -12,22 +12,20 @@ ENGINE_CONFIG = {
     "tensor_parallel_size": 2,
     "tokenizer_mode": "mistral",
 }
-SERVICE_CONFIG = {
-    "name": "bentovllm-mixtral-8x7b-v0.1-service",
-    "traffic": {"timeout": 300},
-    "resources": {"gpu": 2, "gpu_type": "nvidia-a100-80gb"},
-    "envs": [{"name": "HF_TOKEN"}, {"name": "UV_COMPILE_BYTECODE", "value": 1}],
-}
-SERVER_CONFIG = {}
 
 openai_api_app = fastapi.FastAPI()
 
 
 @bentoml.asgi_app(openai_api_app, path="/v1")
 @bentoml.service(
-    **SERVICE_CONFIG,
+    name="bentovllm-mixtral-8x7b-v0.1-service",
+    traffic={"timeout": 300},
+    resources={"gpu": 2, "gpu_type": "nvidia-a100-80gb"},
+    envs=[{"name": "HF_TOKEN"}, {"name": "UV_COMPILE_BYTECODE", "value": 1}],
     labels={"owner": "bentoml-team", "type": "prebuilt"},
-    image=bentoml.images.PythonImage(python_version="3.11").requirements_file("requirements.txt"),
+    image=bentoml.images.PythonImage(python_version="3.11", lock_python_packages=True).requirements_file(
+        "requirements.txt"
+    ),
 )
 class VLLM:
     model_id = ENGINE_CONFIG["model"]
@@ -84,9 +82,6 @@ class VLLM:
         args.enable_prompt_tokens_details = False
         args.enable_reasoning = False
         args.reasoning_parser = None
-
-        for key, value in SERVER_CONFIG.items():
-            setattr(args, key, value)
 
         asyncio.create_task(vllm_api_server.init_app_state(self.engine, model_config, openai_api_app.state, args))
 
