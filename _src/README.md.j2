@@ -25,7 +25,10 @@ cd BentoVLLM/{{model_name}}
 
 pip install -r requirements.txt
 
+{%- if requires_hf_tokens | lower == "true" %}
+
 export HF_TOKEN=<your-api-key>
+{%- endif %}
 ```
 
 ## Run the BentoML Service
@@ -202,6 +205,8 @@ Make sure you have [logged in to BentoCloud](https://docs.bentoml.com/en/latest/
 bentoml cloud login
 ```
 
+{%- if requires_hf_tokens | lower == "true" %}
+
 Create a BentoCloud secret to store the required environment variable and reference it for deployment.
 
 ```bash
@@ -209,6 +214,14 @@ bentoml secret create huggingface HF_TOKEN=$HF_TOKEN
 
 bentoml deploy service:VLLM --secret huggingface
 ```
+{%- else %}
+
+Create a BentoCloud deployment from this service:
+
+```bash
+bentoml deploy service:VLLM
+```
+{%- endif %}
 
 Once the application is up and running on BentoCloud, you can access it via the exposed URL.
 

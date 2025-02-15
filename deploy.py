@@ -124,6 +124,15 @@ def deploy_bento(bento_tag: str, context: str, progress: Progress, task_id: int)
     ):
       time.sleep(2)
 
+    # Delete the deployment
+    progress.update(task_id, description=f"[blue]Deleting deployment {deployment_name}...[/]")
+    subprocess.run(
+      ["bentoml", "deployment", "delete", deployment_name, "--context", context],
+      capture_output=True,
+      text=True,
+      check=True,
+    )
+
     return DeployResult(bento_tag, True)
   except subprocess.CalledProcessError as e:
     return DeployResult(bento_tag, False, f"[red]Deployment failed: {e.stderr}[/]")
