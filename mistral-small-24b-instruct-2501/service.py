@@ -27,7 +27,7 @@ if len(REQUIREMENTS) > 0:
 
 
 @bentoml.asgi_app(openai_api_app, path="/v1")
-@bentoml.service(**SERVICE_CONFIG, image=image)
+@bentoml.service(**SERVICE_CONFIG, image=image, labels={"owner": "bentoml-team", "type": "prebuilt"})
 class VLLM:
     model_id = ENGINE_CONFIG["model"]
     model = bentoml.models.HuggingFaceModel(model_id)

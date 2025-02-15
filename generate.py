@@ -84,6 +84,7 @@ def generate_jinja_context(model_name, config):
     "service_config": service_config,
     "engine_config": engine_config_struct,
     "server_config": model_config.get("server_config", {}),
+    "labels": dict(owner="bentoml-team", type="prebuilt"),
   }
 
   requirements = model_config.get("requirements", [])

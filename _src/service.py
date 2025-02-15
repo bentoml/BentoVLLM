@@ -16,7 +16,7 @@ image = bentoml.images.PythonImage(python_version="3.11").requirements_file("req
 if len(REQUIREMENTS) > 0: image = image.python_packages(*REQUIREMENTS)
 
 @bentoml.asgi_app(openai_api_app, path="/v1")
-@bentoml.service(**SERVICE_CONFIG, image=image)
+@bentoml.service(**SERVICE_CONFIG, image=image, labels={{labels}})
 class VLLM:
   model_id = ENGINE_CONFIG["model"]
   model = bentoml.models.HuggingFaceModel(model_id)
