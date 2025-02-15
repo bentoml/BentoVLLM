@@ -93,7 +93,7 @@ def generate_jinja_context(model_name, config):
     "labels": dict(owner="bentoml-team", type="prebuilt"),
     "metadata": model_config["metadata"],
     "requires_hf_tokens": requires_hf_tokens,
-    "lock_python_packages": config.get("build", {}).get("lock_python_packages", True),
+    "lock_python_packages": model_config.get("build", {}).get("lock_python_packages", True),
   }
 
   requirements = model_config.get("requirements", [])
