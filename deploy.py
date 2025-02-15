@@ -65,7 +65,7 @@ def deploy_bento(bento_tag: str, context: str, progress: Progress, task_id: int)
           text=True,
           check=True,
         ).stdout
-      )["status"]
+      )["status"]["status"]
       != "running"
     ):
       time.sleep(2)
@@ -89,7 +89,7 @@ def deploy_bento(bento_tag: str, context: str, progress: Progress, task_id: int)
           text=True,
           check=True,
         ).stdout
-      )["status"]
+      )["status"]["status"]
       != "terminated"
     ):
       time.sleep(2)
