@@ -28,9 +28,39 @@ def get_deployment_name(bento_tag: str) -> str:
   return f"{bento_tag.split(':')[0].replace('.', '-')}-{suffix}"
 
 
+def check_and_pull_bento(bento_tag: str, context: str) -> bool:
+  """Check if bento exists locally, if not try to pull it from the context."""
+  try:
+    # Check if bento exists locally
+    subprocess.run(
+      ["bentoml", "get", bento_tag],
+      capture_output=True,
+      text=True,
+      check=True,
+    )
+    return True
+  except subprocess.CalledProcessError:
+    try:
+      # Attempt to pull the bento
+      subprocess.run(
+        ["bentoml", "pull", bento_tag, "--context", context],
+        capture_output=True,
+        text=True,
+        check=True,
+      )
+      return True
+    except subprocess.CalledProcessError:
+      return False
+
+
 def deploy_bento(bento_tag: str, context: str, progress: Progress, task_id: int) -> DeployResult:
   """Deploy a single bento or update existing deployment."""
   try:
+    # First check if bento exists and try to pull if needed
+    progress.update(task_id, description=f"[blue]Checking/pulling bento {bento_tag}...[/]")
+    if not check_and_pull_bento(bento_tag, context):
+      return DeployResult(bento_tag, False, f"[red]Failed to find or pull bento {bento_tag}[/]")
+
     deployment_name = get_deployment_name(bento_tag)
 
     progress.update(task_id, description=f"[blue]Creating new deployment {deployment_name} with {bento_tag}...[/]")

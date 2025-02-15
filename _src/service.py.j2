@@ -112,7 +112,7 @@ class VLLM:
         except Exception:
             yield traceback.format_exc()
 
-  {%- if vision | lower == "true" %}
+    {%- if vision | lower == "true" %}
     @bentoml.api
     async def sights(
         self, prompt: str = "Describe the content of the picture", image: typing.Optional["PIL.Image.Image"] = None
@@ -138,4 +138,4 @@ class VLLM:
                 yield chunk.choices[0].delta.content or ""
         except Exception:
             yield traceback.format_exc()
-  {%- endif %}
+    {%- endif %}
