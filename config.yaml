@@ -311,6 +311,8 @@
   requirements:
     - causal-conv1d>=1.2.0
     - mamba-ssm
+  build:
+    - --no-build-isolation torch
 "llama3.1-8b-instruct":
   metadata:
     description: Llama 3.1 8B Instruct

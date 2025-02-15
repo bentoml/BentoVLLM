@@ -5,3 +5,4 @@ openai>=1.61.0
 pyyaml
 Pillow
 flashinfer-python
+mistral_common[opencv]

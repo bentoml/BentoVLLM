@@ -153,6 +153,11 @@ def generate_model(model_name: str, config: dict, template_dir: Path, progress: 
         ignore=lambda src, names: [i for i in names if i.endswith(".j2")],
       )
 
+      if "requirements" in context:
+        with (temp_output_dir / "requirements.txt").open("a") as f:
+          for req in context["requirements"]:
+            f.write(f"{req}\n")
+
       for template_path in template_source.rglob("*.j2"):
         # Get relative path from template root
         rel_path = template_path.relative_to(template_source)

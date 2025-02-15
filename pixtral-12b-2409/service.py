@@ -28,9 +28,7 @@ openai_api_app = fastapi.FastAPI()
 @bentoml.service(
     **SERVICE_CONFIG,
     labels={"owner": "bentoml-team", "type": "prebuilt"},
-    image=bentoml.images.PythonImage(python_version="3.11")
-    .requirements_file("requirements.txt")
-    .python_packages("mistral_common[opencv]"),
+    image=bentoml.images.PythonImage(python_version="3.11").requirements_file("requirements.txt"),
 )
 class VLLM:
     model_id = ENGINE_CONFIG["model"]
