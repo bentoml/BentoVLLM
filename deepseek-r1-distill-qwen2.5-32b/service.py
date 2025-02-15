@@ -11,17 +11,19 @@ SERVICE_CONFIG = {
     "name": "bentovllm-r1-qwen2.5-32b-service",
     "resources": {"gpu": 1, "gpu_type": "nvidia-a100-80gb"},
     "traffic": {"timeout": 300},
-    "envs": [{"name": "HF_TOKEN"}],
+    "envs": [{"name": "HF_TOKEN"}, {"name": "UV_COMPILE_BYTECODE", "value": 1}],
 }
 SERVER_CONFIG = {}
+REQUIREMENTS = []
 
 openai_api_app = fastapi.FastAPI()
+image = bentoml.images.PythonImage(python_version="3.11").requirements_file("requirements.txt")
+if len(REQUIREMENTS) > 0:
+    image = image.python_packages(*REQUIREMENTS)
 
 
 @bentoml.asgi_app(openai_api_app, path="/v1")
-@bentoml.service(
-    **SERVICE_CONFIG, image=bentoml.images.PythonImage(python_version="3.11").requirements_file("requirements.txt")
-)
+@bentoml.service(**SERVICE_CONFIG, image=image)
 class VLLM:
     model_id = ENGINE_CONFIG["model"]
     model = bentoml.models.HuggingFaceModel(model_id)

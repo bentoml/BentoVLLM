@@ -1,8 +1,8 @@
 <div align="center">
-    <h1 align="center">Self-host {{cookiecutter.model_id}} with vLLM and BentoML</h1>
+    <h1 align="center">Self-host {{model_id}} with vLLM and BentoML</h1>
 </div>
 
-This is a BentoML example project, showing you how to serve and deploy {{cookiecutter.model_id}} using [vLLM](https://vllm.ai), a high-throughput and memory-efficient inference engine.
+This is a BentoML example project, showing you how to serve and deploy {{model_id}} using [vLLM](https://vllm.ai), a high-throughput and memory-efficient inference engine.
 
 See [here](https://docs.bentoml.com/en/latest/examples/overview.html) for a full list of BentoML example projects.
 
@@ -10,14 +10,14 @@ See [here](https://docs.bentoml.com/en/latest/examples/overview.html) for a full
 
 ## Prerequisites
 
-- You have gained access to {{cookiecutter.model_id}} on [Hugging Face](https://huggingface.co/{{cookiecutter.engine_config['model']}}).
+- You have gained access to {{model_id}} on [Hugging Face](https://huggingface.co/{{engine_config['model']}}).
 - If you want to test the Service locally, we recommend you use an Nvidia GPU with at least 16G VRAM.
 
 ## Install dependencies
 
 ```bash
 git clone https://github.com/bentoml/BentoVLLM.git
-cd BentoVLLM/{{cookiecutter.model_name}}
+cd BentoVLLM/{{model_name}}
 
 # Recommend Python 3.11
 
@@ -84,7 +84,7 @@ client = OpenAI(base_url='http://localhost:3000/v1', api_key='na')
 client.models.list()
 
 chat_completion = client.chat.completions.create(
-    model="{{cookiecutter.engine_config['model']}}",
+    model="{{engine_config['model']}}",
     messages=[
         {
             "role": "user",
@@ -116,7 +116,7 @@ json_schema = {
 }
 
 chat_completion = client.chat.completions.create(
-    model="{{cookiecutter.engine_config['model']}}",
+    model="{{engine_config['model']}}",
     messages=[
         {
             "role": "user",

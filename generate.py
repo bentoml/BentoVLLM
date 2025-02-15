@@ -1,7 +1,6 @@
 # /// script
 # requires-python = ">=3.12"
 # dependencies = [
-#     "cookiecutter",
 #     "jinja2",
 #     "pyyaml",
 #     "ruff",
@@ -69,16 +68,20 @@ def update_model_descriptions(config, template_dir):
     f.write(json.dumps(dict(certified_bentos=certified_bentos), indent=2, ensure_ascii=False))
 
 
-def generate_cookiecutter_context(model_name, config):
+def generate_jinja_context(model_name, config):
   model_config = config[model_name]
   engine_config_struct = model_config.get("engine_config", {"model": "deepseek-ai/DeepSeek-R1-Distill-Llama-8B"})
 
-  # Convert configs to YAML strings to preserve types
+  service_config = model_config.get("service_config", {})
+  if not service_config.get("envs"):
+    service_config['envs'] = []
+  service_config['envs'].append(dict(name="UV_COMPILE_BYTECODE", value=1))
+
   context = {
     "model_name": model_name,
     "model_id": engine_config_struct["model"],
-    "vision": str(model_config.get("vision", False)).lower(),
-    "service_config": model_config.get("service_config", {}),
+    "vision": model_config.get("vision", False),
+    "service_config": service_config,
     "engine_config": engine_config_struct,
     "server_config": model_config.get("server_config", {}),
   }
@@ -102,38 +105,73 @@ def generate_readme(config, template_dir):
     f.write(rendered)
 
 
+def compare_directories(dir1: Path, dir2: Path) -> bool:
+  """Compare two directories recursively to check if they have the same content."""
+  if not dir1.exists() or not dir2.exists():
+    return False
+
+  files1 = sorted([f.relative_to(dir1) for f in dir1.rglob("*") if f.is_file()])
+  files2 = sorted([f.relative_to(dir2) for f in dir2.rglob("*") if f.is_file()])
+
+  if files1 != files2:
+    return False
+
+  for f1, f2 in zip(files1, files2):
+    with open(dir1 / f1, "rb") as file1, open(dir2 / f2, "rb") as file2:
+      if file1.read() != file2.read():
+        return False
+
+  return True
+
+
 def generate_model(model_name: str, config: dict, template_dir: Path, progress: Progress, task_id: int) -> bool:
   """Generate a single model's project."""
   output_dir = template_dir / model_name
   try:
     progress.update(task_id, description=f"[blue]Generating {model_name}...[/]")
 
-    if output_dir.exists():
-      progress.update(task_id, description=f"[yellow]Skipping {model_name} - directory exists[/]")
-      return True
+    context = generate_jinja_context(model_name, config)
 
-    context = generate_cookiecutter_context(model_name, config)
-    config_path = template_dir / "cookiecutter.json"
+    # Create a temporary directory for new generation
+    import tempfile
+    with tempfile.TemporaryDirectory() as temp_dir:
+      temp_output_dir = Path(temp_dir) / model_name
+      temp_output_dir.mkdir(parents=True)
 
-    with open(config_path, "w") as f:
-      json.dump(context, f, indent=2)
+      # Walk through template directory and render each file
+      template_source = template_dir / "_src"
 
-    # Run cookiecutter with the config
-    subprocess.run(
-      [
-        "cookiecutter",
-        str(template_dir),
-        "--no-input",
-        "--config-file",
-        str(config_path),
-        "--output-dir",
-        str(template_dir),
-      ],
-      check=True,
-      capture_output=True,
-    )
+      shutil.copytree(template_source, temp_output_dir, dirs_exist_ok=True)
 
-    config_path.unlink()
+      for template_path in template_source.rglob("*"):
+        if template_path.is_file() and template_path.name in ["service.py", "README.md"]:
+          # Get relative path from template root
+          rel_path = template_path.relative_to(template_source)
+          target_path = temp_output_dir / str(rel_path).replace("_src", model_name)
+          target_path.parent.mkdir(parents=True, exist_ok=True)
+
+          # Read and render template
+          with open(template_path, "r") as f:
+            template_content = f.read()
+          rendered = Template(template_content).render(**context)
+
+          # Write rendered content
+          with open(target_path, "w") as f:
+            f.write(rendered)
+
+      if output_dir.exists():
+        # Compare the existing directory with the newly generated one
+        if compare_directories(output_dir, temp_output_dir):
+          progress.update(task_id, description=f"[yellow]Skipping {model_name} - no changes[/]")
+          return True
+        else:
+          progress.update(task_id, description=f"[blue]Updating {model_name} - changes detected[/]")
+          shutil.rmtree(output_dir)
+          shutil.copytree(temp_output_dir, output_dir)
+      else:
+        # If directory doesn't exist, just move the generated one
+        shutil.copytree(temp_output_dir, output_dir)
+
     progress.update(task_id, description=f"[green]✓ {model_name}[/]", completed=1)
     return True
 
@@ -209,7 +247,7 @@ def main() -> int:
       "--config",
       "preview=true",
       "--exclude",
-      "\\{\\{cookiecutter.*\\}\\}",
+      "_src",
       "--exclude",
       "generate.py",
       "--exclude",

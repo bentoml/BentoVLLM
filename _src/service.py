@@ -6,27 +6,17 @@ import bentoml, fastapi, PIL.Image
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-ENGINE_CONFIG = {{cookiecutter.engine_config}}
-SERVICE_CONFIG = {{cookiecutter.service_config}}
-SERVER_CONFIG = {{cookiecutter.server_config}}
-
-{%- if cookiecutter.requirements is defined %}
-{%- set requirements = cookiecutter.requirements | tojson %}
-{%- endif %}
+ENGINE_CONFIG = {{engine_config}}
+SERVICE_CONFIG = {{service_config}}
+SERVER_CONFIG = {{server_config}}
+REQUIREMENTS = {{requirements|default([])}}
 
 openai_api_app = fastapi.FastAPI()
+image = bentoml.images.PythonImage(python_version="3.11").requirements_file("requirements.txt")
+if len(REQUIREMENTS) > 0: image = image.python_packages(*REQUIREMENTS)
 
 @bentoml.asgi_app(openai_api_app, path="/v1")
-@bentoml.service(
-  **SERVICE_CONFIG,
-  image=bentoml.images.PythonImage(python_version="3.11")
-          .requirements_file("requirements.txt")
-          {%- if cookiecutter.requirements is defined and requirements|length > 0 %}
-          {% for req in requirements %}
-          .python_packages("{{req}}")
-          {%- endfor %}
-          {%- endif %}
-)
+@bentoml.service(**SERVICE_CONFIG, image=image)
 class VLLM:
   model_id = ENGINE_CONFIG["model"]
   model = bentoml.models.HuggingFaceModel(model_id)
@@ -91,7 +81,7 @@ class VLLM:
       async for chunk in completion: yield chunk.choices[0].delta.content or ""
     except Exception: yield traceback.format_exc()
 
-  {%- if cookiecutter.vision | lower == "true" %}
+  {%- if vision | lower == "true" %}
   @bentoml.api
   async def sights(
       self, prompt: str = "what is this?", image: typing.Optional[PIL.Image.Image] = None
