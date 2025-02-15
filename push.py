@@ -1,6 +1,8 @@
 # /// script
 # requires-python = ">=3.12"
 # dependencies = [
+#     "bentoml==1.4.0a1",
+#     "huggingface-hub",
 #     "rich",
 # ]
 # ///
@@ -27,7 +29,7 @@ def push_bento(bento_tag: str, context: str, progress: Progress, task_id: int) -
 
     # Run bentoml push with output capture
     result = subprocess.run(
-      ["uvx", "--with", "huggingface-hub", "bentoml", "push", bento_tag, "--context", context],
+      ["bentoml", "push", bento_tag, "--context", context],
       capture_output=True,
       text=True,
       check=True,

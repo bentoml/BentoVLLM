@@ -520,37 +520,3 @@
     enable_auto_tool_choice: true
     enable_tool_call_parser: true
     tool_call_parser: "llama3_json"
-"qwen2.5vl-3b-instruct":
-  metadata:
-    description: Qwen 2.5 Vision 3B Instruct
-    provider: Alibaba
-  vision: true
-  engine_config:
-    max_model_len: 2048
-    model: Qwen/Qwen2.5-VL-3B-Instruct
-  service_config:
-    name: bentovllm-qwen2.5vl-3b-instruct-service
-    resources:
-      gpu: 1
-      gpu_type: nvidia-l4
-    traffic:
-      timeout: 300
-  requirements:
-    - qwen-vl-utils[decord]==0.0.8
-"qwen2.5vl-7b-instruct":
-  metadata:
-    description: Qwen 2.5 Vision 7B Instruct
-    provider: Alibaba
-  vision: true
-  engine_config:
-    max_model_len: 2048
-    model: Qwen/Qwen2.5-VL-7B-Instruct
-  service_config:
-    name: bentovllm-qwen2.5vl-7b-instruct-service
-    resources:
-      gpu: 1
-      gpu_type: nvidia-l4
-    traffic:
-      timeout: 300
-  requirements:
-    - qwen-vl-utils[decord]==0.0.8

@@ -41,8 +41,15 @@ def build_model(model_name: str, template_dir: Path, progress: Progress, task_id
     # Run bentoml build with output capture
     result = subprocess.run(
       [
-        "uv", "run", "--with-requirements", str(model_dir / "requirements.txt"),
-        "bentoml", "build", "service:VLLM", "--output", "tag",
+        "uv",
+        "run",
+        "--with-requirements",
+        str(model_dir / "requirements.txt"),
+        "bentoml",
+        "build",
+        "service:VLLM",
+        "--output",
+        "tag",
       ],
       capture_output=True,
       text=True,

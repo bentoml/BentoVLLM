@@ -176,5 +176,3 @@ In addition to Llama 3.1 8B Instruct, we also have examples for other models in 
 | qwen2.5-72b-instruct | [GitHub](qwen2.5-72b-instruct/) • [Hugging Face](https://huggingface.co/Qwen/Qwen2.5-72B-Instruct) |
 | qwen2.5-coder-7b-instruct | [GitHub](qwen2.5-coder-7b-instruct/) • [Hugging Face](https://huggingface.co/Qwen/Qwen2.5-Coder-7B-Instruct) |
 | qwen2.5-coder-32b-instruct | [GitHub](qwen2.5-coder-32b-instruct/) • [Hugging Face](https://huggingface.co/Qwen/Qwen2.5-Coder-32B-Instruct) |
-| qwen2.5vl-3b-instruct | [GitHub](qwen2.5vl-3b-instruct/) • [Hugging Face](https://huggingface.co/Qwen/Qwen2.5-VL-3B-Instruct) |
-| qwen2.5vl-7b-instruct | [GitHub](qwen2.5vl-7b-instruct/) • [Hugging Face](https://huggingface.co/Qwen/Qwen2.5-VL-7B-Instruct) |

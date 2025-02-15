@@ -32,7 +32,6 @@ def update_model_descriptions(config, template_dir):
   # Create a mapping of model names to their certified repo data
   certified_list = [repo["repo_name"] for repo in certified_bentos]
 
-
   # Update descriptions for each model
   for model_name, model_config in config.items():
     repo_name = f"bentovllm-{model_name}-service"
@@ -74,8 +73,8 @@ def generate_jinja_context(model_name, config):
 
   service_config = model_config.get("service_config", {})
   if not service_config.get("envs"):
-    service_config['envs'] = []
-  service_config['envs'].append(dict(name="UV_COMPILE_BYTECODE", value=1))
+    service_config["envs"] = []
+  service_config["envs"].append(dict(name="UV_COMPILE_BYTECODE", value=1))
 
   context = {
     "model_name": model_name,
@@ -135,6 +134,7 @@ def generate_model(model_name: str, config: dict, template_dir: Path, progress: 
 
     # Create a temporary directory for new generation
     import tempfile
+
     with tempfile.TemporaryDirectory() as temp_dir:
       temp_output_dir = Path(temp_dir) / model_name
       temp_output_dir.mkdir(parents=True)
@@ -142,23 +142,27 @@ def generate_model(model_name: str, config: dict, template_dir: Path, progress: 
       # Walk through template directory and render each file
       template_source = template_dir / "_src"
 
-      shutil.copytree(template_source, temp_output_dir, dirs_exist_ok=True)
+      shutil.copytree(
+        template_source,
+        temp_output_dir,
+        dirs_exist_ok=True,
+        ignore=lambda src, names: [i for i in names if i.endswith(".j2")],
+      )
 
-      for template_path in template_source.rglob("*"):
-        if template_path.is_file() and template_path.name in ["service.py", "README.md"]:
-          # Get relative path from template root
-          rel_path = template_path.relative_to(template_source)
-          target_path = temp_output_dir / str(rel_path).replace("_src", model_name)
-          target_path.parent.mkdir(parents=True, exist_ok=True)
+      for template_path in template_source.rglob("*.j2"):
+        # Get relative path from template root
+        rel_path = template_path.relative_to(template_source)
+        target_path = temp_output_dir / str(rel_path).replace("_src", model_name).replace(".j2", "")
+        target_path.parent.mkdir(parents=True, exist_ok=True)
 
-          # Read and render template
-          with open(template_path, "r") as f:
-            template_content = f.read()
-          rendered = Template(template_content).render(**context)
+        # Read and render template
+        with open(template_path, "r") as f:
+          template_content = f.read()
+        rendered = Template(template_content).render(**context)
 
-          # Write rendered content
-          with open(target_path, "w") as f:
-            f.write(rendered)
+        # Write rendered content
+        with open(target_path, "w") as f:
+          f.write(rendered)
 
       if output_dir.exists():
         # Compare the existing directory with the newly generated one
@@ -255,7 +259,27 @@ def main() -> int:
       "build.py",
       "--exclude",
       "push.py",
+      "--exclude",
+      "deploy.py",
       ".",
+    ],
+    check=True,
+    capture_output=True,
+  )
+  subprocess.run(
+    [
+      "ruff",
+      "format",
+      "--config",
+      "indent-width=2",
+      "--config",
+      "line-length=119",
+      "--config",
+      "preview=true",
+      "generate.py",
+      "build.py",
+      "push.py",
+      "deploy.py",
     ],
     check=True,
     capture_output=True,
