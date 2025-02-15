@@ -288,9 +288,29 @@
       - name: HF_TOKEN
   engine_config:
     model: ai21labs/AI21-Jamba-1.5-Mini
-    max_model_len: 2048
-    dtype: half
+    max_model_len: 204800
     tensor_parallel_size: 2
+"jamba1.5-large":
+  metadata:
+    description: Jamba 1.5 Large
+    provider: AI21 Lab
+  service_config:
+    name: bentovllm-jamba1.5-large-service
+    traffic:
+      timeout: 300
+    resources:
+      gpu: 8
+      gpu_type: nvidia-a100-80gb
+    envs:
+      - name: HF_TOKEN
+  engine_config:
+    model: ai21labs/AI21-Jamba-1.5-Mini
+    max_model_len: 225280
+    tensor_parallel_size: 8
+    quantization: "experts_int8"
+  requirements:
+    - causal-conv1d>=1.2.0
+    - mamba-ssm
 "llama3.1-8b-instruct":
   metadata:
     description: Llama 3.1 8B Instruct

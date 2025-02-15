@@ -6,11 +6,16 @@ import bentoml, fastapi, PIL.Image
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-ENGINE_CONFIG = {"model": "ai21labs/AI21-Jamba-1.5-Mini", "max_model_len": 204800, "tensor_parallel_size": 2}
+ENGINE_CONFIG = {
+    "model": "ai21labs/AI21-Jamba-1.5-Mini",
+    "max_model_len": 225280,
+    "tensor_parallel_size": 8,
+    "quantization": "experts_int8",
+}
 SERVICE_CONFIG = {
-    "name": "bentovllm-jamba1.5-mini-service",
+    "name": "bentovllm-jamba1.5-large-service",
     "traffic": {"timeout": 300},
-    "resources": {"gpu": 2, "gpu_type": "nvidia-a100-80gb"},
+    "resources": {"gpu": 8, "gpu_type": "nvidia-a100-80gb"},
     "envs": [{"name": "HF_TOKEN"}, {"name": "UV_COMPILE_BYTECODE", "value": 1}],
 }
 SERVER_CONFIG = {}
@@ -22,7 +27,10 @@ openai_api_app = fastapi.FastAPI()
 @bentoml.service(
     **SERVICE_CONFIG,
     labels={"owner": "bentoml-team", "type": "prebuilt"},
-    image=bentoml.images.PythonImage(python_version="3.11").requirements_file("requirements.txt"),
+    image=bentoml.images.PythonImage(python_version="3.11")
+    .requirements_file("requirements.txt")
+    .python_packages("causal-conv1d>=1.2.0")
+    .python_packages("mamba-ssm"),
 )
 class VLLM:
     model_id = ENGINE_CONFIG["model"]

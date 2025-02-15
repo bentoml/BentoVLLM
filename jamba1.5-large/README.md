@@ -1,8 +1,8 @@
 <div align="center">
-    <h1 align="center">Self-host Jamba 1.5 Mini with vLLM and BentoML</h1>
+    <h1 align="center">Self-host Jamba 1.5 Large with vLLM and BentoML</h1>
 </div>
 
-This is a BentoML example project, showing you how to serve and deploy Jamba 1.5 Mini using [vLLM](https://vllm.ai), a high-throughput and memory-efficient inference engine.
+This is a BentoML example project, showing you how to serve and deploy Jamba 1.5 Large using [vLLM](https://vllm.ai), a high-throughput and memory-efficient inference engine.
 
 See [here](https://docs.bentoml.com/en/latest/examples/overview.html) for a full list of BentoML example projects.
 
@@ -16,7 +16,7 @@ See [here](https://docs.bentoml.com/en/latest/examples/overview.html) for a full
 
 ```bash
 git clone https://github.com/bentoml/BentoVLLM.git
-cd BentoVLLM/jamba1.5-mini
+cd BentoVLLM/jamba1.5-large
 
 # Recommend Python 3.11
 
@@ -36,7 +36,7 @@ $ bentoml serve service.py:VLLM
 The server is now active at [http://localhost:3000](http://localhost:3000/). You can interact with it using the Swagger UI or in other different ways.
 
 > [!NOTE]
-> This ships with a default `max_model_len=204800`. If you wish to change this value, set `MAX_MODEL_LEN=<target_context_len>`. Make sure that you have enough VRAM to use this context length. BentoVLLM will only set a conservative value based on this model configuration.
+> This ships with a default `max_model_len=225280`. If you wish to change this value, set `MAX_MODEL_LEN=<target_context_len>`. Make sure that you have enough VRAM to use this context length. BentoVLLM will only set a conservative value based on this model configuration.
 
 <details>
 
