@@ -327,6 +327,15 @@
     model: ai21labs/AI21-Jamba-1.5-Mini
     max_model_len: 204800
     tensor_parallel_size: 2
+    enable_prefix_caching: false
+  requirements:
+    - mamba-ssm[causal-conv1d]
+  build:
+    lock_python_packages: false
+    pre: uv pip install torch
+    args:
+      - --no-build-isolation
+      - torch
 "jamba1.5-large":
   metadata:
     description: Jamba 1.5 Large
@@ -345,6 +354,7 @@
     max_model_len: 225280
     tensor_parallel_size: 8
     quantization: "experts_int8"
+    enable_prefix_caching: false
   requirements:
     - mamba-ssm[causal-conv1d]
   build:

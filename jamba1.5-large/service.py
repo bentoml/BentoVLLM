@@ -11,7 +11,7 @@ ENGINE_CONFIG = {
     "max_model_len": 225280,
     "tensor_parallel_size": 8,
     "quantization": "experts_int8",
-    "enable_prefix_caching": True,
+    "enable_prefix_caching": False,
 }
 
 openai_api_app = fastapi.FastAPI()

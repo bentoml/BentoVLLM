@@ -10,7 +10,7 @@ ENGINE_CONFIG = {
     "model": "ai21labs/AI21-Jamba-1.5-Mini",
     "max_model_len": 204800,
     "tensor_parallel_size": 2,
-    "enable_prefix_caching": True,
+    "enable_prefix_caching": False,
 }
 
 openai_api_app = fastapi.FastAPI()
@@ -23,7 +23,7 @@ openai_api_app = fastapi.FastAPI()
     resources={"gpu": 2, "gpu_type": "nvidia-a100-80gb"},
     envs=[{"name": "HF_TOKEN"}, {"name": "UV_COMPILE_BYTECODE", "value": 1}],
     labels={"owner": "bentoml-team", "type": "prebuilt"},
-    image=bentoml.images.PythonImage(python_version="3.11", lock_python_packages=True).requirements_file(
+    image=bentoml.images.PythonImage(python_version="3.11", lock_python_packages=False).requirements_file(
         "requirements.txt"
     ),
 )
