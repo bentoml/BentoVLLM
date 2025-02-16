@@ -11,6 +11,7 @@ ENGINE_CONFIG = {
     "max_model_len": 2048,
     "dtype": "half",
     "enable_prefix_caching": False,
+    "gpu_memory_utilization": 1.0,
 }
 
 openai_api_app = fastapi.FastAPI()

@@ -191,7 +191,7 @@
       timeout: 300
     resources:
       gpu: 1
-      gpu_type: nvidia-tesla-l4
+      gpu_type: nvidia-l4
   engine_config:
     model: neuralmagic/DeepSeek-R1-Distill-Qwen-14B-quantized.w4a16
     max_model_len: 4096
@@ -292,6 +292,7 @@
     max_model_len: 2048
     dtype: half
     enable_prefix_caching: false
+    gpu_memory_utilization: 1.0
 "gemma2-27b-instruct":
   metadata:
     description: Gemma 2 27B Instruct

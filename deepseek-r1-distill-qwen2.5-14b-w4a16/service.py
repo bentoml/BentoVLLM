@@ -19,7 +19,7 @@ openai_api_app = fastapi.FastAPI()
 @bentoml.service(
     name="bentovllm-r1-qwen2.5-14b-w4a16-service",
     traffic={"timeout": 300},
-    resources={"gpu": 1, "gpu_type": "nvidia-tesla-l4"},
+    resources={"gpu": 1, "gpu_type": "nvidia-l4"},
     envs=[{"name": "UV_COMPILE_BYTECODE", "value": 1}],
     labels={"owner": "bentoml-team", "type": "prebuilt"},
     image=bentoml.images.PythonImage(python_version="3.11", lock_python_packages=True).requirements_file(
