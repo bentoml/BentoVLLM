@@ -606,6 +606,9 @@
     tokenizer_mode: mistral
     dtype: half
     enable_prefix_caching: false
+  build:
+    exclude:
+      - "consolidated-*"
 "phi4-14b":
   metadata:
     description: Phi 4 14B

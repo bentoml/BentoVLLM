@@ -169,10 +169,13 @@ def build_bentos(config: Dict[str, Any], template_dir: pathlib.Path, workers: in
 def main() -> int:
   parser = argparse.ArgumentParser(description="Build all model bentos in parallel")
   parser.add_argument(
+    "model_names", nargs="*", help="Specific model names to build. If not provided, builds all models."
+  )
+  parser.add_argument(
     "--workers",
     type=int,
     default=multiprocessing.cpu_count(),
-    help="Number of parallel workers (default: number of CPU cores)",
+    help=f"Number of parallel workers (default: {multiprocessing.cpu_count()})",
   )
   args = parser.parse_args()
 
@@ -180,14 +183,23 @@ def main() -> int:
   config = load_config()
 
   console = Console()
-  console.print(f"[bold]Building {len(config)} bentos with {args.workers} workers[/]")
+  if args.model_names:
+    invalid_models = [model for model in args.model_names if model not in config]
+    if invalid_models:
+      console.print(f"[red]Error: Models not found in config.yaml: {', '.join(invalid_models)}[/]")
+      return 1
+    filtered_config = {model: config[model] for model in args.model_names}
+  else:
+    filtered_config = config
 
-  results = build_bentos(config, template_dir, args.workers)
+  console.print(f"[bold]Building {len(filtered_config)} bentos with {args.workers} workers[/]")
+
+  results = build_bentos(filtered_config, template_dir, args.workers)
   successful_builds = [r for r in results if r.success]
 
   # Print summary
   console.print("\n[bold]Build Summary:[/]")
-  console.print(f"Total bentos: {len(config)}")
+  console.print(f"Total bentos: {len(filtered_config)}")
   console.print(f"Successful builds: {len(successful_builds)}")
   console.print(f"Failed builds: {len(results) - len(successful_builds)}")
 
@@ -198,7 +210,7 @@ def main() -> int:
       f.write("\n".join(bento_tags))
     console.print("\n[green]Saved successful build tags to successful_builds.txt[/]")
 
-  return 0 if len(successful_builds) == len(config) else 1
+  return 0 if len(successful_builds) == len(filtered_config) else 1
 
 
 if __name__ == "__main__":

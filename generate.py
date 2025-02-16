@@ -86,6 +86,11 @@ def generate_jinja_context(model_name, config):
   if "enable_prefix_caching" not in engine_config_struct:
     engine_config_struct["enable_prefix_caching"] = True
 
+  build_config = model_config.get("build", {})
+  if "exclude" not in build_config:
+    build_config["exclude"] = []
+  build_config["exclude"] = [*build_config["exclude"], "*.pth", "*.pt"]
+
   context = {
     "model_name": model_name,
     "model_id": engine_config_struct["model"],
@@ -96,7 +101,8 @@ def generate_jinja_context(model_name, config):
     "labels": dict(owner="bentoml-team", type="prebuilt"),
     "metadata": model_config["metadata"],
     "requires_hf_tokens": requires_hf_tokens,
-    "lock_python_packages": model_config.get("build", {}).get("lock_python_packages", True),
+    "lock_python_packages": build_config.get("lock_python_packages", True),
+    "exclude": build_config["exclude"],
   }
 
   requirements = model_config.get("requirements", [])
@@ -283,7 +289,7 @@ def main() -> int:
     "--workers",
     type=int,
     default=multiprocessing.cpu_count(),
-    help="Number of parallel workers (default: number of CPU cores)",
+    help=f"Number of parallel workers (default: {multiprocessing.cpu_count()})",
   )
   args = parser.parse_args()
 

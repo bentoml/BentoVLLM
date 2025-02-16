@@ -6,6 +6,7 @@
 #     "rich",
 # ]
 # ///
+import multiprocessing
 import subprocess, argparse
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -85,7 +86,7 @@ def main() -> int:
   parser.add_argument(
     "--workers",
     type=int,
-    default=4,
+    default=multiprocessing.cpu_count(),
     help="Number of parallel workers (default: 4)",
   )
   args = parser.parse_args()
