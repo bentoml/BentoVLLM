@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 ENGINE_CONFIG = {
-    "model": "ai21labs/AI21-Jamba-1.5-Mini",
+    "model": "ai21labs/AI21-Jamba-1.5-Large",
     "max_model_len": 225280,
     "tensor_parallel_size": 8,
     "quantization": "experts_int8",

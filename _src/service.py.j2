@@ -48,7 +48,7 @@ class VLLM:
             try:
                 ENGINE_CONFIG["max_model_len"] = int(max_model_len)
                 logger.info(
-                  f"Updated `max_model_len` to {max_model_len} from environment variable. Make sure that you have enough VRAM to use this given context windows."
+                    f"Updated `max_model_len` to {max_model_len} from environment variable. Make sure that you have enough VRAM to use this given context windows."
                 )
             except ValueError:
                 logger.warning(f"Invalid MAX_MODEL_LEN value: {max_model_len}. Must be an integer.")
@@ -79,11 +79,11 @@ class VLLM:
         {%- if server_config | length > 0 %}
         {% for key, value in server_config.items() -%}
         {% if value is string -%}
-        args.{{key}}="{{value}}"
+        args.{{key}} = "{{value}}"
         {% else -%}
-        args.{{key}}={{value}}
+        args.{{key}} = {{value}}
         {% endif -%}
-        {% endfor %}
+        {%- endfor %}
         {%- endif %}
 
         # reasoning

@@ -304,7 +304,7 @@
     envs:
       - name: HF_TOKEN
   engine_config:
-    model: ai21labs/AI21-Jamba-1.5-Mini
+    model: ai21labs/AI21-Jamba-1.5-Large
     max_model_len: 225280
     tensor_parallel_size: 8
     quantization: "experts_int8"
@@ -516,7 +516,7 @@
     traffic:
       timeout: 300
     resources:
-      gpu: 8
+      gpu: 4
       gpu_type: nvidia-a100-80gb
     envs:
       - name: HF_TOKEN
@@ -527,7 +527,7 @@
     limit_mm_per_prompt:
       image: 5
     max_model_len: 16384
-    tensor_parallel_size: 8
+    tensor_parallel_size: 4
   requirements:
     - mistral_common[opencv]
 "mixtral-8x7b-v0.1":

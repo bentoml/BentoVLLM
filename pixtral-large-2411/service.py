@@ -12,7 +12,7 @@ ENGINE_CONFIG = {
     "enable_chunked_prefill": False,
     "limit_mm_per_prompt": {"image": 5},
     "max_model_len": 16384,
-    "tensor_parallel_size": 8,
+    "tensor_parallel_size": 4,
 }
 
 openai_api_app = fastapi.FastAPI()
@@ -22,7 +22,7 @@ openai_api_app = fastapi.FastAPI()
 @bentoml.service(
     name="bentovllm-pixtral-large-instruct-2411-service",
     traffic={"timeout": 300},
-    resources={"gpu": 8, "gpu_type": "nvidia-a100-80gb"},
+    resources={"gpu": 4, "gpu_type": "nvidia-a100-80gb"},
     envs=[{"name": "HF_TOKEN"}, {"name": "UV_COMPILE_BYTECODE", "value": 1}],
     labels={"owner": "bentoml-team", "type": "prebuilt"},
     image=bentoml.images.PythonImage(python_version="3.11", lock_python_packages=True).requirements_file(

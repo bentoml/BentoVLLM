@@ -9,7 +9,7 @@ See [here](https://docs.bentoml.com/en/latest/examples/overview.html) for a full
 💡 This example is served as a basis for advanced code customization, such as custom model, inference logic or vLLM options. For simple LLM hosting with OpenAI compatible endpoint without writing any code, see [OpenLLM](https://github.com/bentoml/OpenLLM).
 
 ## Prerequisites
-- You have gained access to `ai21labs/AI21-Jamba-1.5-Mini` on [Hugging Face](https://huggingface.co/ai21labs/AI21-Jamba-1.5-Mini).
+- You have gained access to `ai21labs/AI21-Jamba-1.5-Large` on [Hugging Face](https://huggingface.co/ai21labs/AI21-Jamba-1.5-Large).
 - If you want to test the Service locally, we recommend you use an Nvidia GPU with at least 16G VRAM.
 
 ## Install dependencies
@@ -84,7 +84,7 @@ client = OpenAI(base_url='http://localhost:3000/v1', api_key='na')
 client.models.list()
 
 chat_completion = client.chat.completions.create(
-    model="ai21labs/AI21-Jamba-1.5-Mini",
+    model="ai21labs/AI21-Jamba-1.5-Large",
     messages=[
         {
             "role": "user",
@@ -116,7 +116,7 @@ json_schema = {
 }
 
 chat_completion = client.chat.completions.create(
-    model="ai21labs/AI21-Jamba-1.5-Mini",
+    model="ai21labs/AI21-Jamba-1.5-Large",
     messages=[
         {
             "role": "user",
