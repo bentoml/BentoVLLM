@@ -8,10 +8,8 @@ logger.setLevel(logging.INFO)
 
 ENGINE_CONFIG = {
     "model": "neuralmagic/pixtral-12b-FP8-dynamic",
-    "tokenizer_mode": "mistral",
     "enable_chunked_prefill": False,
     "enable_prefix_caching": False,
-    "limit_mm_per_prompt": {"image": 1},
     "max_model_len": 8192,
 }
 

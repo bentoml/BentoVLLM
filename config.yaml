@@ -537,14 +537,9 @@
       gpu_type: nvidia-l4
   engine_config:
     model: neuralmagic/pixtral-12b-FP8-dynamic
-    tokenizer_mode: mistral
     enable_chunked_prefill: false
     enable_prefix_caching: false
-    limit_mm_per_prompt:
-      image: 1
     max_model_len: 8192
-  requirements:
-    - mistral_common[opencv]
 "pixtral-large-2411":
   metadata:
     description: Pixtral Large Instruct 2411
@@ -571,25 +566,6 @@
     tensor_parallel_size: 4
   requirements:
     - mistral_common[opencv]
-"mixtral-8x7b-v0.1":
-  metadata:
-    description: Mixtral 8x7B v0.1 Mixture of Expert
-    provider: Mistral AI
-  service_config:
-    name: bentovllm-mixtral-8x7b-v0.1-service
-    traffic:
-      timeout: 300
-    resources:
-      gpu: 2
-      gpu_type: nvidia-a100-80gb
-    envs:
-      - name: HF_TOKEN
-  engine_config:
-    model: mistralai/Mixtral-8x7B-Instruct-v0.1
-    max_model_len: 2048
-    tensor_parallel_size: 2
-    tokenizer_mode: mistral
-    enable_prefix_caching: false
 "ministral-8b-instruct-2410":
   metadata:
     description: Ministral 8B Instruct 2410
