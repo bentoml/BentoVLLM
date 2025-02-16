@@ -11,6 +11,7 @@ ENGINE_CONFIG = {
     "tensor_parallel_size": 16,
     "trust_remote_code": True,
     "max_model_len": 8192,
+    "enable_prefix_caching": True,
 }
 
 openai_api_app = fastapi.FastAPI()
@@ -54,7 +55,7 @@ class VLLM:
             except ValueError:
                 logger.warning(f"Invalid MAX_MODEL_LEN value: {max_model_len}. Must be an integer.")
 
-        ENGINE_ARGS = AsyncEngineArgs(**dict(ENGINE_CONFIG, model=self.model, enable_prefix_caching=True))
+        ENGINE_ARGS = AsyncEngineArgs(**dict(ENGINE_CONFIG, model=self.model))
         self.engine = AsyncLLMEngine.from_engine_args(ENGINE_ARGS)
 
         model_config = self.engine.engine.get_model_config()

@@ -9,6 +9,7 @@ logger.setLevel(logging.INFO)
 ENGINE_CONFIG = {
     "model": "mistralai/Pixtral-12B-2409",
     "tokenizer_mode": "mistral",
+    "enable_prefix_caching": False,
     "enable_chunked_prefill": False,
     "limit_mm_per_prompt": {"image": 5},
     "max_model_len": 32768,
@@ -55,7 +56,7 @@ class VLLM:
             except ValueError:
                 logger.warning(f"Invalid MAX_MODEL_LEN value: {max_model_len}. Must be an integer.")
 
-        ENGINE_ARGS = AsyncEngineArgs(**dict(ENGINE_CONFIG, model=self.model, enable_prefix_caching=True))
+        ENGINE_ARGS = AsyncEngineArgs(**dict(ENGINE_CONFIG, model=self.model))
         self.engine = AsyncLLMEngine.from_engine_args(ENGINE_ARGS)
 
         model_config = self.engine.engine.get_model_config()

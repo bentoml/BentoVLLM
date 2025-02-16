@@ -83,6 +83,9 @@ def generate_jinja_context(model_name, config):
 
   requires_hf_tokens = any(it["name"] == "HF_TOKEN" for it in service_config["envs"])
 
+  if "enable_prefix_caching" not in engine_config_struct:
+    engine_config_struct["enable_prefix_caching"] = True
+
   context = {
     "model_name": model_name,
     "model_id": engine_config_struct["model"],
@@ -273,7 +276,7 @@ def generate_all_models(config: dict, template_dir: Path, force: bool = False, w
 def main() -> int:
   parser = argparse.ArgumentParser(description="Generate model service from config.yaml")
   parser.add_argument(
-    "model_name", nargs="?", help="Specific model name to generate. If not provided, generates all models."
+    "model_names", nargs="*", help="Specific model names to generate. If not provided, generates all models."
   )
   parser.add_argument("--force", action="store_true", help="Force regeneration even if directory exists")
   parser.add_argument(
@@ -289,11 +292,12 @@ def main() -> int:
   template_dir = Path(__file__).parent
 
   console = Console()
-  if args.model_name:
-    if args.model_name not in config:
-      console.print(f"[red]Error: Model {args.model_name} not found in config.yaml[/]")
+  if args.model_names:
+    invalid_models = [model for model in args.model_names if model not in config]
+    if invalid_models:
+      console.print(f"[red]Error: Models not found in config.yaml: {', '.join(invalid_models)}[/]")
       return 1
-    filtered_config = {args.model_name: config[args.model_name]}
+    filtered_config = {model: config[model] for model in args.model_names}
   else:
     filtered_config = config
 

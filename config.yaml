@@ -239,6 +239,7 @@
     model: google/gemma-2-2b-it
     max_model_len: 2048
     dtype: half
+    enable_prefix_caching: false
 "gemma2-9b-instruct":
   metadata:
     description: Gemma 2 9B Instruct
@@ -256,6 +257,7 @@
     model: google/gemma-2-9b-it
     max_model_len: 2048
     dtype: half
+    enable_prefix_caching: false
 "gemma2-27b-instruct":
   metadata:
     description: Gemma 2 27B Instruct
@@ -273,6 +275,7 @@
     model: google/gemma-2-27b-it
     max_model_len: 2048
     dtype: half
+    enable_prefix_caching: false
 "jamba1.5-mini":
   metadata:
     description: Jamba 1.5 Mini
@@ -479,6 +482,7 @@
   engine_config:
     model: mistralai/Pixtral-12B-2409
     tokenizer_mode: mistral
+    enable_prefix_caching: false
     enable_chunked_prefill: false
     limit_mm_per_prompt:
       image: 5
@@ -501,6 +505,7 @@
     model: neuralmagic/pixtral-12b-FP8-dynamic
     tokenizer_mode: mistral
     enable_chunked_prefill: false
+    enable_prefix_caching: false
     limit_mm_per_prompt:
       image: 1
     max_model_len: 8192
@@ -524,6 +529,7 @@
     model: mistralai/Pixtral-Large-Instruct-2411
     tokenizer_mode: mistral
     enable_chunked_prefill: false
+    enable_prefix_caching: false
     limit_mm_per_prompt:
       image: 5
     max_model_len: 16384
@@ -548,6 +554,7 @@
     max_model_len: 2048
     tensor_parallel_size: 2
     tokenizer_mode: mistral
+    enable_prefix_caching: false
 "ministral-8b-instruct-2410":
   metadata:
     description: Ministral 8B Instruct 2410
@@ -566,6 +573,7 @@
     dtype: half
     tokenizer_mode: mistral
     max_model_len: 4096
+    enable_prefix_caching: false
 "mistral-small-24b-instruct-2501":
   metadata:
     description: Mistral Small 24B Instruct 2501
@@ -583,6 +591,7 @@
     model: mistralai/Mistral-Small-24B-Instruct-2501
     tokenizer_mode: mistral
     max_model_len: 4096
+    enable_prefix_caching: false
 "mistral-large-123b-instruct-2407":
   metadata:
     description: Mistral Large 123B Instruct 2407
@@ -601,6 +610,7 @@
     max_model_len: 4096
     tensor_parallel_size: 4
     tokenizer_mode: mistral
+    enable_prefix_caching: false
 "phi4-14b":
   metadata:
     description: Phi 4 14B
