@@ -224,6 +224,14 @@ def main() -> int:
   console.print(f"  - Updated deployments: {len(updates)}")
   console.print(f"Failed deployments: {len(results) - len(successful)}")
 
+  # Write successful deployments to file
+  successful_deploys_file = template_dir / "successful_deploys.txt"
+  with open(successful_deploys_file, "w") as f:
+    for result in successful:
+      f.write(f"{result.bento_tag}\n")
+
+  console.print(f"\nSuccessful deployments written to {successful_deploys_file}")
+
   return 0 if len(successful) == len(bento_tags) else 1
 
 
