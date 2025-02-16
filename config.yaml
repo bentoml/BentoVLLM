@@ -523,23 +523,6 @@
     max_model_len: 32768
   requirements:
     - mistral_common[opencv]
-"pixtral-12b-fp8-2409":
-  metadata:
-    description: Pixtral 12B FP8 2409
-    provider: NeuralMagic
-  vision: true
-  service_config:
-    name: bentovllm-pixtral-12b-fp8-2409-service
-    traffic:
-      timeout: 300
-    resources:
-      gpu: 1
-      gpu_type: nvidia-l4
-  engine_config:
-    model: neuralmagic/pixtral-12b-FP8-dynamic
-    enable_chunked_prefill: false
-    enable_prefix_caching: false
-    max_model_len: 8192
 "pixtral-large-2411":
   metadata:
     description: Pixtral Large Instruct 2411
