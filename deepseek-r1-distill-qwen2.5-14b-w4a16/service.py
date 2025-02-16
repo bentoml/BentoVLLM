@@ -7,14 +7,9 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 ENGINE_CONFIG = {
-    "model": "mistralai/Pixtral-Large-Instruct-2411",
-    "tokenizer_mode": "mistral",
-    "enable_chunked_prefill": False,
-    "enable_prefix_caching": False,
-    "limit_mm_per_prompt": {"image": 5},
-    "max_model_len": 16384,
-    "dtype": "half",
-    "tensor_parallel_size": 4,
+    "model": "neuralmagic/DeepSeek-R1-Distill-Qwen-14B-quantized.w4a16",
+    "max_model_len": 4096,
+    "enable_prefix_caching": True,
 }
 
 openai_api_app = fastapi.FastAPI()
@@ -22,10 +17,10 @@ openai_api_app = fastapi.FastAPI()
 
 @bentoml.asgi_app(openai_api_app, path="/v1")
 @bentoml.service(
-    name="bentovllm-pixtral-large-instruct-2411-service",
+    name="bentovllm-r1-qwen2.5-14b-w4a16-service",
     traffic={"timeout": 300},
-    resources={"gpu": 4, "gpu_type": "nvidia-a100-80gb"},
-    envs=[{"name": "HF_TOKEN"}, {"name": "UV_COMPILE_BYTECODE", "value": 1}],
+    resources={"gpu": 1, "gpu_type": "nvidia-tesla-l4"},
+    envs=[{"name": "UV_COMPILE_BYTECODE", "value": 1}],
     labels={"owner": "bentoml-team", "type": "prebuilt"},
     image=bentoml.images.PythonImage(python_version="3.11", lock_python_packages=True).requirements_file(
         "requirements.txt"
@@ -81,6 +76,7 @@ class VLLM:
         args.enable_prompt_tokens_details = False
         args.enable_reasoning = False
         args.reasoning_parser = None
+        args.reasoning_parser = "deepseek_r1"
 
         # reasoning
         if (reasoning := os.getenv("REASONING")) is not None:
@@ -102,32 +98,6 @@ class VLLM:
                 model=self.model_id,
                 messages=[dict(role="user", content=[dict(type="text", text=prompt)])],
                 stream=True,
-            )
-            async for chunk in completion:
-                yield chunk.choices[0].delta.content or ""
-        except Exception:
-            yield traceback.format_exc()
-
-    @bentoml.api
-    async def sights(
-        self, prompt: str = "Describe the content of the picture", image: typing.Optional["PIL.Image.Image"] = None
-    ) -> typing.AsyncGenerator[str, None]:
-        from openai import AsyncOpenAI
-
-        client = AsyncOpenAI(base_url="http://127.0.0.1:3000/v1", api_key="dummy")
-        if image:
-            buffered = io.BytesIO()
-            image.save(buffered, format="PNG")
-            img_str = base64.b64encode(buffered.getvalue()).decode()
-            buffered.close()
-            image_url = f"data:image/png;base64,{img_str}"
-            content = [dict(type="image_url", image_url=dict(url=image_url)), dict(type="text", text=prompt)]
-        else:
-            content = [dict(type="text", text=prompt)]
-
-        try:
-            completion = await client.chat.completions.create(
-                model=self.model_id, messages=[dict(role="user", content=content)], stream=True
             )
             async for chunk in completion:
                 yield chunk.choices[0].delta.content or ""

@@ -151,10 +151,12 @@ In addition to Llama 3.1 8B Instruct, we also have examples for other models in 
 | deepseek-r1-distill-llama3.3-70b | [GitHub](deepseek-r1-distill-llama3.3-70b/) • [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Llama-70B) |
 | deepseek-r1-distill-llama3.3-70b-w8a8 | [GitHub](deepseek-r1-distill-llama3.3-70b-w8a8/) • [Hugging Face](https://huggingface.co/neuralmagic/DeepSeek-R1-Distill-Llama-70B-quantized.w8a8) |
 | deepseek-r1-distill-llama3.3-70b-w4a16 | [GitHub](deepseek-r1-distill-llama3.3-70b-w4a16/) • [Hugging Face](https://huggingface.co/neuralmagic/DeepSeek-R1-Distill-Llama-70B-quantized.w4a16) |
+| deepseek-r1-distill-qwen2.5-32b | [GitHub](deepseek-r1-distill-qwen2.5-32b/) • [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-32B) |
 | deepseek-r1-distill-qwen2.5-32b-w8a8 | [GitHub](deepseek-r1-distill-qwen2.5-32b-w8a8/) • [Hugging Face](https://huggingface.co/neuralmagic/DeepSeek-R1-Distill-Qwen-32B-quantized.w8a8) |
 | deepseek-r1-distill-qwen2.5-32b-w4a16 | [GitHub](deepseek-r1-distill-qwen2.5-32b-w4a16/) • [Hugging Face](https://huggingface.co/neuralmagic/DeepSeek-R1-Distill-Qwen-32B-quantized.w4a16) |
-| deepseek-r1-distill-qwen2.5-32b | [GitHub](deepseek-r1-distill-qwen2.5-32b/) • [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-32B) |
 | deepseek-r1-distill-qwen2.5-14b | [GitHub](deepseek-r1-distill-qwen2.5-14b/) • [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-14B) |
+| deepseek-r1-distill-qwen2.5-14b-w8a8 | [GitHub](deepseek-r1-distill-qwen2.5-14b-w8a8/) • [Hugging Face](https://huggingface.co/neuralmagic/DeepSeek-R1-Distill-Qwen-14B-quantized.w8a8) |
+| deepseek-r1-distill-qwen2.5-14b-w4a16 | [GitHub](deepseek-r1-distill-qwen2.5-14b-w4a16/) • [Hugging Face](https://huggingface.co/neuralmagic/DeepSeek-R1-Distill-Qwen-14B-quantized.w4a16) |
 | deepseek-r1-distill-qwen2.5-7b-math | [GitHub](deepseek-r1-distill-qwen2.5-7b-math/) • [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-7B) |
 | deepseek-r1-distill-llama3.1-8b | [GitHub](deepseek-r1-distill-llama3.1-8b/) • [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Llama-8B) |
 | deepseek-r1-distill-llama3.1-8b-tool-calling | [GitHub](deepseek-r1-distill-llama3.1-8b-tool-calling/) • [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Llama-8B) |
@@ -177,7 +179,7 @@ In addition to Llama 3.1 8B Instruct, we also have examples for other models in 
 | mixtral-8x7b-v0.1 | [GitHub](mixtral-8x7b-v0.1/) • [Hugging Face](https://huggingface.co/mistralai/Mixtral-8x7B-Instruct-v0.1) |
 | ministral-8b-instruct-2410 | [GitHub](ministral-8b-instruct-2410/) • [Hugging Face](https://huggingface.co/mistralai/Ministral-8B-Instruct-2410) |
 | mistral-small-24b-instruct-2501 | [GitHub](mistral-small-24b-instruct-2501/) • [Hugging Face](https://huggingface.co/mistralai/Mistral-Small-24B-Instruct-2501) |
-| mistral-large-123b-instruct-2407 | [GitHub](mistral-large-123b-instruct-2407/) • [Hugging Face](https://huggingface.co/mistralai/Mistral-Large-Instruct-2407) |
+| mistral-large-123b-instruct-2411 | [GitHub](mistral-large-123b-instruct-2411/) • [Hugging Face](https://huggingface.co/mistralai/Mistral-Large-Instruct-2411) |
 | phi4-14b | [GitHub](phi4-14b/) • [Hugging Face](https://huggingface.co/microsoft/phi-4) |
 | qwen2.5-7b-instruct | [GitHub](qwen2.5-7b-instruct/) • [Hugging Face](https://huggingface.co/Qwen/Qwen2.5-7B-Instruct) |
 | qwen2.5-14b-instruct | [GitHub](qwen2.5-14b-instruct/) • [Hugging Face](https://huggingface.co/Qwen/Qwen2.5-14B-Instruct) |
