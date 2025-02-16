@@ -671,6 +671,7 @@
   engine_config:
     model: Qwen/Qwen2.5-72B-Instruct
     max_model_len: 2048
+    tensor_parallel_size: 2
 "qwen2.5-coder-7b-instruct":
   metadata:
     description: Qwen 2.5 Coder 7B Instruct
