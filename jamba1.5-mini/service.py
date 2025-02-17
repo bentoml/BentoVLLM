@@ -29,7 +29,7 @@ openai_api_app = fastapi.FastAPI()
     ],
     labels={'owner': 'bentoml-team', 'type': 'prebuilt'},
     image=bentoml.images.PythonImage(python_version='3.11', lock_python_packages=True)
-    .python_packages('-i https://flashinfer.ai/whl/cu124/torch2.5/')
+    .python_packages('--extra-index-url https://flashinfer.ai/whl/cu124/torch2.5/')
     .requirements_file('requirements.txt')
     .run('uv pip install --compile-bytecode torch')
     .run('uv pip install --compile-bytecode mamba-ssm[causal-conv1d]'),
