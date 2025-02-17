@@ -39,30 +39,25 @@ def ensure_venv(req_txt, venv_dir, cfg):
   build_args = build.get("args", [])
 
   if not venv_dir.exists():
-    subprocess.run(["uv", "venv", venv_dir, "-p", "3.11"], check=True, capture_output=True)
-    subprocess.run(
-      ["uv", "pip", "install", "--compile-bytecode", "bentoml==1.4.0a2", "-p", venv_dir / "bin" / "python"],
-      check=True,
-      capture_output=True,
-    )
+    subprocess.run(["uv", "venv", venv_dir, "-p", "3.11"], check=True)
     subprocess.run(
       [
         "uv",
         "pip",
         "install",
         "--compile-bytecode",
-        "-r",
-        req_txt,
-        *build_args,
+        "--prerelease=allow",
+        "bentoml==1.4.0a2",
         "-p",
         venv_dir / "bin" / "python",
       ],
       check=True,
-      capture_output=True,
+      capture_output=True
     )
+    subprocess.run(["uv", "pip", "install", "-r", req_txt, *build_args, "-p", venv_dir / "bin" / "python"], check=True, capture_output=True)
     if "post" in build:
       if not isinstance(build["post"], list):
-        raise RuntimeError("pre should be a list of commands")
+        raise RuntimeError("post should be a list of commands")
       for it in build["post"]:
         subprocess.run([*it.split(), "-p", venv_dir / "bin" / "python"], check=True, capture_output=True)
   return venv_dir
@@ -77,11 +72,8 @@ def build_model(
     return BuildResult(model_name, "", False, f"Directory {model_dir} does not exist")
 
   req_txt_file = model_dir / "requirements.txt"
-  venv_dir = model_dir / "venv" / f"{model_name}-{hash_file(req_txt_file)[:7]}"
+  venv_dir = template_dir / "venv" / f"{model_name}-{hash_file(req_txt_file)[:7]}"
   version_path = ensure_venv(req_txt_file, venv_dir, cfg)
-
-  build = cfg.get("build", {})
-  build_args = build.get("args", [])
 
   try:
     progress.update(task_id, description=f"[blue]Building {model_name}...[/]")
