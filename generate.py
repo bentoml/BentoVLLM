@@ -274,35 +274,12 @@ def main() -> int:
 
   # Format all python files
   console.print("\n[yellow]Formatting Python files...[/]")
+  subprocess.run(["ruff", "format"], check=True, capture_output=True)
   subprocess.run(
     [
       "ruff",
       "format",
-      "--config",
-      "indent-width=4",
-      "--config",
-      "line-length=119",
-      "--config",
-      "preview=true",
-      "--exclude",
-      "_src",
-      "--exclude",
-      "generate.py",
-      "--exclude",
-      "deploy.py",
-      "--exclude",
-      "build.py",
-      "--exclude",
-      "push.py",
-      ".",
-    ],
-    check=True,
-    capture_output=True,
-  )
-  subprocess.run(
-    [
-      "ruff",
-      "format",
+      "--isolated",
       "--config",
       "indent-width=2",
       "--config",

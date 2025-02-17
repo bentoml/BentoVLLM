@@ -30,10 +30,7 @@ def push_bento(bento_tag: str, context: str, progress: Progress, task_id: int) -
 
     # Run bentoml push with output capture
     result = subprocess.run(
-      ["bentoml", "push", bento_tag, "--context", context],
-      capture_output=True,
-      text=True,
-      check=True,
+      ["bentoml", "push", bento_tag, "--context", context], capture_output=True, text=True, check=True
     )
     return PushResult(bento_tag, True)
 
@@ -77,17 +74,9 @@ def push_all_bentos(bento_tags: List[str], context: str, workers: int) -> List[P
 
 def main() -> int:
   parser = argparse.ArgumentParser(description="Push all built bentos to registry")
+  parser.add_argument("--context", type=str, required=True, help="Context to push bentos")
   parser.add_argument(
-    "--context",
-    type=str,
-    required=True,
-    help="Context to push bentos",
-  )
-  parser.add_argument(
-    "--workers",
-    type=int,
-    default=multiprocessing.cpu_count(),
-    help="Number of parallel workers (default: 4)",
+    "--workers", type=int, default=multiprocessing.cpu_count(), help="Number of parallel workers (default: 4)"
   )
   args = parser.parse_args()
 

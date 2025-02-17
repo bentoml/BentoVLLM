@@ -7,42 +7,42 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 ENGINE_CONFIG = {
-    "model": "mistralai/Pixtral-Large-Instruct-2411",
-    "tokenizer_mode": "mistral",
-    "enable_chunked_prefill": False,
-    "enable_prefix_caching": False,
-    "limit_mm_per_prompt": {"image": 5},
-    "max_model_len": 16384,
-    "dtype": "half",
-    "tensor_parallel_size": 4,
+    'model': 'mistralai/Pixtral-Large-Instruct-2411',
+    'tokenizer_mode': 'mistral',
+    'enable_chunked_prefill': False,
+    'enable_prefix_caching': False,
+    'limit_mm_per_prompt': {'image': 5},
+    'max_model_len': 16384,
+    'dtype': 'half',
+    'tensor_parallel_size': 4,
 }
 MAX_TOKENS = 16384
 
 openai_api_app = fastapi.FastAPI()
 
 
-@bentoml.asgi_app(openai_api_app, path="/v1")
+@bentoml.asgi_app(openai_api_app, path='/v1')
 @bentoml.service(
-    name="bentovllm-pixtral-large-instruct-2411-service",
-    traffic={"timeout": 300},
-    resources={"gpu": 4, "gpu_type": "nvidia-a100-80gb"},
-    envs=[{"name": "HF_TOKEN"}, {"name": "UV_COMPILE_BYTECODE", "value": 1}],
-    labels={"owner": "bentoml-team", "type": "prebuilt"},
-    image=bentoml.images.PythonImage(python_version="3.11", lock_python_packages=True).requirements_file(
-        "requirements.txt"
+    name='bentovllm-pixtral-large-instruct-2411-service',
+    traffic={'timeout': 300},
+    resources={'gpu': 4, 'gpu_type': 'nvidia-a100-80gb'},
+    envs=[{'name': 'HF_TOKEN'}, {'name': 'UV_COMPILE_BYTECODE', 'value': 1}],
+    labels={'owner': 'bentoml-team', 'type': 'prebuilt'},
+    image=bentoml.images.PythonImage(python_version='3.11', lock_python_packages=True).requirements_file(
+        'requirements.txt'
     ),
 )
 class VLLM:
-    model_id = ENGINE_CONFIG["model"]
-    model = bentoml.models.HuggingFaceModel(model_id, exclude=["*.pth", "*.pt"])
+    model_id = ENGINE_CONFIG['model']
+    model = bentoml.models.HuggingFaceModel(model_id, exclude=['*.pth', '*.pt'])
 
     def __init__(self) -> None:
         from vllm import AsyncEngineArgs, AsyncLLMEngine
         import vllm.entrypoints.openai.api_server as vllm_api_server
 
         OPENAI_ENDPOINTS = [
-            ["/chat/completions", vllm_api_server.create_chat_completion, ["POST"]],
-            ["/models", vllm_api_server.show_available_models, ["GET"]],
+            ['/chat/completions', vllm_api_server.create_chat_completion, ['POST']],
+            ['/models', vllm_api_server.show_available_models, ['GET']],
         ]
         for route, endpoint, methods in OPENAI_ENDPOINTS:
             openai_api_app.add_api_route(path=route, endpoint=endpoint, methods=methods, include_in_schema=True)
@@ -55,10 +55,10 @@ class VLLM:
         args.model = self.model
         args.disable_log_requests = True
         args.max_log_len = 1000
-        args.response_role = "assistant"
+        args.response_role = 'assistant'
         args.served_model_name = [self.model_id]
         args.chat_template = None
-        args.chat_template_content_format = "auto"
+        args.chat_template_content_format = 'auto'
         args.lora_modules = None
         args.prompt_adapters = None
         args.request_logger = None
@@ -76,53 +76,53 @@ class VLLM:
     @bentoml.api
     async def generate(
         self,
-        prompt: str = "Who are you? Please respond in pirate speak!",
+        prompt: str = 'Who are you? Please respond in pirate speak!',
         max_tokens: typing.Annotated[int, annotated_types.Ge(128), annotated_types.Le(MAX_TOKENS)] = MAX_TOKENS,
     ) -> typing.AsyncGenerator[str, None]:
         from openai import AsyncOpenAI
 
-        client = AsyncOpenAI(base_url="http://127.0.0.1:3000/v1", api_key="dummy")
+        client = AsyncOpenAI(base_url='http://127.0.0.1:3000/v1', api_key='dummy')
         try:
             completion = await client.chat.completions.create(
                 model=self.model_id,
-                messages=[dict(role="user", content=[dict(type="text", text=prompt)])],
+                messages=[dict(role='user', content=[dict(type='text', text=prompt)])],
                 stream=True,
                 max_tokens=max_tokens,
             )
             async for chunk in completion:
-                yield chunk.choices[0].delta.content or ""
+                yield chunk.choices[0].delta.content or ''
         except Exception:
             logger.error(traceback.format_exc())
-            yield "Internal error found. Check server logs for more information"
+            yield 'Internal error found. Check server logs for more information'
             return
 
     @bentoml.api
     async def sights(
         self,
-        prompt: str = "Describe the content of the picture",
-        image: typing.Optional["PIL.Image.Image"] = None,
+        prompt: str = 'Describe the content of the picture',
+        image: typing.Optional['PIL.Image.Image'] = None,
         max_tokens: typing.Annotated[int, annotated_types.Ge(128), annotated_types.Le(MAX_TOKENS)] = MAX_TOKENS,
     ) -> typing.AsyncGenerator[str, None]:
         from openai import AsyncOpenAI
 
-        client = AsyncOpenAI(base_url="http://127.0.0.1:3000/v1", api_key="dummy")
+        client = AsyncOpenAI(base_url='http://127.0.0.1:3000/v1', api_key='dummy')
         if image:
             buffered = io.BytesIO()
-            image.save(buffered, format="PNG")
+            image.save(buffered, format='PNG')
             img_str = base64.b64encode(buffered.getvalue()).decode()
             buffered.close()
-            image_url = f"data:image/png;base64,{img_str}"
-            content = [dict(type="image_url", image_url=dict(url=image_url)), dict(type="text", text=prompt)]
+            image_url = f'data:image/png;base64,{img_str}'
+            content = [dict(type='image_url', image_url=dict(url=image_url)), dict(type='text', text=prompt)]
         else:
-            content = [dict(type="text", text=prompt)]
+            content = [dict(type='text', text=prompt)]
 
         try:
             completion = await client.chat.completions.create(
-                model=self.model_id, messages=[dict(role="user", content=content)], stream=True, max_tokens=max_tokens
+                model=self.model_id, messages=[dict(role='user', content=content)], stream=True, max_tokens=max_tokens
             )
             async for chunk in completion:
-                yield chunk.choices[0].delta.content or ""
+                yield chunk.choices[0].delta.content or ''
         except Exception:
             logger.error(traceback.format_exc())
-            yield "Internal error found. Check server logs for more information"
+            yield 'Internal error found. Check server logs for more information'
             return

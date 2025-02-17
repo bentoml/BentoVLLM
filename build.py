@@ -39,27 +39,9 @@ def ensure_venv(req_txt, venv_dir, cfg):
   build_args = build.get("args", [])
 
   if not venv_dir.exists():
+    subprocess.run(["uv", "venv", venv_dir, "-p", "3.11"], check=True, capture_output=True)
     subprocess.run(
-      [
-        "uv",
-        "venv",
-        venv_dir,
-        "-p",
-        "3.11",
-      ],
-      check=True,
-      capture_output=True,
-    )
-    subprocess.run(
-      [
-        "uv",
-        "pip",
-        "install",
-        "--compile-bytecode",
-        "bentoml==1.4.0a2",
-        "-p",
-        venv_dir / "bin" / "python",
-      ],
+      ["uv", "pip", "install", "--compile-bytecode", "bentoml==1.4.0a2", "-p", venv_dir / "bin" / "python"],
       check=True,
       capture_output=True,
     )
@@ -106,15 +88,7 @@ def build_model(
 
     # Run bentoml build with output capture
     result = subprocess.run(
-      [
-        version_path / "bin" / "python",
-        "-m",
-        "bentoml",
-        "build",
-        "service:VLLM",
-        "--output",
-        "tag",
-      ],
+      [version_path / "bin" / "python", "-m", "bentoml", "build", "service:VLLM", "--output", "tag"],
       capture_output=True,
       text=True,
       check=True,

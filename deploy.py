@@ -33,22 +33,12 @@ def check_and_pull_bento(bento_tag: str, context: str) -> bool:
   """Check if bento exists locally, if not try to pull it from the context."""
   try:
     # Check if bento exists locally
-    subprocess.run(
-      ["bentoml", "get", bento_tag],
-      capture_output=True,
-      text=True,
-      check=True,
-    )
+    subprocess.run(["bentoml", "get", bento_tag], capture_output=True, text=True, check=True)
     return True
   except subprocess.CalledProcessError:
     try:
       # Attempt to pull the bento
-      subprocess.run(
-        ["bentoml", "pull", bento_tag, "--context", context],
-        capture_output=True,
-        text=True,
-        check=True,
-      )
+      subprocess.run(["bentoml", "pull", bento_tag, "--context", context], capture_output=True, text=True, check=True)
       return True
     except subprocess.CalledProcessError:
       return False
@@ -157,11 +147,7 @@ def deploy_all_bentos(bento_tags: List[str], context: str, workers: int) -> List
   console = Console()
   results = []
 
-  with Progress(
-    SpinnerColumn(),
-    TextColumn("[progress.description]{task.description}"),
-    console=console,
-  ) as progress:
+  with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"), console=console) as progress:
     overall_task = progress.add_task("[yellow]Deploying bentos...[/]", total=len(bento_tags))
     deploy_tasks = {tag: progress.add_task(f"[cyan]Waiting to deploy {tag}...[/]", total=1) for tag in bento_tags}
 
@@ -187,12 +173,7 @@ def deploy_all_bentos(bento_tags: List[str], context: str, workers: int) -> List
 
 def main() -> int:
   parser = argparse.ArgumentParser(description="Deploy all built bentos")
-  parser.add_argument(
-    "--context",
-    type=str,
-    required=True,
-    help="Context to push bentos",
-  )
+  parser.add_argument("--context", type=str, required=True, help="Context to push bentos")
   parser.add_argument(
     "--workers",
     type=int,
