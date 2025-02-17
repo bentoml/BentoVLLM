@@ -22,11 +22,15 @@ openai_api_app = fastapi.FastAPI()
     name="bentovllm-jamba1.5-large-service",
     traffic={"timeout": 300},
     resources={"gpu": 8, "gpu_type": "nvidia-a100-80gb"},
-    envs=[{"name": "HF_TOKEN"}, {"name": "UV_COMPILE_BYTECODE", "value": 1}],
+    envs=[
+        {"name": "HF_TOKEN"},
+        {"name": "UV_NO_BUILD_ISOLATION", "value": 1},
+        {"name": "UV_COMPILE_BYTECODE", "value": 1},
+    ],
     labels={"owner": "bentoml-team", "type": "prebuilt"},
-    image=bentoml.images.PythonImage(python_version="3.11", lock_python_packages=False).requirements_file(
-        "requirements.txt"
-    ),
+    image=bentoml.images.PythonImage(python_version="3.11", lock_python_packages=False)
+    .run("uv pip install torch")
+    .requirements_file("requirements.txt"),
 )
 class VLLM:
     model_id = ENGINE_CONFIG["model"]
@@ -103,4 +107,6 @@ class VLLM:
             async for chunk in completion:
                 yield chunk.choices[0].delta.content or ""
         except Exception:
-            yield traceback.format_exc()
+            logger.error(traceback.format_exc())
+            yield "Internal error found. Check server logs for more information"
+            return

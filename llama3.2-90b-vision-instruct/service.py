@@ -104,7 +104,9 @@ class VLLM:
             async for chunk in completion:
                 yield chunk.choices[0].delta.content or ""
         except Exception:
-            yield traceback.format_exc()
+            logger.error(traceback.format_exc())
+            yield "Internal error found. Check server logs for more information"
+            return
 
     @bentoml.api
     async def sights(
@@ -130,4 +132,6 @@ class VLLM:
             async for chunk in completion:
                 yield chunk.choices[0].delta.content or ""
         except Exception:
-            yield traceback.format_exc()
+            logger.error(traceback.format_exc())
+            yield "Internal error found. Check server logs for more information"
+            return
