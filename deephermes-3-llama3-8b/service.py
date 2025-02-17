@@ -65,7 +65,7 @@ class VLLM:
         args.enable_prompt_tokens_details = False
         args.enable_reasoning = False
         args.reasoning_parser = None
-        args.reasoning_parser = "deepseek_r1"
+        args.tool_call_parser = "pythonic"
 
         asyncio.create_task(vllm_api_server.init_app_state(engine, model_config, openai_api_app.state, args))
 

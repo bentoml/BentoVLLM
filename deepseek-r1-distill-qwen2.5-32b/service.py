@@ -66,6 +66,7 @@ class VLLM:
         args.enable_reasoning = False
         args.reasoning_parser = None
         args.reasoning_parser = "deepseek_r1"
+        args.tool_call_parser = "llama3_json"
 
         asyncio.create_task(vllm_api_server.init_app_state(engine, model_config, openai_api_app.state, args))
 

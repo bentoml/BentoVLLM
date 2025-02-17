@@ -32,7 +32,7 @@ openai_api_app = fastapi.FastAPI()
 )
 class VLLM:
     model_id = ENGINE_CONFIG["model"]
-    model = bentoml.models.HuggingFaceModel(model_id, exclude=["*.pth", "*.pt"])
+    model = bentoml.models.HuggingFaceModel(model_id, exclude=["original", "*.pth", "*.pt"])
 
     def __init__(self) -> None:
         from vllm import AsyncEngineArgs, AsyncLLMEngine
@@ -68,6 +68,7 @@ class VLLM:
         args.enable_prompt_tokens_details = False
         args.enable_reasoning = False
         args.reasoning_parser = None
+        args.tool_call_parser = "pythonic"
 
         asyncio.create_task(vllm_api_server.init_app_state(engine, model_config, openai_api_app.state, args))
 

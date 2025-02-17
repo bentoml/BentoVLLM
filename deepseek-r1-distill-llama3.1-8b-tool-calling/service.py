@@ -68,6 +68,7 @@ class VLLM:
         args.enable_auto_tool_choice = True
         args.enable_tool_call_parser = True
         args.tool_call_parser = "llama3_json"
+        args.reasoning_parser = "deepseek_r1"
 
         asyncio.create_task(vllm_api_server.init_app_state(engine, model_config, openai_api_app.state, args))
 
