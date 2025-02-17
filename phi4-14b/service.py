@@ -19,9 +19,9 @@ openai_api_app = fastapi.FastAPI()
     resources={'gpu': 1, 'gpu_type': 'nvidia-a100-80gb'},
     envs=[{'name': 'UV_COMPILE_BYTECODE', 'value': 1}],
     labels={'owner': 'bentoml-team', 'type': 'prebuilt'},
-    image=bentoml.images.PythonImage(python_version='3.11', lock_python_packages=True).requirements_file(
-        'requirements.txt'
-    ),
+    image=bentoml.images.PythonImage(python_version='3.11', lock_python_packages=True)
+    .python_packages('-i https://flashinfer.ai/whl/cu124/torch2.5/')
+    .requirements_file('requirements.txt'),
 )
 class VLLM:
     model_id = ENGINE_CONFIG['model']
@@ -61,6 +61,25 @@ class VLLM:
         args.enable_prompt_tokens_details = False
         args.enable_reasoning = False
         args.reasoning_parser = None
+
+        args.chat_template = """{% if messages[0]['role'] == 'system' %}
+    {% set offset = 1 %}
+{% else %}
+    {% set offset = 0 %}
+{% endif %}
+
+{% for message in messages %}
+    {% if (message['role'] == 'user') != (loop.index0 % 2 == offset) %}
+        {{ raise_exception('Conversation roles must alternate user/assistant/user/assistant/...') }}
+    {% endif %}
+
+    {{ '<|' + message['role'] + '|>\n' + message['content'].strip() + '<|end|>' + '\n' }}
+
+    {% if loop.last and message['role'] == 'user' and add_generation_prompt %}
+        {{ '<|assistant|>\n' }}
+    {% endif %}
+{% endfor %}
+"""
 
         asyncio.create_task(vllm_api_server.init_app_state(engine, model_config, openai_api_app.state, args))
 

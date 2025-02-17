@@ -19,9 +19,9 @@ openai_api_app = fastapi.FastAPI()
     resources={'gpu': 1, 'gpu_type': 'nvidia-l4'},
     envs=[{'name': 'UV_COMPILE_BYTECODE', 'value': 1}],
     labels={'owner': 'bentoml-team', 'type': 'prebuilt'},
-    image=bentoml.images.PythonImage(python_version='3.11', lock_python_packages=True).requirements_file(
-        'requirements.txt'
-    ),
+    image=bentoml.images.PythonImage(python_version='3.11', lock_python_packages=True)
+    .python_packages('-i https://flashinfer.ai/whl/cu124/torch2.5/')
+    .requirements_file('requirements.txt'),
 )
 class VLLM:
     model_id = ENGINE_CONFIG['model']

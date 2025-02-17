@@ -9,7 +9,6 @@ See [here](https://docs.bentoml.com/en/latest/examples/overview.html) for a full
 💡 This example is served as a basis for advanced code customization, such as custom model, inference logic or vLLM options. For simple LLM hosting with OpenAI compatible endpoint without writing any code, see [OpenLLM](https://github.com/bentoml/OpenLLM).
 
 ## Prerequisites
-- You have gained access to `NousResearch/Hermes-3-Llama-3.1-405B-FP8` on [Hugging Face](https://huggingface.co/NousResearch/Hermes-3-Llama-3.1-405B-FP8).
 - If you want to test the Service locally, we recommend you use an Nvidia GPU with at least 16G VRAM.
 
 ## Install dependencies
@@ -21,8 +20,6 @@ cd BentoVLLM/hermes-3-llama3.1-405b
 # Recommend Python 3.11
 
 pip install -r requirements.txt
-
-export HF_TOKEN=<your-api-key>
 ```
 
 ## Run the BentoML Service
@@ -156,12 +153,10 @@ Make sure you have [logged in to BentoCloud](https://docs.bentoml.com/en/latest/
 bentoml cloud login
 ```
 
-Create a BentoCloud secret to store the required environment variable and reference it for deployment.
+Create a BentoCloud deployment from this service:
 
 ```bash
-bentoml secret create huggingface HF_TOKEN=$HF_TOKEN
-
-bentoml deploy service:VLLM --secret huggingface
+bentoml deploy service:VLLM
 ```
 
 Once the application is up and running on BentoCloud, you can access it via the exposed URL.

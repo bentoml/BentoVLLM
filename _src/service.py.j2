@@ -12,7 +12,7 @@ MAX_TOKENS = {{generate_config['max_tokens']|default(engine_config['max_model_le
 
 openai_api_app = fastapi.FastAPI()
 
-@bentoml.asgi_app(openai_api_app, path="/v1")
+@bentoml.asgi_app(openai_api_app, path='/v1')
 @bentoml.service(
   {%- for key, value in service_config.items() -%}
   {%- if key == "name" -%}
@@ -22,13 +22,14 @@ openai_api_app = fastapi.FastAPI()
   {%- endif -%}
   {%- endfor %}
   labels={{labels}},
-  image = bentoml.images.PythonImage(python_version="3.11", lock_python_packages={{lock_python_packages}})
+  image = bentoml.images.PythonImage(python_version='3.11', lock_python_packages={{lock_python_packages}})
         {%- if build['pre'] is defined %}
         {%- for item in build['pre'] -%}
         .run("{{item}}")
         {%- endfor %}
         {%- endif %}
-        .requirements_file("requirements.txt")
+        .python_packages('-i https://flashinfer.ai/whl/cu124/torch2.5/')
+        .requirements_file('requirements.txt')
         {%- if build['post'] is defined %}
         {%- for item in build['post'] -%}
         .run("{{item}}")
@@ -77,7 +78,9 @@ class VLLM:
     args.reasoning_parser = None
     {%- if server_config | length > 0 %}
     {% for key, value in server_config.items() -%}
-    {% if value is string -%}
+    {%- if key == "chat_template" %}
+    args.{{key}} = """{{value}}"""
+    {% elif value is string -%}
     args.{{key}} = "{{value}}"
     {% else -%}
     args.{{key}} = {{value}}

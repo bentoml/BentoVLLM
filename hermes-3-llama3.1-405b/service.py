@@ -22,11 +22,11 @@ openai_api_app = fastapi.FastAPI()
     name='bentovllm-hermes-3-llama3.1-405b-service',
     traffic={'timeout': 300},
     resources={'gpu': 6, 'gpu_type': 'nvidia-a100-80gb'},
-    envs=[{'name': 'HF_TOKEN'}, {'name': 'UV_COMPILE_BYTECODE', 'value': 1}],
+    envs=[{'name': 'UV_COMPILE_BYTECODE', 'value': 1}],
     labels={'owner': 'bentoml-team', 'type': 'prebuilt'},
-    image=bentoml.images.PythonImage(python_version='3.11', lock_python_packages=True).requirements_file(
-        'requirements.txt'
-    ),
+    image=bentoml.images.PythonImage(python_version='3.11', lock_python_packages=True)
+    .python_packages('-i https://flashinfer.ai/whl/cu124/torch2.5/')
+    .requirements_file('requirements.txt'),
 )
 class VLLM:
     model_id = ENGINE_CONFIG['model']
