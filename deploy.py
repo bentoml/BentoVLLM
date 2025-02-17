@@ -88,8 +88,8 @@ def deploy_bento(bento_tag: str, context: str, progress: Progress, task_id: int)
     # Wait for deployment to reach "running" status
     progress.update(task_id, description=f"[blue]Waiting for {deployment_name} to be ready...[/]")
     time.sleep(1)
-    while (
-      json.loads(
+    while True:
+      status = json.loads(
         subprocess.run(
           ["bentoml", "deployment", "get", deployment_name, "-o", "json", "--context", context],
           capture_output=True,
@@ -97,12 +97,23 @@ def deploy_bento(bento_tag: str, context: str, progress: Progress, task_id: int)
           check=True,
         ).stdout
       )["status"]["status"]
-      != "running"
-    ):
+      if status == "running":
+        break
+      elif status == "terminated":
+        subprocess.run(
+          ["bentoml", "deployment", "delete", deployment_name, "--context", context],
+          capture_output=True,
+          text=True,
+          check=True,
+        )
+        return DeployResult(
+          bento_tag, False, f"[red]Deployment terminated unexpectedly while waiting for running state[/]"
+        )
+
       time.sleep(2)
 
     # Terminate the deployment
-    progress.update(task_id, description=f"[blue]Terminating {deployment_name}...[/]")
+    progress.update(task_id, description=f"[cyan]Terminating {deployment_name}...[/]")
     time.sleep(1)
     subprocess.run(
       ["bentoml", "deployment", "terminate", deployment_name, "--context", context],
@@ -126,7 +137,7 @@ def deploy_bento(bento_tag: str, context: str, progress: Progress, task_id: int)
       time.sleep(2)
 
     # Delete the deployment
-    progress.update(task_id, description=f"[blue]Deleting deployment {deployment_name}...[/]")
+    progress.update(task_id, description=f"[cyan]Deleting deployment {deployment_name}...[/]")
     subprocess.run(
       ["bentoml", "deployment", "delete", deployment_name, "--context", context],
       capture_output=True,
@@ -147,7 +158,7 @@ def deploy_all_bentos(bento_tags: List[str], context: str, workers: int) -> List
   results = []
 
   with Progress(
-    SpinnerColumn(spinner_name="bouncingBar"),
+    SpinnerColumn(),
     TextColumn("[progress.description]{task.description}"),
     console=console,
   ) as progress:
