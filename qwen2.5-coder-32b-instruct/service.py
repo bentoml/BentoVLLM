@@ -65,7 +65,7 @@ class VLLM:
         args.enable_tool_call_parser = True
         args.tool_call_parser = "llama3_json"
 
-        await vllm_api_server.init_app_state(engine, model_config, openai_api_app.state, args)
+        asyncio.create_task(vllm_api_server.init_app_state(engine, model_config, openai_api_app.state, args))
 
     @bentoml.api
     async def generate(

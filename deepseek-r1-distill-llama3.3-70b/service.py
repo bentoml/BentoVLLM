@@ -68,7 +68,7 @@ class VLLM:
         args.reasoning_parser = None
         args.reasoning_parser = "deepseek_r1"
 
-        await vllm_api_server.init_app_state(engine, model_config, openai_api_app.state, args)
+        asyncio.create_task(vllm_api_server.init_app_state(engine, model_config, openai_api_app.state, args))
 
     @bentoml.api
     async def generate(
