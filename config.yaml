@@ -331,11 +331,9 @@
     max_model_len: 204800
     tensor_parallel_size: 2
     enable_prefix_caching: false
-  requirements:
-    - mamba-ssm[causal-conv1d]
   build:
     lock_python_packages: false
-    pre: uv pip install torch
+    pre: uv pip install --compile-bytecode torch mamba-ssm[causal-conv1d]
     args:
       - --no-build-isolation
       - torch
@@ -360,11 +358,9 @@
     tensor_parallel_size: 8
     quantization: "experts_int8"
     enable_prefix_caching: false
-  requirements:
-    - mamba-ssm[causal-conv1d]
   build:
     lock_python_packages: false
-    pre: uv pip install torch
+    pre: uv pip install --compile-bytecode torch mamba-ssm[causal-conv1d]
     args:
       - --no-build-isolation
       - torch
