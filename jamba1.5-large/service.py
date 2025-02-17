@@ -34,11 +34,13 @@ openai_api_app = fastapi.FastAPI()
     .system_packages('git')
     .requirements_file('requirements.txt')
     .run(
-        'curl -L -o ./causal-conv1d.whl https://github.com/Dao-AILab/causal-conv1d/releases/download/v1.5.0.post8/causal_conv1d-1.5.0.post8+cu11torch2.5cxx11abiTRUE-cp311-cp311-linux_x86_64.whl'
+        'curl -L -o ./causal_conv1d-1.5.0.post8+cu12torch2.5cxx11abiFALSE-cp311-cp311-linux_x86_64.whl https://github.com/Dao-AILab/causal-conv1d/releases/download/v1.5.0.post8/causal_conv1d-1.5.0.post8+cu12torch2.5cxx11abiFALSE-cp311-cp311-linux_x86_64.whl'
     )
-    .run('uv pip install --compile-bytecode ./causal-conv1d.whl')
-    .run('uv pip install --compile-bytecode --no-build-isolation torch')
-    .run('uv pip install --compile-bytecode --no-build-isolation torch mamba-ssm'),
+    .run(
+        'uv pip install --compile-bytecode ./causal_conv1d-1.5.0.post8+cu12torch2.5cxx11abiFALSE-cp311-cp311-linux_x86_64.whl'
+    )
+    .run('uv pip install --compile-bytecode torch')
+    .run('uv pip install --compile-bytecode mamba-ssm'),
 )
 class VLLM:
     model_id = ENGINE_CONFIG['model']

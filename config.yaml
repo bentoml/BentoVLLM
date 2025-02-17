@@ -349,8 +349,8 @@
       - curl
       - git
     post:
-      - curl -L -o ./causal-conv1d.whl https://github.com/Dao-AILab/causal-conv1d/releases/download/v1.5.0.post8/causal_conv1d-1.5.0.post8+cu11torch2.5cxx11abiTRUE-cp311-cp311-linux_x86_64.whl
-      - uv pip install --compile-bytecode ./causal-conv1d.whl
+      - curl -L -o ./causal_conv1d-1.5.0.post8+cu12torch2.5cxx11abiFALSE-cp311-cp311-linux_x86_64.whl https://github.com/Dao-AILab/causal-conv1d/releases/download/v1.5.0.post8/causal_conv1d-1.5.0.post8+cu12torch2.5cxx11abiFALSE-cp311-cp311-linux_x86_64.whl
+      - uv pip install --compile-bytecode ./causal_conv1d-1.5.0.post8+cu12torch2.5cxx11abiFALSE-cp311-cp311-linux_x86_64.whl
       - uv pip install --compile-bytecode torch
       - uv pip install --compile-bytecode mamba-ssm
   generate_config:
@@ -381,10 +381,10 @@
       - curl
       - git
     post:
-      - curl -L -o ./causal-conv1d.whl https://github.com/Dao-AILab/causal-conv1d/releases/download/v1.5.0.post8/causal_conv1d-1.5.0.post8+cu11torch2.5cxx11abiTRUE-cp311-cp311-linux_x86_64.whl
-      - uv pip install --compile-bytecode ./causal-conv1d.whl
-      - uv pip install --compile-bytecode --no-build-isolation torch
-      - uv pip install --compile-bytecode --no-build-isolation torch mamba-ssm
+      - curl -L -o ./causal_conv1d-1.5.0.post8+cu12torch2.5cxx11abiFALSE-cp311-cp311-linux_x86_64.whl https://github.com/Dao-AILab/causal-conv1d/releases/download/v1.5.0.post8/causal_conv1d-1.5.0.post8+cu12torch2.5cxx11abiFALSE-cp311-cp311-linux_x86_64.whl
+      - uv pip install --compile-bytecode ./causal_conv1d-1.5.0.post8+cu12torch2.5cxx11abiFALSE-cp311-cp311-linux_x86_64.whl
+      - uv pip install --compile-bytecode torch
+      - uv pip install --compile-bytecode mamba-ssm
   server_config:
     tool_call_parser: "jamba"
   generate_config:
