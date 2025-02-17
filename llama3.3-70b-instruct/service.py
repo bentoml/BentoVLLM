@@ -29,7 +29,7 @@ openai_api_app = fastapi.FastAPI()
 )
 class VLLM:
     model_id = ENGINE_CONFIG["model"]
-    model = bentoml.models.HuggingFaceModel(model_id, exclude=["*.pth", "*.pt"])
+    model = bentoml.models.HuggingFaceModel(model_id, exclude=["original", "consolidated*", "*.pth", "*.pt"])
 
     def __init__(self) -> None:
         from vllm import AsyncEngineArgs, AsyncLLMEngine

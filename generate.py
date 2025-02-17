@@ -125,45 +125,6 @@ def generate_readme(config, template_dir):
     f.write(rendered)
 
 
-def compare_directories(dir1: Path, dir2: Path) -> bool:
-  """Compare two directories recursively to check if they have the same content, respecting .gitignore."""
-  if not dir1.exists() or not dir2.exists():
-    return False
-
-  # Use pathspec to parse .gitignore rules
-  from pathspec import PathSpec
-  from pathspec.patterns import GitWildMatchPattern
-
-  # Read .gitignore if it exists
-  gitignore_path = GIT_DIRECTORY / ".gitignore"
-  ignore_patterns = []
-  if gitignore_path.exists():
-    with gitignore_path.open("r") as f:
-      ignore_patterns = f.readlines()
-  spec = PathSpec.from_lines(GitWildMatchPattern, ignore_patterns)
-
-  # Get files while respecting .gitignore
-  def get_tracked_files(path: Path) -> list:
-    return sorted([
-      f.relative_to(path) for f in path.rglob("*") if f.is_file() and not spec.match_file(str(f.relative_to(path)))
-    ])
-
-  files1 = get_tracked_files(dir1)
-  files2 = get_tracked_files(dir2)
-
-  if files1 != files2:
-    return False
-
-  # Use filecmp for faster file comparison
-  import filecmp
-
-  for f1, f2 in zip(files1, files2):
-    if not filecmp.cmp(dir1 / f1, dir2 / f2, shallow=False):
-      return False
-
-  return True
-
-
 @dataclass
 class GenerateResult:
   model_name: str
@@ -220,14 +181,8 @@ def generate_model(
           f.write(rendered)
 
       if output_dir.exists():
-        # Compare the existing directory with the newly generated one
-        if compare_directories(output_dir, temp_output_dir):
-          progress.update(task_id, description=f"[yellow]Skipping {model_name} - no changes[/]")
-          return GenerateResult(model_name, True, no_changes=True)
-        else:
-          progress.update(task_id, description=f"[blue]Updating {model_name} - changes detected[/]")
-          shutil.rmtree(output_dir)
-          shutil.copytree(temp_output_dir, output_dir)
+        shutil.rmtree(output_dir)
+        shutil.copytree(temp_output_dir, output_dir)
       else:
         # If directory doesn't exist, just move the generated one
         shutil.copytree(temp_output_dir, output_dir)
