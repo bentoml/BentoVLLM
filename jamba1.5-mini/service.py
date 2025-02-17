@@ -79,7 +79,9 @@ class VLLM:
     async def generate(
         self,
         prompt: str = 'Who are you? Please respond in pirate speak!',
-        max_tokens: typing.Annotated[int, annotated_types.Ge(128), annotated_types.Le(MAX_TOKENS)] = MAX_TOKENS,
+        max_tokens: typing_extensions.Annotated[
+            int, annotated_types.Ge(128), annotated_types.Le(MAX_TOKENS)
+        ] = MAX_TOKENS,
     ) -> typing.AsyncGenerator[str, None]:
         from openai import AsyncOpenAI
 
