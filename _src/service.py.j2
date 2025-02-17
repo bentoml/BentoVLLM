@@ -23,6 +23,11 @@ openai_api_app = fastapi.FastAPI()
   {%- endfor %}
   labels={{labels}},
   image = bentoml.images.PythonImage(python_version='3.11', lock_python_packages={{lock_python_packages}})
+        {%- if build['system_packages'] is defined %}
+        {%- for item in build['system_packages'] -%}
+        .system_packages("{{item}}")
+        {%- endfor %}
+        {%- endif %}
         {%- if build['pre'] is defined %}
         {%- for item in build['pre'] -%}
         .run("{{item}}")
