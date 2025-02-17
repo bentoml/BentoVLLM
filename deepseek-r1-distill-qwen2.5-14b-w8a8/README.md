@@ -125,6 +125,9 @@ chat_completion = client.chat.completions.create(
 print(chat_completion.choices[0].message.content)  # will return something like: {"city": "Paris"}
 ```
 
+> [!NOTE]
+> This is also a reasoning model. Structured Outputs might not work if you enable reasoning! Please check upstream vLLM for support on this use-case.
+
 All supported extra parameters are listed in [vLLM documentation](https://docs.vllm.ai/en/latest/serving/openai_compatible_server.html#extra-parameters).
 
 **Note**: If your Service is deployed with [protected endpoints on BentoCloud](https://docs.bentoml.com/en/latest/bentocloud/how-tos/manage-access-token.html#access-protected-deployments), you need to set the environment variable `OPENAI_API_KEY` to your BentoCloud API key first.

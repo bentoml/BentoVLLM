@@ -95,6 +95,7 @@ def generate_jinja_context(model_name, config):
     "model_name": model_name,
     "model_id": engine_config_struct["model"],
     "vision": model_config.get("vision", False),
+    "generate_config": model_config.get("generate_config", {}),
     "service_config": service_config,
     "engine_config": engine_config_struct,
     "server_config": model_config.get("server_config", {}),
@@ -104,6 +105,7 @@ def generate_jinja_context(model_name, config):
     "lock_python_packages": build_config.get("lock_python_packages", True),
     "build": build_config,
     "exclude": build_config["exclude"],
+    "reasoning": model_config.get("reasoning", False),
   }
 
   requirements = model_config.get("requirements", [])

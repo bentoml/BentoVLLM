@@ -168,12 +168,6 @@ print(chat_completion.choices[0].message.content)  # will return something like:
 
 > [!NOTE]
 > This is also a reasoning model. Structured Outputs might not work if you enable reasoning! Please check upstream vLLM for support on this use-case.
->
-> To enable reasoning capabilities, pass in `REASONING=1` to either deployment or to `bentoml serve`:
->
-> ```bash
-> REASONING=1 bentoml serve service.py:VLLM
-> ```
 
 {%- endif %}
 
