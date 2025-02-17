@@ -29,7 +29,7 @@ openai_api_app = fastapi.FastAPI()
     ],
     labels={"owner": "bentoml-team", "type": "prebuilt"},
     image=bentoml.images.PythonImage(python_version="3.11", lock_python_packages=False)
-    .run("uv pip install --compile-bytecode torch mamba-ssm[causal-conv1d]")
+    .run("uv pip install --compile-bytecode torch").run("uv pip install --compile-bytecode --no-build-isolation torch mamba-ssm[causal-conv1d]")
     .requirements_file("requirements.txt"),
 )
 class VLLM:

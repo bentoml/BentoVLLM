@@ -333,7 +333,7 @@
     enable_prefix_caching: false
   build:
     lock_python_packages: false
-    pre: uv pip install --compile-bytecode torch mamba-ssm[causal-conv1d]
+    pre: uv pip install torch && uv pip install --compile-bytecode --no-build-isolation torch mamba-ssm[causal-conv1d]
     args:
       - --no-build-isolation
       - torch
@@ -360,7 +360,7 @@
     enable_prefix_caching: false
   build:
     lock_python_packages: false
-    pre: uv pip install --compile-bytecode torch mamba-ssm[causal-conv1d]
+    pre: uv pip install torch && uv pip install --compile-bytecode --no-build-isolation torch mamba-ssm[causal-conv1d]
     args:
       - --no-build-isolation
       - torch
