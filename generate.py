@@ -102,7 +102,6 @@ def generate_jinja_context(model_name, config):
     "labels": dict(owner="bentoml-team", type="prebuilt"),
     "metadata": model_config["metadata"],
     "requires_hf_tokens": requires_hf_tokens,
-    "lock_python_packages": build_config.get("lock_python_packages", True),
     "build": build_config,
     "exclude": build_config["exclude"],
     "reasoning": model_config.get("reasoning", False),

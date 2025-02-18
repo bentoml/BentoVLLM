@@ -6,22 +6,18 @@ import bentoml, fastapi, PIL.Image, typing_extensions, annotated_types
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-ENGINE_CONFIG = {
-    'model': 'deepseek-ai/DeepSeek-R1-Distill-Qwen-14B',
-    'max_model_len': 8192,
-    'enable_prefix_caching': True,
-}
-MAX_TOKENS = 8192
+ENGINE_CONFIG = {'model': 'allenai/Llama-3.1-Tulu-3.1-8B', 'max_model_len': 4096, 'enable_prefix_caching': True}
+MAX_TOKENS = 4096
 
 openai_api_app = fastapi.FastAPI()
 
 
 @bentoml.asgi_app(openai_api_app, path='/v1')
 @bentoml.service(
-    name='bentovllm-r1-qwen2.5-14b-service',
+    name='bentovllm-llama3.1-tulu-3.1-8b-service',
     traffic={'timeout': 300},
-    resources={'gpu': 1, 'gpu_type': 'nvidia-a100-80gb'},
-    envs=[{'name': 'HF_TOKEN'}, {'name': 'UV_COMPILE_BYTECODE', 'value': 1}],
+    resources={'gpu': 1, 'gpu_type': 'nvidia-l4'},
+    envs=[{'name': 'UV_COMPILE_BYTECODE', 'value': 1}],
     labels={'owner': 'bentoml-team', 'type': 'prebuilt'},
     image=bentoml.images.PythonImage(python_version='3.11').requirements_file('requirements.txt'),
 )
@@ -63,7 +59,6 @@ class VLLM:
         args.enable_prompt_tokens_details = False
         args.enable_reasoning = False
         args.reasoning_parser = None
-        args.reasoning_parser = 'deepseek_r1'
 
         asyncio.create_task(vllm_api_server.init_app_state(engine, model_config, openai_api_app.state, args))
 

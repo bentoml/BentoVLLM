@@ -28,7 +28,7 @@ openai_api_app = fastapi.FastAPI()
         {'name': 'UV_COMPILE_BYTECODE', 'value': 1},
     ],
     labels={'owner': 'bentoml-team', 'type': 'prebuilt'},
-    image=bentoml.images.PythonImage(python_version='3.11', lock_python_packages=True)
+    image=bentoml.images.PythonImage(python_version='3.11')
     .system_packages('curl')
     .system_packages('git')
     .requirements_file('requirements.txt')

@@ -166,6 +166,7 @@ In addition to Llama 3.1 8B Instruct, we also have examples for other models in 
 | jamba1.5-mini | [GitHub](jamba1.5-mini/) • [Hugging Face](https://huggingface.co/ai21labs/AI21-Jamba-1.5-Mini) |
 | jamba1.5-large | [GitHub](jamba1.5-large/) • [Hugging Face](https://huggingface.co/ai21labs/AI21-Jamba-1.5-Large) |
 | llama3.1-8b-instruct | [GitHub](llama3.1-8b-instruct/) • [Hugging Face](https://huggingface.co/meta-llama/Meta-Llama-3.1-8B-Instruct) |
+| llama3.1-tulu-3.1-8b | [GitHub](llama3.1-tulu-3.1-8b/) • [Hugging Face](https://huggingface.co/allenai/Llama-3.1-Tulu-3.1-8B) |
 | llama3.2-1b-instruct | [GitHub](llama3.2-1b-instruct/) • [Hugging Face](https://huggingface.co/meta-llama/Llama-3.2-1B-Instruct) |
 | llama3.2-3b-instruct | [GitHub](llama3.2-3b-instruct/) • [Hugging Face](https://huggingface.co/meta-llama/Llama-3.2-3B-Instruct) |
 | llama3.2-11b-vision-instruct | [GitHub](llama3.2-11b-vision-instruct/) • [Hugging Face](https://huggingface.co/meta-llama/Llama-3.2-11B-Vision-Instruct) |

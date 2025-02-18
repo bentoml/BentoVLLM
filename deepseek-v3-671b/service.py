@@ -24,9 +24,7 @@ openai_api_app = fastapi.FastAPI()
     resources={'gpu': 16, 'gpu_type': 'nvidia-a100-80gb'},
     envs=[{'name': 'HF_TOKEN'}, {'name': 'UV_COMPILE_BYTECODE', 'value': 1}],
     labels={'owner': 'bentoml-team', 'type': 'prebuilt'},
-    image=bentoml.images.PythonImage(python_version='3.11', lock_python_packages=True).requirements_file(
-        'requirements.txt'
-    ),
+    image=bentoml.images.PythonImage(python_version='3.11').requirements_file('requirements.txt'),
 )
 class VLLM:
     model_id = ENGINE_CONFIG['model']

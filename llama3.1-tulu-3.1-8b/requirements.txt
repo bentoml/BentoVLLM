@@ -1,0 +1,7 @@
+bentoml==1.4.0a2
+vllm==0.7.2
+kantoku>=0.18.1
+openai>=1.61.0
+pyyaml
+fastapi
+Pillow
