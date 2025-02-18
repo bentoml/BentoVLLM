@@ -22,11 +22,7 @@ openai_api_app = fastapi.FastAPI()
     name='bentovllm-jamba1.5-mini-service',
     traffic={'timeout': 300},
     resources={'gpu': 2, 'gpu_type': 'nvidia-a100-80gb'},
-    envs=[
-        {'name': 'HF_TOKEN'},
-        {'name': 'UV_NO_BUILD_ISOLATION', 'value': 1},
-        {'name': 'UV_COMPILE_BYTECODE', 'value': 1},
-    ],
+    envs=[{'name': 'HF_TOKEN'}, {'name': 'UV_NO_BUILD_ISOLATION', 'value': 1}],
     labels={'owner': 'bentoml-team', 'type': 'prebuilt'},
     image=bentoml.images.PythonImage(python_version='3.11')
     .system_packages('curl')

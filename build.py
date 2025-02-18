@@ -59,11 +59,6 @@ def ensure_venv(req_txt, venv_dir, cfg):
       check=True,
       capture_output=True,
     )
-    if "post" in build:
-      if not isinstance(build["post"], list):
-        raise RuntimeError("post should be a list of commands")
-      for it in build["post"]:
-        subprocess.run([*it.split(), "-p", venv_dir / "bin" / "python"], check=True, capture_output=True)
   return venv_dir
 
 

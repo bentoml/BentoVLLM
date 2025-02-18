@@ -77,11 +77,8 @@ def generate_jinja_context(model_name, config):
   engine_config_struct = model_config.get("engine_config", {"model": "deepseek-ai/DeepSeek-R1-Distill-Llama-8B"})
 
   service_config = model_config.get("service_config", {})
-  if not service_config.get("envs"):
-    service_config["envs"] = []
-  service_config["envs"].append(dict(name="UV_COMPILE_BYTECODE", value=1))
 
-  requires_hf_tokens = any(it["name"] == "HF_TOKEN" for it in service_config["envs"])
+  requires_hf_tokens = "envs" in service_config and any(it["name"] == "HF_TOKEN" for it in service_config["envs"])
 
   if "enable_prefix_caching" not in engine_config_struct:
     engine_config_struct["enable_prefix_caching"] = True

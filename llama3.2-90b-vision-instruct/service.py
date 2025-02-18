@@ -24,7 +24,7 @@ openai_api_app = fastapi.FastAPI()
     name='bentovllm-llama3.2-90b-vision-instruct-service',
     traffic={'timeout': 300},
     resources={'gpu': 2, 'gpu_type': 'nvidia-a100-80gb'},
-    envs=[{'name': 'HF_TOKEN'}, {'name': 'UV_COMPILE_BYTECODE', 'value': 1}],
+    envs=[{'name': 'HF_TOKEN'}],
     labels={'owner': 'bentoml-team', 'type': 'prebuilt'},
     image=bentoml.images.PythonImage(python_version='3.11').requirements_file('requirements.txt'),
 )

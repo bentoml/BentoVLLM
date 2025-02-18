@@ -17,6 +17,8 @@ openai_api_app = fastapi.FastAPI()
   {%- for key, value in service_config.items() -%}
   {%- if key == "name" -%}
   {{key}}="{{value}}",
+  {%- elif key == "envs" and (value|length > 0) %}
+  {{key}}={{value}},
   {%- else -%}
   {{key}}={{value}},
   {%- endif -%}

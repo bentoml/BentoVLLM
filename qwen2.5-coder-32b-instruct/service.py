@@ -17,7 +17,6 @@ openai_api_app = fastapi.FastAPI()
     name='bentovllm-qwen2.5-coder-32b-instruct-service',
     resources={'gpu': 1, 'gpu_type': 'nvidia-a100-80gb'},
     traffic={'timeout': 300},
-    envs=[{'name': 'UV_COMPILE_BYTECODE', 'value': 1}],
     labels={'owner': 'bentoml-team', 'type': 'prebuilt'},
     image=bentoml.images.PythonImage(python_version='3.11').requirements_file('requirements.txt'),
 )
