@@ -58,41 +58,6 @@
   server_config:
     reasoning_parser: "deepseek_r1"
     tool_call_parser: "llama3_json"
-"deepseek-r1-distill-llama3.3-70b-w8a8":
-  reasoning: true
-  metadata:
-    description: DeepSeek R1 Distill Llama 3.3 70B w8a8 GPTQ
-    provider: NeuralMagic
-  service_config:
-    name: bentovllm-r1-llama3.3-70b-w8a8-service
-    traffic:
-      timeout: 300
-    resources:
-      gpu: 1
-      gpu_type: nvidia-a100-80gb
-  engine_config:
-    model: neuralmagic/DeepSeek-R1-Distill-Llama-70B-quantized.w8a8
-    max_model_len: 4096
-  server_config:
-    reasoning_parser: "deepseek_r1"
-    tool_call_parser: "llama3_json"
-"deepseek-r1-distill-llama3.3-70b-w4a16":
-  reasoning: true
-  metadata:
-    description: DeepSeek R1 Distill Llama 3.3 70B w4a16 GPTQ
-    provider: NeuralMagic
-  service_config:
-    name: bentovllm-r1-llama3.3-70b-w4a16-service
-    traffic:
-      timeout: 300
-    resources:
-      gpu: 1
-      gpu_type: nvidia-a100-80gb
-  engine_config:
-    model: neuralmagic/DeepSeek-R1-Distill-Llama-70B-quantized.w4a16
-    max_model_len: 8192
-  server_config:
-    reasoning_parser: "deepseek_r1"
 "deepseek-r1-distill-qwen2.5-32b":
   reasoning: true
   metadata:
@@ -113,40 +78,6 @@
   server_config:
     reasoning_parser: "deepseek_r1"
     tool_call_parser: "llama3_json"
-"deepseek-r1-distill-qwen2.5-32b-w8a8":
-  reasoning: true
-  metadata:
-    description: DeepSeek R1 Distill Qwen 2.5 32B w8a8 GPTQ
-    provider: NeuralMagic
-  service_config:
-    name: bentovllm-r1-qwen2.5-32b-w8a8-service
-    traffic:
-      timeout: 300
-    resources:
-      gpu: 1
-      gpu_type: nvidia-a100-80gb
-  engine_config:
-    model: neuralmagic/DeepSeek-R1-Distill-Qwen-32B-quantized.w8a8
-    max_model_len: 4096
-  server_config:
-    reasoning_parser: "deepseek_r1"
-"deepseek-r1-distill-qwen2.5-32b-w4a16":
-  reasoning: true
-  metadata:
-    description: DeepSeek R1 Distill Qwen 2.5 32B w4a16 GPTQ
-    provider: NeuralMagic
-  service_config:
-    name: bentovllm-r1-qwen2.5-32b-w4a16-service
-    traffic:
-      timeout: 300
-    resources:
-      gpu: 1
-      gpu_type: nvidia-a100-80gb
-  engine_config:
-    model: neuralmagic/DeepSeek-R1-Distill-Qwen-32B-quantized.w4a16
-    max_model_len: 16384
-  server_config:
-    reasoning_parser: "deepseek_r1"
 "deepseek-r1-distill-qwen2.5-14b":
   reasoning: true
   metadata:
@@ -164,40 +95,6 @@
   engine_config:
     model: deepseek-ai/DeepSeek-R1-Distill-Qwen-14B
     max_model_len: 8192
-  server_config:
-    reasoning_parser: "deepseek_r1"
-"deepseek-r1-distill-qwen2.5-14b-w8a8":
-  reasoning: true
-  metadata:
-    description: DeepSeek R1 Distill Qwen 2.5 14B w8a8 GPTQ
-    provider: NeuralMagic
-  service_config:
-    name: bentovllm-r1-qwen2.5-14b-w8a8-service
-    traffic:
-      timeout: 300
-    resources:
-      gpu: 1
-      gpu_type: nvidia-l4
-  engine_config:
-    model: neuralmagic/DeepSeek-R1-Distill-Qwen-14B-quantized.w8a8
-    max_model_len: 4096
-  server_config:
-    reasoning_parser: "deepseek_r1"
-"deepseek-r1-distill-qwen2.5-14b-w4a16":
-  reasoning: true
-  metadata:
-    description: DeepSeek R1 Distill Qwen 2.5 14B w4a16 GPTQ
-    provider: NeuralMagic
-  service_config:
-    name: bentovllm-r1-qwen2.5-14b-w4a16-service
-    traffic:
-      timeout: 300
-    resources:
-      gpu: 1
-      gpu_type: nvidia-l4
-  engine_config:
-    model: neuralmagic/DeepSeek-R1-Distill-Qwen-14B-quantized.w4a16
-    max_model_len: 4096
   server_config:
     reasoning_parser: "deepseek_r1"
 "deepseek-r1-distill-qwen2.5-7b-math":
@@ -410,20 +307,6 @@
     dtype: half
   server_config:
     tool_call_parser: "llama3_json"
-"llama3.1-tulu-3.1-8b":
-  metadata:
-    description: Llama 3.1 Tulu-3.1 8B
-    provider: allenai
-  service_config:
-    name: bentovllm-llama3.1-tulu-3.1-8b-service
-    traffic:
-      timeout: 300
-    resources:
-      gpu: 1
-      gpu_type: nvidia-l4
-  engine_config:
-    model: allenai/Llama-3.1-Tulu-3.1-8B
-    max_model_len: 4096
 "llama3.2-1b-instruct":
   metadata:
     description: Llama 3.2 1B Instruct
@@ -550,23 +433,6 @@
     model: NousResearch/Hermes-3-Llama-3.1-405B-FP8
     max_model_len: 2048
     tensor_parallel_size: 6
-  server_config:
-    tool_call_parser: "pythonic"
-"deephermes-3-llama3-8b":
-  reasoning: true
-  metadata:
-    description: DeepHermes 3 Llama 3 8B
-    provider: NousResearch
-  service_config:
-    name: bentovllm-deephermes-3-llama3-8b-service
-    traffic:
-      timeout: 300
-    resources:
-      gpu: 1
-      gpu_type: nvidia-a100-80gb
-  engine_config:
-    model: NousResearch/DeepHermes-3-Llama-3-8B-Preview
-    max_model_len: 8192
   server_config:
     tool_call_parser: "pythonic"
 "pixtral-12b-2409":
