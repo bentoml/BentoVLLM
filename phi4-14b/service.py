@@ -24,25 +24,17 @@ class VLLM:
     model_id = ENGINE_CONFIG['model']
     model = bentoml.models.HuggingFaceModel(model_id, exclude=['*.pth', '*.pt'])
 
+    def __init__(self):
+        from openai import AsyncOpenAI
+
+        self.openai = AsyncOpenAI(base_url='http://127.0.0.1:3000/v1', api_key='dummy')
+
     @bentoml.on_startup
-    async def init_openai_app(self) -> None:
+    async def init_engine(self) -> None:
         import vllm.entrypoints.openai.api_server as vllm_api_server
 
-        from vllm import AsyncEngineArgs, AsyncLLMEngine
         from vllm.utils import FlexibleArgumentParser
         from vllm.entrypoints.openai.cli_args import make_arg_parser
-
-        OPENAI_ENDPOINTS = [
-            ['/chat/completions', vllm_api_server.create_chat_completion, ['POST']],
-            ['/models', vllm_api_server.show_available_models, ['GET']],
-        ]
-        for route, endpoint, methods in OPENAI_ENDPOINTS:
-            openai_api_app.add_api_route(path=route, endpoint=endpoint, methods=methods, include_in_schema=True)
-
-        ENGINE_ARGS = AsyncEngineArgs(**dict(ENGINE_CONFIG, model=self.model))
-        self.engine = AsyncLLMEngine.from_engine_args(ENGINE_ARGS)
-        self.model_config = self.engine.engine.get_model_config()
-        self.tokenizer = await self.engine.engine.get_tokenizer_async()
 
         args = make_arg_parser(FlexibleArgumentParser()).parse_args([])
         args.model = self.model
@@ -51,6 +43,23 @@ class VLLM:
         args.served_model_name = [self.model_id]
         args.request_logger = None
         args.disable_log_stats = True
+        for key, value in ENGINE_CONFIG.items():
+            setattr(args, key, value)
+
+        router = fastapi.APIRouter(lifespan=vllm_api_server.lifespan)
+        OPENAI_ENDPOINTS = [
+            ['/chat/completions', vllm_api_server.create_chat_completion, ['POST']],
+            ['/models', vllm_api_server.show_available_models, ['GET']],
+        ]
+
+        for route, endpoint, methods in OPENAI_ENDPOINTS:
+            router.add_api_route(path=route, endpoint=endpoint, methods=methods, include_in_schema=True)
+        openai_api_app.include_router(router)
+
+        self.engine_context = vllm_api_server.build_async_engine_client(args)
+        self.engine = await self.engine_context.__aenter__()
+        self.model_config = await self.engine.get_model_config()
+        self.tokenizer = await self.engine.get_tokenizer()
 
         args.chat_template = """{% if messages[0]['role'] == 'system' %}
     {% set offset = 1 %}
@@ -73,6 +82,10 @@ class VLLM:
 
         await vllm_api_server.init_app_state(self.engine, self.model_config, openai_api_app.state, args)
 
+    @bentoml.on_shutdown
+    async def teardown_engine(self):
+        await self.engine_context.__aexit__(GeneratorExit, None, None)
+
     @bentoml.api
     async def generate(
         self,
@@ -94,7 +107,7 @@ class VLLM:
             chat_template=None,
         )
 
-        stream = await self.engine.add_request(uuid.uuid4().hex, prompt=prompt, params=params)
+        stream = self.engine.generate(request_id=uuid.uuid4().hex, prompt=prompt, sampling_params=params)
 
         cursor = 0
         async for request_output in stream:
