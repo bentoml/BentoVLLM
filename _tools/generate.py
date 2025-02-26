@@ -16,8 +16,6 @@ from rich.progress import Progress, SpinnerColumn, TextColumn
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 
-GIT_DIRECTORY = Path(__file__).parent
-
 
 def load_config():
   with open("config.yaml", "r") as f:
@@ -249,7 +247,7 @@ def main() -> int:
 
   with open("config.yaml", "r") as f:
     config = yaml.safe_load(f)
-  template_dir = Path(__file__).parent
+  template_dir = Path(__file__).parent.parent
 
   console = Console()
   if args.model_names:
@@ -270,7 +268,7 @@ def main() -> int:
 
   # Format all python files
   console.print("\n[yellow]Formatting Python files...[/]")
-  subprocess.run(["ruff", "format"], check=True, capture_output=True)
+  subprocess.run(["ruff", "format", template_dir.__fspath__()], check=True, capture_output=True)
   subprocess.run(
     [
       "ruff",
@@ -282,10 +280,7 @@ def main() -> int:
       "line-length=119",
       "--config",
       "preview=true",
-      "generate.py",
-      "deploy.py",
-      "build.py",
-      "push.py",
+      (template_dir / "_tools").__fspath__(),
     ],
     check=True,
     capture_output=True,

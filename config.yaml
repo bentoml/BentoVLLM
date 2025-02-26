@@ -15,6 +15,8 @@
     model: deepseek-ai/DeepSeek-V3
     max_model_len: 8192
     tensor_parallel_size: 16
+  generate_config:
+    max_tokens: 4096
 "deepseek-r1-671b":
   reasoning: true
   metadata:
@@ -37,6 +39,8 @@
   server_config:
     enable_reasoning: true
     reasoning_parser: "deepseek_r1"
+  generate_config:
+    max_tokens: 4096
 "deepseek-r1-distill-llama3.3-70b":
   reasoning: true
   metadata:
@@ -58,6 +62,8 @@
   server_config:
     reasoning_parser: "deepseek_r1"
     tool_call_parser: "llama3_json"
+  generate_config:
+    max_tokens: 4096
 "deepseek-r1-distill-qwen2.5-32b":
   reasoning: true
   metadata:
@@ -78,25 +84,8 @@
   server_config:
     reasoning_parser: "deepseek_r1"
     tool_call_parser: "llama3_json"
-"deepseek-r1-distill-qwen2.5-14b":
-  reasoning: true
-  metadata:
-    description: DeepSeek R1 Distill Qwen 2.5 14B
-    provider: DeepSeek
-  service_config:
-    name: bentovllm-r1-qwen2.5-14b-service
-    traffic:
-      timeout: 300
-    resources:
-      gpu: 1
-      gpu_type: nvidia-a100-80gb
-    envs:
-      - name: HF_TOKEN
-  engine_config:
-    model: deepseek-ai/DeepSeek-R1-Distill-Qwen-14B
-    max_model_len: 8192
-  server_config:
-    reasoning_parser: "deepseek_r1"
+  generate_config:
+    max_tokens: 4096
 "deepseek-r1-distill-qwen2.5-7b-math":
   reasoning: true
   metadata:
@@ -116,26 +105,8 @@
     max_model_len: 8192
   server_config:
     reasoning_parser: "deepseek_r1"
-"deepseek-r1-distill-llama3.1-8b":
-  reasoning: true
-  metadata:
-    description: DeepSeek R1 Distill Llama 3.1 8B
-    provider: DeepSeek
-  service_config:
-    name: bentovllm-r1-llama3.1-8b-service
-    traffic:
-      timeout: 300
-    resources:
-      gpu: 1
-      gpu_type: nvidia-l4
-    envs:
-      - name: HF_TOKEN
-  engine_config:
-    model: deepseek-ai/DeepSeek-R1-Distill-Llama-8B
-    max_model_len: 4096
-  server_config:
-    reasoning_parser: "deepseek_r1"
-    tool_call_parser: "llama3_json"
+  generate_config:
+    max_tokens: 4096
 "deepseek-r1-distill-llama3.1-8b-tool-calling":
   reasoning: true
   metadata:
@@ -158,6 +129,8 @@
     enable_tool_call_parser: true
     tool_call_parser: "llama3_json"
     reasoning_parser: "deepseek_r1"
+  generate_config:
+    max_tokens: 2048
 "gemma2-2b-instruct":
   metadata:
     description: Gemma 2 2B Instruct
@@ -178,27 +151,8 @@
     enable_prefix_caching: false
   server_config:
     chat_template: "{% if messages[0]['role'] == 'system' %}\n    {% set loop_messages = messages[1:] %}\n    {% set system_message = messages[0]['content'].strip() + '\\n\\n' %}\n{% else %}\n    {% set loop_messages = messages %}\n    {% set system_message = '' %}\n{% endif %}\n\n{% for message in loop_messages %}\n    {% if (message['role'] == 'user') != (loop.index0 % 2 == 0) %}\n        {{ raise_exception('Conversation roles must alternate user/assistant/user/assistant/...') }}\n    {% endif %}\n\n    {% if loop.index0 == 0 %}\n        {% set content = system_message + message['content'] %}\n    {% else %}\n        {% set content = message['content'] %}\n    {% endif %}\n\n    {% if (message['role'] == 'assistant') %}\n        {% set role = 'model' %}\n    {% else %}\n        {% set role = message['role'] %}\n    {% endif %}\n\n    {{ '<start_of_turn>' + role + '\\n' + content.strip() + '<end_of_turn>\\n' }}\n\n    {% if loop.last and message['role'] == 'user' and add_generation_prompt %}\n        {{'<start_of_turn>model\\n'}}\n    {% endif %}\n{% endfor %}\n"
-"gemma2-9b-instruct":
-  metadata:
-    description: Gemma 2 9B Instruct
-    provider: Google
-  service_config:
-    name: bentovllm-gemma2-9b-instruct-service
-    traffic:
-      timeout: 300
-    resources:
-      gpu: 1
-      gpu_type: nvidia-l4
-    envs:
-      - name: HF_TOKEN
-  engine_config:
-    model: google/gemma-2-9b-it
-    max_model_len: 2048
-    dtype: half
-    enable_prefix_caching: false
-    gpu_memory_utilization: 1.0
-  server_config:
-    chat_template: "{% if messages[0]['role'] == 'system' %}\n    {% set loop_messages = messages[1:] %}\n    {% set system_message = messages[0]['content'].strip() + '\\n\\n' %}\n{% else %}\n    {% set loop_messages = messages %}\n    {% set system_message = '' %}\n{% endif %}\n\n{% for message in loop_messages %}\n    {% if (message['role'] == 'user') != (loop.index0 % 2 == 0) %}\n        {{ raise_exception('Conversation roles must alternate user/assistant/user/assistant/...') }}\n    {% endif %}\n\n    {% if loop.index0 == 0 %}\n        {% set content = system_message + message['content'] %}\n    {% else %}\n        {% set content = message['content'] %}\n    {% endif %}\n\n    {% if (message['role'] == 'assistant') %}\n        {% set role = 'model' %}\n    {% else %}\n        {% set role = message['role'] %}\n    {% endif %}\n\n    {{ '<start_of_turn>' + role + '\\n' + content.strip() + '<end_of_turn>\\n' }}\n\n    {% if loop.last and message['role'] == 'user' and add_generation_prompt %}\n        {{'<start_of_turn>model\\n'}}\n    {% endif %}\n{% endfor %}\n"
+  generate_config:
+    max_tokens: 1024
 "gemma2-27b-instruct":
   metadata:
     description: Gemma 2 27B Instruct
@@ -219,6 +173,8 @@
     enable_prefix_caching: false
   server_config:
     chat_template: "{% if messages[0]['role'] == 'system' %}\n    {% set loop_messages = messages[1:] %}\n    {% set system_message = messages[0]['content'].strip() + '\\n\\n' %}\n{% else %}\n    {% set loop_messages = messages %}\n    {% set system_message = '' %}\n{% endif %}\n\n{% for message in loop_messages %}\n    {% if (message['role'] == 'user') != (loop.index0 % 2 == 0) %}\n        {{ raise_exception('Conversation roles must alternate user/assistant/user/assistant/...') }}\n    {% endif %}\n\n    {% if loop.index0 == 0 %}\n        {% set content = system_message + message['content'] %}\n    {% else %}\n        {% set content = message['content'] %}\n    {% endif %}\n\n    {% if (message['role'] == 'assistant') %}\n        {% set role = 'model' %}\n    {% else %}\n        {% set role = message['role'] %}\n    {% endif %}\n\n    {{ '<start_of_turn>' + role + '\\n' + content.strip() + '<end_of_turn>\\n' }}\n\n    {% if loop.last and message['role'] == 'user' and add_generation_prompt %}\n        {{'<start_of_turn>model\\n'}}\n    {% endif %}\n{% endfor %}\n"
+  generate_config:
+    max_tokens: 1024
 "jamba1.5-mini":
   metadata:
     description: Jamba 1.5 Mini
@@ -303,28 +259,11 @@
       - name: HF_TOKEN
   engine_config:
     model: meta-llama/Meta-Llama-3.1-8B-Instruct
-    max_model_len: 2048
-    dtype: half
+    max_model_len: 4096
   server_config:
     tool_call_parser: "llama3_json"
-"llama3.2-1b-instruct":
-  metadata:
-    description: Llama 3.2 1B Instruct
-    provider: Meta
-  service_config:
-    name: bentovllm-llama3.2-1b-instruct-service
-    traffic:
-      timeout: 300
-    resources:
-      gpu: 1
-      gpu_type: nvidia-l4
-    envs:
-      - name: HF_TOKEN
-  engine_config:
-    model: meta-llama/Llama-3.2-1B-Instruct
-    max_model_len: 8192
-  server_config:
-    tool_call_parser: "pythonic"
+  generate_config:
+    max_tokens: 2048
 "llama3.2-3b-instruct":
   metadata:
     description: Llama 3.1 3B Instruct
@@ -335,7 +274,7 @@
       timeout: 300
     resources:
       gpu: 1
-      gpu_type: nvidia-l4
+      gpu_type: nvidia-tesla-t4
     envs:
       - name: HF_TOKEN
   engine_config:
@@ -343,6 +282,8 @@
     max_model_len: 8192
   server_config:
     tool_call_parser: "pythonic"
+  generate_config:
+    max_tokens: 4096
 "llama3.2-11b-vision-instruct":
   metadata:
     description: Llama 3.2 11B Vision Instruct
@@ -369,32 +310,8 @@
       - "original"
   server_config:
     tool_call_parser: "pythonic"
-"llama3.2-90b-vision-instruct":
-  metadata:
-    description: Llama 3.2 90B Vision Instruct
-    provider: Meta
-  vision: true
-  service_config:
-    name: bentovllm-llama3.2-90b-vision-instruct-service
-    traffic:
-      timeout: 300
-    resources:
-      gpu: 2
-      gpu_type: nvidia-a100-80gb
-    envs:
-      - name: HF_TOKEN
-  engine_config:
-    model: meta-llama/Llama-3.2-90B-Vision-Instruct
-    enforce_eager: true
-    limit_mm_per_prompt:
-      image: 1
-    max_model_len: 16384
-    max_num_seqs: 16
-  server_config:
-    tool_call_parser: "pythonic"
-  build:
-    exclude:
-      - "original"
+  generate_config:
+    max_tokens: 8192
 "llama3.3-70b-instruct":
   metadata:
     description: Llama 3.3 70B Instruct
@@ -418,6 +335,8 @@
       - "consolidated*"
   server_config:
     tool_call_parser: "pythonic"
+  generate_config:
+    max_tokens: 1024
 "hermes-3-llama3.1-405b":
   metadata:
     description: Hermes 3 Llama 3.1 405B FP8
@@ -435,6 +354,8 @@
     tensor_parallel_size: 6
   server_config:
     tool_call_parser: "pythonic"
+  generate_config:
+    max_tokens: 1024
 "pixtral-12b-2409":
   metadata:
     description: Pixtral 12B 2409
@@ -459,32 +380,8 @@
     max_model_len: 32768
   requirements:
     - mistral_common[opencv]
-"pixtral-large-2411":
-  metadata:
-    description: Pixtral Large Instruct 2411
-    provider: Mistral AI
-  vision: true
-  service_config:
-    name: bentovllm-pixtral-large-instruct-2411-service
-    traffic:
-      timeout: 300
-    resources:
-      gpu: 4
-      gpu_type: nvidia-a100-80gb
-    envs:
-      - name: HF_TOKEN
-  engine_config:
-    model: mistralai/Pixtral-Large-Instruct-2411
-    tokenizer_mode: mistral
-    enable_chunked_prefill: false
-    enable_prefix_caching: false
-    limit_mm_per_prompt:
-      image: 5
-    max_model_len: 16384
-    dtype: half
-    tensor_parallel_size: 4
-  requirements:
-    - mistral_common[opencv]
+  generate_config:
+    max_tokens: 4096
 "ministral-8b-instruct-2410":
   metadata:
     description: Ministral 8B Instruct 2410
@@ -507,6 +404,8 @@
   build:
     exclude:
       - "consolidated*"
+  generate_config:
+    max_tokens: 2048
 "mistral-small-24b-instruct-2501":
   metadata:
     description: Mistral Small 24B Instruct 2501
@@ -528,29 +427,8 @@
   build:
     exclude:
       - "consolidated*"
-"mistral-large-123b-instruct-2411":
-  metadata:
-    description: Mistral Large 123B Instruct 2411
-    provider: Mistral AI
-  service_config:
-    name: bentovllm-mistral-large-123b-instruct-2411-service
-    traffic:
-      timeout: 300
-    resources:
-      gpu: 4
-      gpu_type: nvidia-a100-80gb
-    envs:
-      - name: HF_TOKEN
-  engine_config:
-    model: mistralai/Mistral-Large-Instruct-2411
-    max_model_len: 4096
-    tensor_parallel_size: 4
-    tokenizer_mode: mistral
-    dtype: half
-    enable_prefix_caching: false
-  build:
-    exclude:
-      - "consolidated*"
+  generate_config:
+    max_tokens: 2048
 "phi4-14b":
   metadata:
     description: Phi 4 14B
@@ -567,6 +445,8 @@
     max_model_len: 8192
   server_config:
     chat_template: "{% if messages[0]['role'] == 'system' %}\n    {% set offset = 1 %}\n{% else %}\n    {% set offset = 0 %}\n{% endif %}\n\n{% for message in messages %}\n    {% if (message['role'] == 'user') != (loop.index0 % 2 == offset) %}\n        {{ raise_exception('Conversation roles must alternate user/assistant/user/assistant/...') }}\n    {% endif %}\n\n    {{ '<|' + message['role'] + '|>\\n' + message['content'].strip() + '<|end|>' + '\\n' }}\n\n    {% if loop.last and message['role'] == 'user' and add_generation_prompt %}\n        {{ '<|assistant|>\\n' }}\n    {% endif %}\n{% endfor %}\n"
+  generate_config:
+    max_tokens: 4096
 "qwen2.5-7b-instruct":
   metadata:
     description: Qwen 2.5 7B Instruct
@@ -581,34 +461,8 @@
   engine_config:
     model: Qwen/Qwen2.5-7B-Instruct
     max_model_len: 2048
-"qwen2.5-14b-instruct":
-  metadata:
-    description: Qwen 2.5 14B Instruct
-    provider: Alibaba
-  service_config:
-    name: bentovllm-qwen2.5-14b-instruct-service
-    traffic:
-      timeout: 300
-    resources:
-      gpu: 1
-      gpu_type: nvidia-a100-80gb
-  engine_config:
-    model: Qwen/Qwen2.5-14B-Instruct
-    max_model_len: 2048
-"qwen2.5-32b-instruct":
-  metadata:
-    description: Qwen 2.5 32B Instruct
-    provider: Alibaba
-  service_config:
-    name: bentovllm-qwen2.5-32b-instruct-service
-    traffic:
-      timeout: 300
-    resources:
-      gpu: 1
-      gpu_type: nvidia-a100-80gb
-  engine_config:
-    model: Qwen/Qwen2.5-32B-Instruct
-    max_model_len: 2048
+  generate_config:
+    max_tokens: 1024
 "qwen2.5-72b-instruct":
   metadata:
     description: Qwen 2.5 72B Instruct
@@ -624,39 +478,5 @@
     model: Qwen/Qwen2.5-72B-Instruct
     max_model_len: 2048
     tensor_parallel_size: 2
-"qwen2.5-coder-7b-instruct":
-  metadata:
-    description: Qwen 2.5 Coder 7B Instruct
-    provider: Alibaba
-  service_config:
-    name: bentovllm-qwen2.5-coder-7b-instruct-service
-    resources:
-      gpu: 1
-      gpu_type: nvidia-l4
-    traffic:
-      timeout: 300
-  engine_config:
-    model: Qwen/Qwen2.5-Coder-7B-Instruct
-    max_model_len: 8192
-  server_config:
-    enable_auto_tool_choice: true
-    enable_tool_call_parser: true
-    tool_call_parser: "llama3_json"
-"qwen2.5-coder-32b-instruct":
-  metadata:
-    description: Qwen 2.5 Coder 32B Instruct
-    provider: Alibaba
-  service_config:
-    name: bentovllm-qwen2.5-coder-32b-instruct-service
-    resources:
-      gpu: 1
-      gpu_type: nvidia-a100-80gb
-    traffic:
-      timeout: 300
-  engine_config:
-    model: Qwen/Qwen2.5-Coder-32B-Instruct
-    max_model_len: 8192
-  server_config:
-    enable_auto_tool_choice: true
-    enable_tool_call_parser: true
-    tool_call_parser: "llama3_json"
+  generate_config:
+    max_tokens: 1024

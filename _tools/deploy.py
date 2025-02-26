@@ -182,7 +182,7 @@ def main() -> int:
   )
   args = parser.parse_args()
 
-  template_dir = Path(__file__).parent
+  template_dir = Path(__file__).parent.parent
   builds_file = template_dir / "successful_builds.txt"
 
   if not builds_file.exists():

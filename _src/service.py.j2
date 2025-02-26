@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import base64, io, logging, traceback, typing, argparse, asyncio, os
+import base64, io, logging, traceback, typing
 import bentoml, fastapi, PIL.Image, typing_extensions, annotated_types
 
 logger = logging.getLogger(__name__)
@@ -46,9 +46,13 @@ class VLLM:
   model_id = ENGINE_CONFIG["model"]
   model = bentoml.models.HuggingFaceModel(model_id, exclude=[{{exclude | map('tojson') | join(", ")}}])
 
-  def __init__(self) -> None:
-    from vllm import AsyncEngineArgs, AsyncLLMEngine
+  @bentoml.on_startup
+  async def init_openai_app(self) -> None:
     import vllm.entrypoints.openai.api_server as vllm_api_server
+
+    from vllm import AsyncEngineArgs, AsyncLLMEngine
+    from vllm.utils import FlexibleArgumentParser
+    from vllm.entrypoints.openai.cli_args import make_arg_parser
 
     OPENAI_ENDPOINTS = [
       ["/chat/completions", vllm_api_server.create_chat_completion, ["POST"]],
@@ -60,28 +64,16 @@ class VLLM:
     for route, endpoint, methods in OPENAI_ENDPOINTS: openai_api_app.add_api_route(path=route, endpoint=endpoint, methods=methods, include_in_schema=True)
 
     ENGINE_ARGS = AsyncEngineArgs(**dict(ENGINE_CONFIG, model=self.model))
-    engine = AsyncLLMEngine.from_engine_args(ENGINE_ARGS)
-    model_config = engine.engine.get_model_config()
+    self.engine = AsyncLLMEngine.from_engine_args(ENGINE_ARGS)
+    self.model_config = engine.engine.get_model_config()
 
-    args = argparse.Namespace()
+    args = make_arg_parser(FlexibleArgumentParser()).parse_args([])
     args.model = self.model
     args.disable_log_requests = True
     args.max_log_len = 1000
-    args.response_role = "assistant"
     args.served_model_name = [self.model_id]
-    args.chat_template = None
-    args.chat_template_content_format = "auto"
-    args.lora_modules = None
-    args.prompt_adapters = None
     args.request_logger = None
     args.disable_log_stats = True
-    args.return_tokens_as_token_ids = False
-    args.enable_tool_call_parser = False
-    args.enable_auto_tool_choice = False
-    args.tool_call_parser = None
-    args.enable_prompt_tokens_details = False
-    args.enable_reasoning = False
-    args.reasoning_parser = None
     {%- if server_config | length > 0 %}
     {% for key, value in server_config.items() -%}
     {%- if key == "chat_template" %}
@@ -94,7 +86,7 @@ class VLLM:
     {%- endfor %}
     {%- endif %}
 
-    asyncio.create_task(vllm_api_server.init_app_state(engine, model_config, openai_api_app.state, args))
+    await vllm_api_server.init_app_state(self.engine, self.model_config, openai_api_app.state, args)
 
   @bentoml.api
   async def generate(

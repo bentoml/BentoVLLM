@@ -147,7 +147,7 @@ def main() -> int:
   )
   args = parser.parse_args()
 
-  template_dir = pathlib.Path(__file__).parent
+  template_dir = pathlib.Path(__file__).parent.parent
   config = load_config()
 
   console = Console()
