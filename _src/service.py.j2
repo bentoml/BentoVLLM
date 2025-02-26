@@ -130,16 +130,16 @@ class VLLM:
     {%- if server_config['tool_call_parser'] == "mistral" %}
     prompt = TokensPrompt(prompt_token_ids=apply_mistral_chat_template(self.tokenizer, messages=messages))
     {%- else %}
-    prompt = apply_hf_chat_template(self.tokenizer, conversation=parse_chat_messages(messages, self.model_config, self.tokenizer, content_format="string")[0], add_generation_prompt=True, continue_final_message=False)
+    prompt = apply_hf_chat_template(self.tokenizer, conversation=parse_chat_messages(messages, self.model_config, self.tokenizer, content_format="string")[0], add_generation_prompt=True, continue_final_message=False, chat_template=None)
     {%- endif %}
 
     stream = await self.engine.add_request(uuid.uuid4().hex, prompt=prompt, params=params)
 
     cursor = 0
     async for request_output in stream:
-        text = request_output.outputs[0].text
-        yield text[cursor:]
-        cursor = len(text)
+      text = request_output.outputs[0].text
+      yield text[cursor:]
+      cursor = len(text)
     {%- endif %}
 
   {%- if vision | lower == "true" %}

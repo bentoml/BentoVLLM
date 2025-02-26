@@ -80,6 +80,7 @@ class VLLM:
             conversation=parse_chat_messages(messages, self.model_config, self.tokenizer, content_format='string')[0],
             add_generation_prompt=True,
             continue_final_message=False,
+            chat_template=None,
         )
 
         stream = await self.engine.add_request(uuid.uuid4().hex, prompt=prompt, params=params)
