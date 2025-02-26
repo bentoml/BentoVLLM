@@ -17,11 +17,6 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 
 
-def load_config():
-  with open("config.yaml", "r") as f:
-    return yaml.safe_load(f)
-
-
 def update_model_descriptions(config, template_dir):
   certified_repos_path = template_dir / "bentocloud-homepage-news" / "certified-bento-repositories.json"
   if not certified_repos_path.exists():
@@ -245,9 +240,10 @@ def main() -> int:
   )
   args = parser.parse_args()
 
-  with open("config.yaml", "r") as f:
-    config = yaml.safe_load(f)
   template_dir = Path(__file__).parent.parent
+  tools_dir = template_dir / "_tools"
+  with (tools_dir / "config.yaml").open("r") as f:
+    config = yaml.safe_load(f)
 
   console = Console()
   if args.model_names:
@@ -280,7 +276,7 @@ def main() -> int:
       "line-length=119",
       "--config",
       "preview=true",
-      (template_dir / "_tools").__fspath__(),
+      tools_dir.__fspath__(),
     ],
     check=True,
     capture_output=True,

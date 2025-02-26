@@ -21,11 +21,6 @@ class BuildResult:
   error: str = ""
 
 
-def load_config() -> Dict:
-  with open("config.yaml", "r") as f:
-    return yaml.safe_load(f)
-
-
 def hash_file(file_path):
   hasher = hashlib.sha256()
   with file_path.open("rb") as f:
@@ -148,7 +143,9 @@ def main() -> int:
   args = parser.parse_args()
 
   template_dir = pathlib.Path(__file__).parent.parent
-  config = load_config()
+  tools_dir = template_dir / "_tools"
+  with (tools_dir / "config.yaml").open("r") as f:
+    config = yaml.safe_load(f)
 
   console = Console()
   if args.model_names:
