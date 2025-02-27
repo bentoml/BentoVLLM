@@ -114,17 +114,21 @@ class VLLM:
             int, annotated_types.Ge(128), annotated_types.Le(MAX_TOKENS)
         ] = MAX_TOKENS,
     ) -> typing.AsyncGenerator[str, None]:
-        from vllm import SamplingParams
+        from vllm import SamplingParams, TokensPrompt
         from vllm.entrypoints.chat_utils import parse_chat_messages, apply_hf_chat_template
 
         params = SamplingParams(max_tokens=max_tokens)
         messages = [dict(role='user', content=[dict(type='text', text=prompt)])]
-        prompt = apply_hf_chat_template(
-            self.tokenizer,
-            conversation=parse_chat_messages(messages, self.model_config, self.tokenizer, content_format='string')[0],
-            add_generation_prompt=True,
-            continue_final_message=False,
-            chat_template=None,
+        conversation, _ = parse_chat_messages(messages, self.model_config, self.tokenizer, content_format='string')
+        prompt = TokensPrompt(
+            prompt_token_ids=apply_hf_chat_template(
+                self.tokenizer,
+                conversation=conversation,
+                add_generation_prompt=True,
+                continue_final_message=False,
+                chat_template=None,
+                tokenize=True,
+            )
         )
 
         stream = self.engine.generate(request_id=uuid.uuid4().hex, prompt=prompt, sampling_params=params)

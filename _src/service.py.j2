@@ -118,7 +118,7 @@ class VLLM:
       yield "Internal error found. Check server logs for more information"
       return
     {%- else %}
-    from vllm import SamplingParams{%- if server_config['tool_call_parser'] == "mistral" %}, TokensPrompt{%-endif %}
+    from vllm import SamplingParams, TokensPrompt
     {%- if server_config['tool_call_parser'] == "mistral" %}
     from vllm.entrypoints.chat_utils import apply_mistral_chat_template
     {%- else %}
@@ -131,7 +131,8 @@ class VLLM:
     {%- if server_config['tool_call_parser'] == "mistral" %}
     prompt = TokensPrompt(prompt_token_ids=apply_mistral_chat_template(self.tokenizer, messages=messages))
     {%- else %}
-    prompt = apply_hf_chat_template(self.tokenizer, conversation=parse_chat_messages(messages, self.model_config, self.tokenizer, content_format="string")[0], add_generation_prompt=True, continue_final_message=False, chat_template=None)
+    conversation, _ = parse_chat_messages(messages, self.model_config, self.tokenizer, content_format="string")
+    prompt = TokensPrompt(prompt_token_ids=apply_hf_chat_template(self.tokenizer, conversation=conversation, add_generation_prompt=True, continue_final_message=False, chat_template=None, tokenize=True))
     {%- endif %}
 
     stream = self.engine.generate(request_id=uuid.uuid4().hex, prompt=prompt, sampling_params=params)
