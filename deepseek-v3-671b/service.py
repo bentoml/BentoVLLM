@@ -9,7 +9,7 @@ logger.setLevel(logging.INFO)
 ENGINE_CONFIG = {
     'model': 'deepseek-ai/DeepSeek-V3',
     'max_model_len': 8192,
-    'tensor_parallel_size': 16,
+    'tensor_parallel_size': 8,
     'enable_prefix_caching': True,
 }
 MAX_TOKENS = 4096
@@ -21,7 +21,7 @@ openai_api_app = fastapi.FastAPI()
 @bentoml.service(
     name='bentovllm-deepseek-v3-671b-service',
     traffic={'timeout': 300},
-    resources={'gpu': 16, 'gpu_type': 'nvidia-a100-80gb'},
+    resources={'gpu': 8, 'gpu_type': 'nvidia-h200-141gb'},
     envs=[{'name': 'HF_TOKEN'}],
     labels={'owner': 'bentoml-team', 'type': 'prebuilt'},
     image=bentoml.images.PythonImage(python_version='3.11').requirements_file('requirements.txt'),
