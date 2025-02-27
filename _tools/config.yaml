@@ -7,14 +7,14 @@
     traffic:
       timeout: 300
     resources:
-      gpu: 16
-      gpu_type: nvidia-a100-80gb
+      gpu: 8
+      gpu_type: nvidia-h200-141gb
     envs:
       - name: HF_TOKEN
   engine_config:
     model: deepseek-ai/DeepSeek-V3
     max_model_len: 8192
-    tensor_parallel_size: 16
+    tensor_parallel_size: 8
   generate_config:
     max_tokens: 4096
 "deepseek-r1-671b":
@@ -27,13 +27,13 @@
     traffic:
       timeout: 300
     resources:
-      gpu: 16
-      gpu_type: nvidia-a100-80gb
+      gpu: 8
+      gpu_type: nvidia-h200-141gb
     envs:
       - name: HF_TOKEN
   engine_config:
     model: deepseek-ai/DeepSeek-R1
-    tensor_parallel_size: 16
+    tensor_parallel_size: 8
     trust_remote_code: true
     max_model_len: 8192
   server_config:
