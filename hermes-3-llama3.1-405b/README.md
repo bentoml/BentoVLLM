@@ -35,40 +35,7 @@ The server is now active at [http://localhost:3000](http://localhost:3000/). You
 > [!NOTE]
 > This ships with a default `max_model_len=2048`. If you wish to change this value, set `MAX_MODEL_LEN=<target_context_len>`. Make sure that you have enough VRAM to use this context length. BentoVLLM will only set a conservative value based on this model configuration.
 
-<details>
-
-<summary>cURL</summary>
-
-```bash
-curl -X 'POST' \
-  'http://localhost:3000/generate' \
-  -H 'accept: text/event-stream' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "prompt": "Who are you? Please respond in pirate speak!",
-}'
-```
-
-</details>
-
-<details>
-
-<summary>Python client</summary>
-
-```python
-import bentoml
-
-with bentoml.SyncHTTPClient("http://localhost:3000") as client:
-    response_generator = client.generate(
-        prompt="Who are you? Please respond in pirate speak!",
-    )
-    for response in response_generator:
-        print(response, end='')
-```
-
-</details>
-
-<details>
+<details open>
 
 <summary>OpenAI-compatible endpoints</summary>
 
@@ -137,6 +104,40 @@ You can then use the following line to replace the client in the above code snip
 
 ```python
 client = OpenAI(base_url='your_bentocloud_deployment_endpoint_url/v1')
+```
+
+</details>
+
+
+<details>
+
+<summary>cURL</summary>
+
+```bash
+curl -X 'POST' \
+  'http://localhost:3000/generate' \
+  -H 'accept: text/event-stream' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "prompt": "Who are you? Please respond in pirate speak!",
+}'
+```
+
+</details>
+
+<details>
+
+<summary>Python SDK</summary>
+
+```python
+import bentoml
+
+with bentoml.SyncHTTPClient("http://localhost:3000") as client:
+    response_generator = client.generate(
+        prompt="Who are you? Please respond in pirate speak!",
+    )
+    for response in response_generator:
+        print(response, end='')
 ```
 
 </details>
