@@ -8,18 +8,18 @@ This repository contains a group of BentoML example projects, showing you how to
 
 See [here](https://docs.bentoml.com/en/latest/examples/overview.html) for a full list of BentoML example projects.
 
-The following is an example of serving one of the LLMs in this repository: Mistral 7B Instruct.
+The following is an example of serving one of the LLMs in this repository: Llama-3.1-8B-Instruct.
 
 ## Prerequisites
 
 - If you want to test the Service locally, we recommend you use an Nvidia GPU with at least 16G VRAM.
-- Gain access to the model in [Hugging Face](https://huggingface.co/meta-llama/Llama-3.2-1B-Instruct).
+- Gain access to the model in [Hugging Face](https://huggingface.co/meta-llama/Llama-3.1-8B-Instruct).
 
 ## Install dependencies
 
 ```bash
 git clone https://github.com/bentoml/BentoVLLM.git
-cd BentoVLLM/llama3.2-1b-instruct
+cd BentoVLLM/llama3.1-8b-instruct
 
 # Recommend UV and Python 3.11
 uv venv && pip install .
@@ -124,7 +124,7 @@ For detailed explanations of the Service code, see [vLLM inference](https://docs
 
 After the Service is ready, you can deploy the application to BentoCloud for better management and scalability. [Sign up](https://www.bentoml.com/) if you haven't got a BentoCloud account.
 
-Make sure you have [logged in to BentoCloud](https://docs.bentoml.com/en/latest/bentocloud/how-tos/manage-access-token.html).
+Make sure you have [logged in to BentoCloud](https://docs.bentoml.com/en/latest/scale-with-bentocloud/manage-api-tokens.html).
 
 ```bash
 bentoml cloud login
@@ -138,7 +138,7 @@ bentoml secret create huggingface HF_TOKEN=$HF_TOKEN
 bentoml deploy . --secret huggingface
 ```
 
-**Note**: For custom deployment in your own infrastructure, use [BentoML to generate an OCI-compliant image](https://docs.bentoml.com/en/latest/guides/containerization.html).
+**Note**: For custom deployment in your own infrastructure, use [BentoML to generate an OCI-compliant image](https://docs.bentoml.com/en/latest/get-started/packaging-for-deployment.html).
 
 ## Featured models
 
