@@ -22,12 +22,19 @@ openai_api_app = fastapi.FastAPI()
     name='bentovllm-jamba1.5-mini-service',
     traffic={'timeout': 300},
     resources={'gpu': 2, 'gpu_type': 'nvidia-a100-80gb'},
-    envs=[{'name': 'HF_TOKEN'}, {'name': 'UV_NO_BUILD_ISOLATION', 'value': 1}],
+    envs=[
+        {'name': 'HF_TOKEN'},
+        {'name': 'UV_NO_BUILD_ISOLATION', 'value': 1},
+        {'name': 'UV_NO_PROGRESS', 'value': 1},
+        {'name': 'HF_HUB_DISABLE_PROGRESS_BARS', 'value': 1},
+        {'name': 'VLLM_ATTENTION_BACKEND', 'value': 'FLASH_ATTN'},
+    ],
     labels={'owner': 'bentoml-team', 'type': 'prebuilt'},
-    image=bentoml.images.PythonImage(python_version='3.11')
+    image=bentoml.images.PythonImage(python_version='3.11', lock_python_packages=False)
     .system_packages('curl')
     .system_packages('git')
     .requirements_file('requirements.txt')
+    .run('uv pip install flashinfer-python --find-links https://flashinfer.ai/whl/cu124/torch2.5')
     .run('uv pip install --compile-bytecode torch')
     .run(
         'curl -L -o ./causal_conv1d-1.5.0.post8+cu12torch2.5cxx11abiFALSE-cp311-cp311-linux_x86_64.whl https://github.com/Dao-AILab/causal-conv1d/releases/download/v1.5.0.post8/causal_conv1d-1.5.0.post8+cu12torch2.5cxx11abiFALSE-cp311-cp311-linux_x86_64.whl'

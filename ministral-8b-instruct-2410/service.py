@@ -22,9 +22,16 @@ openai_api_app = fastapi.FastAPI()
     name='bentovllm-ministral-8b-instruct-2410-service',
     traffic={'timeout': 300},
     resources={'gpu': 1, 'gpu_type': 'nvidia-l4'},
-    envs=[{'name': 'HF_TOKEN'}],
+    envs=[
+        {'name': 'HF_TOKEN'},
+        {'name': 'UV_NO_PROGRESS', 'value': 1},
+        {'name': 'HF_HUB_DISABLE_PROGRESS_BARS', 'value': 1},
+        {'name': 'VLLM_ATTENTION_BACKEND', 'value': 'FLASH_ATTN'},
+    ],
     labels={'owner': 'bentoml-team', 'type': 'prebuilt'},
-    image=bentoml.images.PythonImage(python_version='3.11').requirements_file('requirements.txt'),
+    image=bentoml.images.PythonImage(python_version='3.11', lock_python_packages=False)
+    .requirements_file('requirements.txt')
+    .run('uv pip install flashinfer-python --find-links https://flashinfer.ai/whl/cu124/torch2.5'),
 )
 class VLLM:
     model_id = ENGINE_CONFIG['model']

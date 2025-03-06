@@ -67,6 +67,8 @@ def update_model_descriptions(config, template_dir):
 
 def generate_jinja_context(model_name, config):
   model_config = config[model_name]
+  use_mla = model_config.get("use_mla", False)
+  use_vision = model_config.get("vision", False)
   engine_config_struct = model_config.get("engine_config", {"model": "deepseek-ai/DeepSeek-R1-Distill-Llama-8B"})
 
   service_config = model_config.get("service_config", {})
@@ -76,6 +78,10 @@ def generate_jinja_context(model_name, config):
     service_config["envs"].extend([
       {"name": "UV_NO_PROGRESS", "value": 1},
       {"name": "HF_HUB_DISABLE_PROGRESS_BARS", "value": 1},
+      {
+        "name": "VLLM_ATTENTION_BACKEND",
+        "value": "FLASHMLA" if use_mla else "FLASH_ATTN",
+      },
     ])
 
   if "enable_prefix_caching" not in engine_config_struct:
@@ -89,7 +95,7 @@ def generate_jinja_context(model_name, config):
   context = {
     "model_name": model_name,
     "model_id": engine_config_struct["model"],
-    "vision": model_config.get("vision", False),
+    "vision": use_vision,
     "generate_config": model_config.get("generate_config", {}),
     "service_config": service_config,
     "engine_config": engine_config_struct,

@@ -23,9 +23,16 @@ openai_api_app = fastapi.FastAPI()
     name='bentovllm-deepseek-r1-671b-service',
     traffic={'timeout': 300},
     resources={'gpu': 8, 'gpu_type': 'nvidia-h200-141gb'},
-    envs=[{'name': 'HF_TOKEN'}],
+    envs=[
+        {'name': 'HF_TOKEN'},
+        {'name': 'UV_NO_PROGRESS', 'value': 1},
+        {'name': 'HF_HUB_DISABLE_PROGRESS_BARS', 'value': 1},
+        {'name': 'VLLM_ATTENTION_BACKEND', 'value': 'FLASHMLA'},
+    ],
     labels={'owner': 'bentoml-team', 'type': 'prebuilt'},
-    image=bentoml.images.PythonImage(python_version='3.11').requirements_file('requirements.txt'),
+    image=bentoml.images.PythonImage(python_version='3.11', lock_python_packages=False)
+    .requirements_file('requirements.txt')
+    .run('uv pip install flashinfer-python --find-links https://flashinfer.ai/whl/cu124/torch2.5'),
 )
 class VLLM:
     model_id = ENGINE_CONFIG['model']

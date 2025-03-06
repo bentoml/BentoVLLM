@@ -19,6 +19,7 @@
     max_tokens: 4096
 "deepseek-r1-671b":
   reasoning: true
+  use_mla: true
   metadata:
     description: DeepSeek R1 671B
     provider: DeepSeek
@@ -526,10 +527,12 @@
         value: 1
   engine_config:
     model: Qwen/QwQ-32B
-    max_model_len: 2048
+    max_model_len: 4096
     tensor_parallel_size: 1
   server_config:
     enable_reasoning: true
     reasoning_parser: "deepseek_r1"
     enable_auto_tool_choice: true
     tool_call_parser: "llama3_json"
+  generate_config:
+    max_tokens: 2048

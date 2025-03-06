@@ -24,7 +24,7 @@ openai_api_app = fastapi.FastAPI()
   {%- endif -%}
   {%- endfor %}
   labels={{labels}},
-  image = bentoml.images.PythonImage(python_version='3.11')
+  image = bentoml.images.PythonImage(python_version='3.11', lock_python_packages=False)
         {%- if build['system_packages'] is defined %}
         {%- for item in build['system_packages'] -%}
         .system_packages("{{item}}")
@@ -36,6 +36,7 @@ openai_api_app = fastapi.FastAPI()
         {%- endfor %}
         {%- endif %}
         .requirements_file('requirements.txt')
+        .run('uv pip install flashinfer-python --find-links https://flashinfer.ai/whl/cu124/torch2.5')
         {%- if build['post'] is defined %}
         {%- for item in build['post'] -%}
         .run("{{item}}")
