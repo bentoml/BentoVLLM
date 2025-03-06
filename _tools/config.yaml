@@ -508,3 +508,25 @@
   server_config:
     enable_auto_tool_choice: true
     tool_call_parser: "llama3_json"
+"qwq-32b":
+  metadata:
+    description: QWQ 32B
+    provider: Alibaba
+  service_config:
+    name: bentovllm-qwq-32b-service
+    traffic:
+      timeout: 300
+    resources:
+      gpu: 1
+      gpu_type: nvidia-a100-80gb
+    envs:
+      - name: HF_TOKEN
+      - name: UV_NO_BUILD_ISOLATION
+        value: 1
+  engine_config:
+    model: Qwen/QwQ-32B
+    max_model_len: 2048
+    tensor_parallel_size: 1
+  server_config:
+    enable_auto_tool_choice: true
+    tool_call_parser: "llama3_json"

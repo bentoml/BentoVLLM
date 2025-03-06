@@ -198,3 +198,4 @@ In addition to Llama 3.1 8B Instruct, we also have examples for other models in 
 | phi4-14b | [GitHub](phi4-14b/) • [Hugging Face](https://huggingface.co/microsoft/phi-4) |
 | qwen2.5-7b-instruct | [GitHub](qwen2.5-7b-instruct/) • [Hugging Face](https://huggingface.co/Qwen/Qwen2.5-7B-Instruct) |
 | qwen2.5-72b-instruct | [GitHub](qwen2.5-72b-instruct/) • [Hugging Face](https://huggingface.co/Qwen/Qwen2.5-72B-Instruct) |
+| qwq-32b | [GitHub](qwq-32b/) • [Hugging Face](https://huggingface.co/Qwen/QwQ-32B) |
