@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import logging, typing, uuid
+import logging, traceback, typing
 import bentoml, fastapi, typing_extensions, annotated_types
 
 logger = logging.getLogger(__name__)
@@ -66,6 +66,8 @@ class VLLM:
         self.engine = await self.engine_context.__aenter__()
         self.model_config = await self.engine.get_model_config()
         self.tokenizer = await self.engine.get_tokenizer()
+        args.enable_reasoning = True
+        args.reasoning_parser = 'deepseek_r1'
         args.enable_auto_tool_choice = True
         args.tool_call_parser = 'llama3_json'
 
@@ -83,27 +85,16 @@ class VLLM:
             int, annotated_types.Ge(128), annotated_types.Le(MAX_TOKENS)
         ] = MAX_TOKENS,
     ) -> typing.AsyncGenerator[str, None]:
-        from vllm import SamplingParams, TokensPrompt
-        from vllm.entrypoints.chat_utils import parse_chat_messages, apply_hf_chat_template
-
-        params = SamplingParams(max_tokens=max_tokens)
-        messages = [dict(role='user', content=[dict(type='text', text=prompt)])]
-        conversation, _ = parse_chat_messages(messages, self.model_config, self.tokenizer, content_format='string')
-        prompt = TokensPrompt(
-            prompt_token_ids=apply_hf_chat_template(
-                self.tokenizer,
-                conversation=conversation,
-                add_generation_prompt=True,
-                continue_final_message=False,
-                chat_template=None,
-                tokenize=True,
+        try:
+            completion = await self.openai.chat.completions.create(
+                model=self.model_id,
+                messages=[dict(role='user', content=[dict(type='text', text=prompt)])],
+                stream=True,
+                max_tokens=max_tokens,
             )
-        )
-
-        stream = self.engine.generate(request_id=uuid.uuid4().hex, prompt=prompt, sampling_params=params)
-
-        cursor = 0
-        async for request_output in stream:
-            text = request_output.outputs[0].text
-            yield text[cursor:]
-            cursor = len(text)
+            async for chunk in completion:
+                yield chunk.choices[0].delta.content or ''
+        except Exception:
+            logger.error(traceback.format_exc())
+            yield 'Internal error found. Check server logs for more information'
+            return

@@ -509,6 +509,7 @@
     enable_auto_tool_choice: true
     tool_call_parser: "llama3_json"
 "qwq-32b":
+  reasoning: true
   metadata:
     description: QWQ 32B
     provider: Alibaba
@@ -528,5 +529,7 @@
     max_model_len: 2048
     tensor_parallel_size: 1
   server_config:
+    enable_reasoning: true
+    reasoning_parser: "deepseek_r1"
     enable_auto_tool_choice: true
     tool_call_parser: "llama3_json"
