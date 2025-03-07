@@ -10,7 +10,7 @@ See [here](https://docs.bentoml.com/en/latest/examples/overview.html) for a full
 
 ## Prerequisites
 - You have gained access to `Qwen/QwQ-32B` on [Hugging Face](https://huggingface.co/Qwen/QwQ-32B).
-- If you want to test the Service locally, we recommend you use an Nvidia GPU with at least 80G VRAM.
+- If you want to test the Service locally, we recommend you use an Nvidia GPU with at least 80GB VRAM (e.g about 1 H100 GPU).
 
 ## Install dependencies
 

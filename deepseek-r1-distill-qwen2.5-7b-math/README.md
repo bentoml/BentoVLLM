@@ -10,7 +10,7 @@ See [here](https://docs.bentoml.com/en/latest/examples/overview.html) for a full
 
 ## Prerequisites
 - You have gained access to `deepseek-ai/DeepSeek-R1-Distill-Qwen-7B` on [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-7B).
-- If you want to test the Service locally, we recommend you use an Nvidia GPU with at least 16G VRAM.
+- If you want to test the Service locally, we recommend you use an Nvidia GPU with at least 24GB VRAM (e.g about 1 L4 GPU).
 
 ## Install dependencies
 

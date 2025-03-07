@@ -1,7 +1,9 @@
 "deepseek-v3-671b":
+  use_mla: true
   metadata:
     description: DeepSeek V3 671B
     provider: DeepSeek
+    gpu_recommendation: Nvidia GPUs with at least 80GBx16 VRAM (e.g. about 8 H200 GPUs).
   service_config:
     name: bentovllm-deepseek-v3-671b-service
     traffic:
@@ -23,6 +25,7 @@
   metadata:
     description: DeepSeek R1 671B
     provider: DeepSeek
+    gpu_recommendation: Nvidia GPUs with at least 80GBx16 VRAM (e.g. about 8 H200 GPUs).
   service_config:
     name: bentovllm-deepseek-r1-671b-service
     traffic:
@@ -47,6 +50,7 @@
   metadata:
     description: DeepSeek R1 Distill Llama 3.3 70B
     provider: DeepSeek
+    gpu_recommendation: Nvidia GPUs with at least 80GBx2 VRAM (e.g about 2 H100 GPUs).
   service_config:
     name: bentovllm-r1-llama3.3-70b-service
     traffic:
@@ -72,6 +76,7 @@
   metadata:
     description: DeepSeek R1 Distill Qwen 2.5 32B
     provider: DeepSeek
+    gpu_recommendation: an Nvidia GPU with at least 80GB VRAM (e.g about 1 H100 GPU).
   service_config:
     name: bentovllm-r1-qwen2.5-32b-service
     resources:
@@ -96,6 +101,7 @@
   metadata:
     description: DeepSeek R1 Distill Qwen 2.5 Math 7B
     provider: DeepSeek
+    gpu_recommendation: an Nvidia GPU with at least 24GB VRAM (e.g about 1 L4 GPU).
   service_config:
     name: bentovllm-r1-qwen2.5-7b-math-service
     traffic:
@@ -120,6 +126,7 @@
   metadata:
     description: DeepSeek R1 Distill Llama 3.1 8B Tool Calling
     provider: DeepSeek
+    gpu_recommendation: an Nvidia GPU with at least 24GB VRAM (e.g about 1 L4 GPU).
   service_config:
     name: bentovllm-r1-llama3.1-8b-tool-calling-service
     traffic:
@@ -143,6 +150,7 @@
   metadata:
     description: Gemma 2 2B Instruct
     provider: Google
+    gpu_recommendation: an Nvidia GPU with at least 16GB VRAM (e.g about 1 L4 GPU).
   service_config:
     name: bentovllm-gemma2-2b-instruct-service
     traffic:
@@ -165,6 +173,7 @@
   metadata:
     description: Gemma 2 27B Instruct
     provider: Google
+    gpu_recommendation: an Nvidia GPU with at least 80GB VRAM (e.g about 1 H100 GPU).
   service_config:
     name: bentovllm-gemma2-27b-instruct-service
     traffic:
@@ -187,6 +196,7 @@
   metadata:
     description: Jamba 1.5 Mini
     provider: AI21 Lab
+    gpu_recommendation: Nvidia GPUs with at least 80GBx2 VRAM (e.g about 2 H100 GPUs).
   service_config:
     name: bentovllm-jamba1.5-mini-service
     traffic:
@@ -222,6 +232,7 @@
   metadata:
     description: Jamba 1.5 Large
     provider: AI21 Lab
+    gpu_recommendation: Nvidia GPUs with at least 80GBx8 VRAM (e.g about 8 H100 GPUs).
   service_config:
     name: bentovllm-jamba1.5-large-service
     traffic:
@@ -258,6 +269,7 @@
   metadata:
     description: Llama 3.1 8B Instruct
     provider: Meta
+    gpu_recommendation: an Nvidia GPU with at least 24GB VRAM (e.g about 1 L4 GPU).
   service_config:
     name: bentovllm-llama3.1-8b-instruct-service
     traffic:
@@ -279,6 +291,7 @@
   metadata:
     description: Llama 3.1 3B Instruct
     provider: Meta
+    gpu_recommendation: an Nvidia GPU with at least 16GB VRAM (e.g about 1 T4 GPU).
   service_config:
     name: bentovllm-llama3.2-3b-instruct-service
     traffic:
@@ -300,6 +313,7 @@
   metadata:
     description: Llama 3.2 11B Vision Instruct
     provider: Meta
+    gpu_recommendation: an Nvidia GPU with at least 80GB VRAM (e.g about 1 H100 GPU).
   vision: true
   service_config:
     name: bentovllm-llama3.2-11b-vision-instruct-service
@@ -329,6 +343,7 @@
   metadata:
     description: Llama 3.3 70B Instruct
     provider: Meta
+    gpu_recommendation: Nvidia GPUs with at least 80GBx2 VRAM (e.g about 2 H100 GPUs).
   service_config:
     name: bentovllm-llama3.3-70b-instruct-service
     traffic:
@@ -355,6 +370,7 @@
   metadata:
     description: Hermes 3 Llama 3.1 405B FP8
     provider: NousResearch
+    gpu_recommendation: Nvidia GPUs with at least 80GBx6 VRAM (e.g about 6 H100 GPUs).
   service_config:
     name: bentovllm-hermes-3-llama3.1-405b-service
     traffic:
@@ -375,6 +391,7 @@
   metadata:
     description: Pixtral 12B 2409
     provider: Mistral AI
+    gpu_recommendation: an Nvidia GPU with at least 80GB VRAM (e.g about 1 H100 GPU).
   vision: true
   service_config:
     name: bentovllm-pixtral-12b-2409-service
@@ -404,6 +421,7 @@
   metadata:
     description: Ministral 8B Instruct 2410
     provider: Mistral AI
+    gpu_recommendation: an Nvidia GPU with at least 24GB VRAM (e.g about 1 L4 GPU).
   service_config:
     name: bentovllm-ministral-8b-instruct-2410-service
     traffic:
@@ -430,6 +448,7 @@
   metadata:
     description: Mistral Small 24B Instruct 2501
     provider: Mistral AI
+    gpu_recommendation: an Nvidia GPU with at least 80GB VRAM (e.g about 1 H100 GPU).
   service_config:
     name: bentovllm-mistral-small-24b-instruct-2501-service
     traffic:
@@ -456,6 +475,7 @@
   metadata:
     description: Phi 4 14B
     provider: Microsoft
+    gpu_recommendation: an Nvidia GPU with at least 80GB VRAM (e.g about 1 H100 GPU).
   service_config:
     name: bentovllm-phi4-14b-service
     traffic:
@@ -474,6 +494,7 @@
   metadata:
     description: Qwen 2.5 7B Instruct
     provider: Alibaba
+    gpu_recommendation: an Nvidia GPU with at least 24GB VRAM (e.g about 1 L4 GPU).
   service_config:
     name: bentovllm-qwen2.5-7b-instruct-service
     traffic:
@@ -493,6 +514,7 @@
   metadata:
     description: Qwen 2.5 72B Instruct
     provider: Alibaba
+    gpu_recommendation: Nvidia GPUs with at least 80GBx2 VRAM (e.g about 2 H100 GPUs).
   service_config:
     name: bentovllm-qwen2.5-72b-instruct-service
     traffic:
@@ -514,6 +536,7 @@
   metadata:
     description: QWQ 32B
     provider: Alibaba
+    gpu_recommendation: an Nvidia GPU with at least 80GB VRAM (e.g about 1 H100 GPU).
   service_config:
     name: bentovllm-qwq-32b-service
     traffic:

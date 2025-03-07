@@ -9,7 +9,7 @@ See [here](https://docs.bentoml.com/en/latest/examples/overview.html) for a full
 💡 This example is served as a basis for advanced code customization, such as custom model, inference logic or vLLM options. For simple LLM hosting with OpenAI compatible endpoint without writing any code, see [OpenLLM](https://github.com/bentoml/OpenLLM).
 
 ## Prerequisites
-- If you want to test the Service locally, we recommend you use an Nvidia GPU with at least 16G VRAM.
+- If you want to test the Service locally, we recommend you use an Nvidia GPU with at least 24GB VRAM (e.g about 1 L4 GPU).
 
 ## Install dependencies
 

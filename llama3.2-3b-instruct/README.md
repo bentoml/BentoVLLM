@@ -10,7 +10,7 @@ See [here](https://docs.bentoml.com/en/latest/examples/overview.html) for a full
 
 ## Prerequisites
 - You have gained access to `meta-llama/Llama-3.2-3B-Instruct` on [Hugging Face](https://huggingface.co/meta-llama/Llama-3.2-3B-Instruct).
-- If you want to test the Service locally, we recommend you use an Nvidia GPU with at least 16G VRAM.
+- If you want to test the Service locally, we recommend you use an Nvidia GPU with at least 16GB VRAM (e.g about 1 T4 GPU).
 
 ## Install dependencies
 

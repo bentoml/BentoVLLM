@@ -10,7 +10,7 @@ See [here](https://docs.bentoml.com/en/latest/examples/overview.html) for a full
 
 ## Prerequisites
 - You have gained access to `deepseek-ai/DeepSeek-V3` on [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-V3).
-- If you want to test the Service locally, we recommend you use Nvidia GPUs with at least 80Gx16 VRAM (e.g. about eight H200 GPUs).
+- If you want to test the Service locally, we recommend you use Nvidia GPUs with at least 80GBx16 VRAM (e.g. about 8 H200 GPUs).
 
 ## Install dependencies
 
