@@ -90,17 +90,20 @@ def generate_jinja_context(model_name, config):
   service_config = model_config.get("service_config", {})
 
   requires_hf_tokens = "envs" in service_config and any(it["name"] == "HF_TOKEN" for it in service_config["envs"])
-  if "envs" in service_config:
-    service_config["envs"].extend([
-      {"name": "UV_NO_PROGRESS", "value": 1},
-      {"name": "HF_HUB_DISABLE_PROGRESS_BARS", "value": 1},
-      {
-        "name": "VLLM_ATTENTION_BACKEND",
-        "value": "FLASHMLA" if use_mla else "FLASH_ATTN",
-      },
-    ])
+  if "envs" not in service_config:
+    service_config["envs"] = []
+
+  service_config["envs"].extend([
+    {"name": "UV_NO_PROGRESS", "value": 1},
+    {"name": "HF_HUB_DISABLE_PROGRESS_BARS", "value": 1},
+    {
+      "name": "VLLM_ATTENTION_BACKEND",
+      "value": "FLASHMLA" if use_mla else "FLASH_ATTN",
+    },
+  ])
+
   if is_nightly and use_v1:
-    service_config["envs"].extend([{"name": "VLLM_USE_V1", "value": 1}])
+    service_config["envs"].append({"name": "VLLM_USE_V1", "value": 1})
 
   if "enable_prefix_caching" not in engine_config_struct:
     engine_config_struct["enable_prefix_caching"] = True

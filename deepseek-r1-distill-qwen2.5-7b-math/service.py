@@ -4,7 +4,6 @@ import logging, traceback, typing
 import bentoml, fastapi, typing_extensions, annotated_types
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
 
 ENGINE_CONFIG = {
     'model': 'deepseek-ai/DeepSeek-R1-Distill-Qwen-7B',

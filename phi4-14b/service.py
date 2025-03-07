@@ -4,7 +4,6 @@ import logging, typing, uuid
 import bentoml, fastapi, typing_extensions, annotated_types
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
 
 ENGINE_CONFIG = {'model': 'microsoft/phi-4', 'max_model_len': 8192, 'enable_prefix_caching': True}
 MAX_TOKENS = 4096
@@ -17,6 +16,11 @@ openai_api_app = fastapi.FastAPI()
     name='bentovllm-phi4-14b-service',
     traffic={'timeout': 300},
     resources={'gpu': 1, 'gpu_type': 'nvidia-a100-80gb'},
+    envs=[
+        {'name': 'UV_NO_PROGRESS', 'value': 1},
+        {'name': 'HF_HUB_DISABLE_PROGRESS_BARS', 'value': 1},
+        {'name': 'VLLM_ATTENTION_BACKEND', 'value': 'FLASH_ATTN'},
+    ],
     labels={'owner': 'bentoml-team', 'type': 'prebuilt'},
     image=bentoml.images.PythonImage(python_version='3.11', lock_python_packages=False)
     .requirements_file('requirements.txt')

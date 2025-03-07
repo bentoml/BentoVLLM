@@ -4,7 +4,6 @@ import {%- if vision | lower == "true" %} base64, io,{%- endif %} logging{%- if 
 import bentoml, fastapi{%- if vision | lower == "true" %}, PIL.Image{%-endif %}, typing_extensions, annotated_types
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
 
 ENGINE_CONFIG = {{engine_config}}
 MAX_TOKENS = {{generate_config['max_tokens']|default(engine_config['max_model_len'])}}

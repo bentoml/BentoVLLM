@@ -4,7 +4,6 @@ import logging, typing, uuid
 import bentoml, fastapi, typing_extensions, annotated_types
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
 
 ENGINE_CONFIG = {
     'model': 'meta-llama/Llama-3.3-70B-Instruct',

@@ -4,7 +4,6 @@ import base64, io, logging, traceback, typing, uuid
 import bentoml, fastapi, PIL.Image, typing_extensions, annotated_types
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
 
 ENGINE_CONFIG = {
     'model': 'mistralai/Pixtral-12B-2409',

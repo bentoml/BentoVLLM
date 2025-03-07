@@ -4,7 +4,6 @@ import logging, typing, uuid
 import bentoml, fastapi, typing_extensions, annotated_types
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
 
 ENGINE_CONFIG = {'model': 'Qwen/Qwen2.5-7B-Instruct', 'max_model_len': 2048, 'enable_prefix_caching': True}
 MAX_TOKENS = 1024
@@ -17,6 +16,11 @@ openai_api_app = fastapi.FastAPI()
     name='bentovllm-qwen2.5-7b-instruct-service',
     traffic={'timeout': 300},
     resources={'gpu': 1, 'gpu_type': 'nvidia-l4'},
+    envs=[
+        {'name': 'UV_NO_PROGRESS', 'value': 1},
+        {'name': 'HF_HUB_DISABLE_PROGRESS_BARS', 'value': 1},
+        {'name': 'VLLM_ATTENTION_BACKEND', 'value': 'FLASH_ATTN'},
+    ],
     labels={'owner': 'bentoml-team', 'type': 'prebuilt'},
     image=bentoml.images.PythonImage(python_version='3.11', lock_python_packages=False)
     .requirements_file('requirements.txt')
