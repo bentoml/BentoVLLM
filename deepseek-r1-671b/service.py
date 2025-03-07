@@ -26,6 +26,7 @@ openai_api_app = fastapi.FastAPI()
         {'name': 'HF_TOKEN'},
         {'name': 'UV_NO_PROGRESS', 'value': 1},
         {'name': 'HF_HUB_DISABLE_PROGRESS_BARS', 'value': 1},
+        {'name': 'VLLM_LOGGING_CONFIG_PATH', 'value': 'logging-config.json'},
         {'name': 'VLLM_ATTENTION_BACKEND', 'value': 'FLASHMLA'},
     ],
     labels={'owner': 'bentoml-team', 'type': 'prebuilt'},

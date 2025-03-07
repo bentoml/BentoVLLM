@@ -96,6 +96,7 @@ def generate_jinja_context(model_name, config):
   service_config["envs"].extend([
     {"name": "UV_NO_PROGRESS", "value": 1},
     {"name": "HF_HUB_DISABLE_PROGRESS_BARS", "value": 1},
+    {"name": "VLLM_LOGGING_CONFIG_PATH", "value": "logging-config.json"},
     {
       "name": "VLLM_ATTENTION_BACKEND",
       "value": "FLASHMLA" if use_mla else "FLASH_ATTN",
