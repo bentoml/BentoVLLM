@@ -10,7 +10,7 @@ See [here](https://docs.bentoml.com/en/latest/examples/overview.html) for a full
 
 ## Prerequisites
 - You have gained access to `deepseek-ai/DeepSeek-V3` on [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-V3).
-- If you want to test the Service locally, we recommend you use an Nvidia GPU with at least 16G VRAM.
+- If you want to test the Service locally, we recommend you use Nvidia GPUs with at least 80Gx16 VRAM (e.g. about eight H200 GPUs).
 
 ## Install dependencies
 
@@ -145,7 +145,7 @@ with bentoml.SyncHTTPClient("http://localhost:3000") as client:
 
 </details>
 
-For detailed explanations of the Service code, see [vLLM inference](https://docs.bentoml.org/en/latest/use-cases/large-language-models/vllm.html).
+For detailed explanations of the Service code, see [vLLM inference](https://docs.bentoml.org/en/latest/examples/vllm.html).
 
 ## Deploy to BentoCloud
 
