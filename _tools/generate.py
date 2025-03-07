@@ -82,6 +82,7 @@ def update_model_descriptions(config, template_dir):
 def generate_jinja_context(model_name, config):
   model_config = config[model_name]
   use_mla = model_config.get("use_mla", False)
+  use_v1 = model_config.get("use_v1", False)
   use_vision = model_config.get("vision", False)
   engine_config_struct = model_config.get("engine_config", {"model": "deepseek-ai/DeepSeek-R1-Distill-Llama-8B"})
   is_nightly = is_nightly_branch()
@@ -98,7 +99,7 @@ def generate_jinja_context(model_name, config):
         "value": "FLASHMLA" if use_mla else "FLASH_ATTN",
       },
     ])
-  if is_nightly:
+  if is_nightly and use_v1:
     service_config["envs"].extend([{"name": "VLLM_USE_V1", "value": 1}])
 
   if "enable_prefix_caching" not in engine_config_struct:

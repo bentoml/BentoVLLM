@@ -123,6 +123,7 @@
     max_tokens: 4096
 "deepseek-r1-distill-llama3.1-8b-tool-calling":
   reasoning: true
+  use_v1: true
   metadata:
     description: DeepSeek R1 Distill Llama 3.1 8B Tool Calling
     provider: DeepSeek
@@ -266,6 +267,7 @@
   generate_config:
     max_tokens: 4096
 "llama3.1-8b-instruct":
+  use_v1: true
   metadata:
     description: Llama 3.1 8B Instruct
     provider: Meta
@@ -288,6 +290,7 @@
   generate_config:
     max_tokens: 2048
 "llama3.2-3b-instruct":
+  use_v1: true
   metadata:
     description: Llama 3.1 3B Instruct
     provider: Meta
@@ -340,6 +343,7 @@
   generate_config:
     max_tokens: 8192
 "llama3.3-70b-instruct":
+  use_v1: true
   metadata:
     description: Llama 3.3 70B Instruct
     provider: Meta
@@ -418,6 +422,7 @@
     tool_call_parser: "mistral"
     enable_auto_tool_choice: true
 "ministral-8b-instruct-2410":
+  use_v1: true
   metadata:
     description: Ministral 8B Instruct 2410
     provider: Mistral AI
@@ -511,6 +516,7 @@
     enable_auto_tool_choice: true
     tool_call_parser: "llama3_json"
 "qwen2.5-72b-instruct":
+  use_v1: true
   metadata:
     description: Qwen 2.5 72B Instruct
     provider: Alibaba
