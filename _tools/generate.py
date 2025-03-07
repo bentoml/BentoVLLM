@@ -17,6 +17,20 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 
 
+def is_nightly_branch():
+  """Check if we are on the nightly branch."""
+  try:
+    result = subprocess.run(
+      ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+      check=True,
+      capture_output=True,
+      text=True,
+    )
+    return result.stdout.strip() == "nightly"
+  except subprocess.SubprocessError:
+    return False
+
+
 def update_model_descriptions(config, template_dir):
   certified_repos_path = template_dir / "bentocloud-homepage-news" / "certified-bento-repositories.json"
   if not certified_repos_path.exists():
@@ -70,6 +84,7 @@ def generate_jinja_context(model_name, config):
   use_mla = model_config.get("use_mla", False)
   use_vision = model_config.get("vision", False)
   engine_config_struct = model_config.get("engine_config", {"model": "deepseek-ai/DeepSeek-R1-Distill-Llama-8B"})
+  is_nightly = is_nightly_branch()
 
   service_config = model_config.get("service_config", {})
 
@@ -83,6 +98,8 @@ def generate_jinja_context(model_name, config):
         "value": "FLASHMLA" if use_mla else "FLASH_ATTN",
       },
     ])
+  if is_nightly:
+    service_config["envs"].extend([{"name": "VLLM_USE_V1", "value": 1}])
 
   if "enable_prefix_caching" not in engine_config_struct:
     engine_config_struct["enable_prefix_caching"] = True
@@ -117,11 +134,12 @@ def generate_jinja_context(model_name, config):
 
 def generate_readme(config, template_dir):
   models = [{"name": name, "engine_config": cfg.get("engine_config", {})} for name, cfg in config.items()]
+  is_nightly = is_nightly_branch()
 
   with open(template_dir / "README.md.tpl", "r") as f:
     template_content = f.read()
 
-  rendered = Template(template_content).render(models=models)
+  rendered = Template(template_content).render(models=models, nightly=is_nightly)
 
   with open(template_dir / "README.md", "w") as f:
     f.write(rendered)

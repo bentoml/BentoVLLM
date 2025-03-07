@@ -2,6 +2,11 @@
     <h1 align="center">Self-host LLMs with vLLM and BentoML</h1>
 </div>
 
+{%- if nightly %}
+> [!WARNING]
+> This is a nightly branch to test out nightly features from vLLM. It might not work. Please use the main branch.
+{%- endif %}
+
 This repository contains a group of BentoML example projects, showing you how to serve and deploy open-source Large Language Models using [vLLM](https://vllm.ai), a high-throughput and memory-efficient inference engine. Every model directory contains the code to add OpenAI compatible endpoints to the BentoML Service.
 
 💡 You can use these examples as bases for advanced code customization, such as custom model, inference logic or vLLM options. For simple LLM hosting with OpenAI compatible endpoints without writing any code, see [OpenLLM](https://github.com/bentoml/OpenLLM).
