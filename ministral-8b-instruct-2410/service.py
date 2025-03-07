@@ -1,16 +1,17 @@
 from __future__ import annotations
 
-import logging, typing, uuid
+import logging, os, typing, uuid
 import bentoml, fastapi, typing_extensions, annotated_types
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
 
 ENGINE_CONFIG = {
     'model': 'mistralai/Ministral-8B-Instruct-2410',
     'tokenizer_mode': 'mistral',
+    'config_format': 'mistral',
+    'load_format': 'mistral',
     'max_model_len': 4096,
-    'enable_prefix_caching': False,
+    'enable_prefix_caching': True,
 }
 MAX_TOKENS = 2048
 
@@ -24,23 +25,19 @@ openai_api_app = fastapi.FastAPI()
     resources={'gpu': 1, 'gpu_type': 'nvidia-l4'},
     envs=[
         {'name': 'HF_TOKEN'},
-        {'name': 'UV_NO_PROGRESS', 'value': 1},
-        {'name': 'HF_HUB_DISABLE_PROGRESS_BARS', 'value': 1},
+        {'name': 'UV_NO_PROGRESS', 'value': '1'},
+        {'name': 'HF_HUB_DISABLE_PROGRESS_BARS', 'value': '1'},
         {'name': 'VLLM_ATTENTION_BACKEND', 'value': 'FLASH_ATTN'},
+        {'name': 'VLLM_LOGGING_CONFIG_PATH', 'value': os.path.join(os.path.dirname(__file__), 'logging-config.json')},
     ],
     labels={'owner': 'bentoml-team', 'type': 'prebuilt'},
     image=bentoml.images.PythonImage(python_version='3.11', lock_python_packages=False)
     .requirements_file('requirements.txt')
-    .run('uv pip install flashinfer-python --find-links https://flashinfer.ai/whl/cu124/torch2.5'),
+    .run('uv pip install --compile-bytecode flashinfer-python --find-links https://flashinfer.ai/whl/cu124/torch2.5'),
 )
 class VLLM:
     model_id = ENGINE_CONFIG['model']
-    model = bentoml.models.HuggingFaceModel(model_id, exclude=['consolidated*', '*.pth', '*.pt'])
-
-    def __init__(self):
-        from openai import AsyncOpenAI
-
-        self.openai = AsyncOpenAI(base_url='http://127.0.0.1:3000/v1', api_key='dummy')
+    model = bentoml.models.HuggingFaceModel(model_id, exclude=['model*', '*.pth', '*.pt', 'original/**/*'])
 
     @bentoml.on_startup
     async def init_engine(self) -> None:
@@ -56,6 +53,8 @@ class VLLM:
         args.served_model_name = [self.model_id]
         args.request_logger = None
         args.disable_log_stats = True
+        args.ignore_patterns = ['model*', '*.pth', '*.pt', 'original/**/*']
+        args.use_tqdm_on_load = False
         for key, value in ENGINE_CONFIG.items():
             setattr(args, key, value)
 
@@ -93,8 +92,9 @@ class VLLM:
         from vllm import SamplingParams, TokensPrompt
         from vllm.entrypoints.chat_utils import apply_mistral_chat_template
 
+        messages = [{'role': 'user', 'content': [{'type': 'text', 'text': prompt}]}]
+
         params = SamplingParams(max_tokens=max_tokens)
-        messages = [dict(role='user', content=[dict(type='text', text=prompt)])]
         prompt = TokensPrompt(prompt_token_ids=apply_mistral_chat_template(self.tokenizer, messages=messages))
 
         stream = self.engine.generate(request_id=uuid.uuid4().hex, prompt=prompt, sampling_params=params)

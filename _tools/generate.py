@@ -82,24 +82,24 @@ def update_model_descriptions(config, template_dir):
 def generate_jinja_context(model_name, config):
   model_config = config[model_name]
   use_mla = model_config.get("use_mla", False)
+  use_nightly = model_config.get("use_nightly", False)
   use_vision = model_config.get("vision", False)
   engine_config_struct = model_config.get("engine_config", {"model": "deepseek-ai/DeepSeek-R1-Distill-Llama-8B"})
-  is_nightly = is_nightly_branch()
 
   service_config = model_config.get("service_config", {})
 
   requires_hf_tokens = "envs" in service_config and any(it["name"] == "HF_TOKEN" for it in service_config["envs"])
-  if "envs" in service_config:
-    service_config["envs"].extend([
-      {"name": "UV_NO_PROGRESS", "value": 1},
-      {"name": "HF_HUB_DISABLE_PROGRESS_BARS", "value": 1},
-      {
-        "name": "VLLM_ATTENTION_BACKEND",
-        "value": "FLASHMLA" if use_mla else "FLASH_ATTN",
-      },
-    ])
-  if is_nightly:
-    service_config["envs"].extend([{"name": "VLLM_USE_V1", "value": 1}])
+  if "envs" not in service_config:
+    service_config["envs"] = []
+
+  service_config["envs"].extend([
+    {"name": "UV_NO_PROGRESS", "value": "1"},
+    {"name": "HF_HUB_DISABLE_PROGRESS_BARS", "value": "1"},
+    {
+      "name": "VLLM_ATTENTION_BACKEND",
+      "value": "FLASHMLA" if use_mla else "FLASH_ATTN",
+    },
+  ])
 
   if "enable_prefix_caching" not in engine_config_struct:
     engine_config_struct["enable_prefix_caching"] = True
@@ -107,7 +107,18 @@ def generate_jinja_context(model_name, config):
   build_config = model_config.get("build", {})
   if "exclude" not in build_config:
     build_config["exclude"] = []
-  build_config["exclude"] = [*build_config["exclude"], "*.pth", "*.pt"]
+  build_config["exclude"] = [*build_config["exclude"], "*.pth", "*.pt", "original/**/*"]
+
+  if "post" not in build_config:
+    build_config["post"] = []
+
+  if use_nightly:
+    build_config["post"].append(
+      "uv pip install --compile-bytecode vllm --pre --extra-index-url https://wheels.vllm.ai/nightly"
+    )
+  build_config["post"].append(
+    "uv pip install --compile-bytecode flashinfer-python --find-links https://flashinfer.ai/whl/cu124/torch2.5"
+  )
 
   context = {
     "model_name": model_name,
@@ -123,6 +134,9 @@ def generate_jinja_context(model_name, config):
     "build": build_config,
     "exclude": build_config["exclude"],
     "reasoning": model_config.get("reasoning", False),
+    "embeddings": model_config.get("embeddings", False),
+    "nightly": use_nightly,
+    "system_prompt": model_config.get("system_prompt", None),
   }
 
   requirements = model_config.get("requirements", [])

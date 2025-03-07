@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-import logging, typing, uuid
+import logging, os, typing, uuid
 import bentoml, fastapi, typing_extensions, annotated_types
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
 
 ENGINE_CONFIG = {
     'model': 'ai21labs/AI21-Jamba-1.5-Large',
@@ -26,16 +25,16 @@ openai_api_app = fastapi.FastAPI()
     envs=[
         {'name': 'HF_TOKEN'},
         {'name': 'UV_NO_BUILD_ISOLATION', 'value': 1},
-        {'name': 'UV_NO_PROGRESS', 'value': 1},
-        {'name': 'HF_HUB_DISABLE_PROGRESS_BARS', 'value': 1},
+        {'name': 'UV_NO_PROGRESS', 'value': '1'},
+        {'name': 'HF_HUB_DISABLE_PROGRESS_BARS', 'value': '1'},
         {'name': 'VLLM_ATTENTION_BACKEND', 'value': 'FLASH_ATTN'},
+        {'name': 'VLLM_LOGGING_CONFIG_PATH', 'value': os.path.join(os.path.dirname(__file__), 'logging-config.json')},
     ],
     labels={'owner': 'bentoml-team', 'type': 'prebuilt'},
     image=bentoml.images.PythonImage(python_version='3.11', lock_python_packages=False)
     .system_packages('curl')
     .system_packages('git')
     .requirements_file('requirements.txt')
-    .run('uv pip install flashinfer-python --find-links https://flashinfer.ai/whl/cu124/torch2.5')
     .run('uv pip install --compile-bytecode torch')
     .run(
         'curl -L -o ./causal_conv1d-1.5.0.post8+cu12torch2.5cxx11abiFALSE-cp311-cp311-linux_x86_64.whl https://github.com/Dao-AILab/causal-conv1d/releases/download/v1.5.0.post8/causal_conv1d-1.5.0.post8+cu12torch2.5cxx11abiFALSE-cp311-cp311-linux_x86_64.whl'
@@ -46,16 +45,12 @@ openai_api_app = fastapi.FastAPI()
     .run(
         'curl -L -o ./mamba_ssm-2.2.4+cu12torch2.5cxx11abiFALSE-cp311-cp311-linux_x86_64.whl https://github.com/state-spaces/mamba/releases/download/v2.2.4/mamba_ssm-2.2.4+cu12torch2.5cxx11abiFALSE-cp311-cp311-linux_x86_64.whl'
     )
-    .run('uv pip install --compile-bytecode ./mamba_ssm-2.2.4+cu12torch2.5cxx11abiFALSE-cp311-cp311-linux_x86_64.whl'),
+    .run('uv pip install --compile-bytecode ./mamba_ssm-2.2.4+cu12torch2.5cxx11abiFALSE-cp311-cp311-linux_x86_64.whl')
+    .run('uv pip install --compile-bytecode flashinfer-python --find-links https://flashinfer.ai/whl/cu124/torch2.5'),
 )
 class VLLM:
     model_id = ENGINE_CONFIG['model']
-    model = bentoml.models.HuggingFaceModel(model_id, exclude=['*.pth', '*.pt'])
-
-    def __init__(self):
-        from openai import AsyncOpenAI
-
-        self.openai = AsyncOpenAI(base_url='http://127.0.0.1:3000/v1', api_key='dummy')
+    model = bentoml.models.HuggingFaceModel(model_id, exclude=['*.pth', '*.pt', 'original/**/*'])
 
     @bentoml.on_startup
     async def init_engine(self) -> None:
@@ -71,6 +66,8 @@ class VLLM:
         args.served_model_name = [self.model_id]
         args.request_logger = None
         args.disable_log_stats = True
+        args.ignore_patterns = ['*.pth', '*.pt', 'original/**/*']
+        args.use_tqdm_on_load = False
         for key, value in ENGINE_CONFIG.items():
             setattr(args, key, value)
 
@@ -108,8 +105,9 @@ class VLLM:
         from vllm import SamplingParams, TokensPrompt
         from vllm.entrypoints.chat_utils import parse_chat_messages, apply_hf_chat_template
 
+        messages = [{'role': 'user', 'content': [{'type': 'text', 'text': prompt}]}]
+
         params = SamplingParams(max_tokens=max_tokens)
-        messages = [dict(role='user', content=[dict(type='text', text=prompt)])]
         conversation, _ = parse_chat_messages(messages, self.model_config, self.tokenizer, content_format='string')
         prompt = TokensPrompt(
             prompt_token_ids=apply_hf_chat_template(
