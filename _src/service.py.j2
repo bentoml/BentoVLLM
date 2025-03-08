@@ -35,8 +35,7 @@ openai_api_app = fastapi.FastAPI()
         {%- endfor %}
         {%- endif %}
         .requirements_file('requirements.txt')
-        .run('uv pip install flashinfer-python --find-links https://flashinfer.ai/whl/cu124/torch2.5')
-        {%- if build['post'] is defined %}
+        {%- if build['post'] | length > 0 %}
         {%- for item in build['post'] -%}
         .run("{{item}}")
         {%- endfor %}
@@ -46,10 +45,11 @@ class VLLM:
   model_id = ENGINE_CONFIG["model"]
   model = bentoml.models.HuggingFaceModel(model_id, exclude=[{{exclude | map('tojson') | join(", ")}}])
 
+  {% if (reasoning | lower == "true") or (vision | lower == "true") %}
   def __init__(self):
     from openai import AsyncOpenAI
-
     self.openai = AsyncOpenAI(base_url="http://127.0.0.1:3000/v1", api_key="dummy")
+  {%- endif %}
 
   @bentoml.on_startup
   async def init_engine(self) -> None:

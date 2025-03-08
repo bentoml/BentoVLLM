@@ -1,5 +1,6 @@
 "deepseek-v3-671b":
   use_mla: true
+  use_v1: true
   metadata:
     description: DeepSeek V3 671B
     provider: DeepSeek
@@ -22,6 +23,7 @@
 "deepseek-r1-671b":
   reasoning: true
   use_mla: true
+  use_v1: true
   metadata:
     description: DeepSeek R1 671B
     provider: DeepSeek
@@ -47,6 +49,7 @@
     max_tokens: 4096
 "deepseek-r1-distill-llama3.3-70b":
   reasoning: true
+  use_v1: true
   metadata:
     description: DeepSeek R1 Distill Llama 3.3 70B
     provider: DeepSeek
@@ -73,6 +76,7 @@
     max_tokens: 4096
 "deepseek-r1-distill-qwen2.5-32b":
   reasoning: true
+  use_v1: true
   metadata:
     description: DeepSeek R1 Distill Qwen 2.5 32B
     provider: DeepSeek
@@ -98,6 +102,7 @@
     max_tokens: 4096
 "deepseek-r1-distill-qwen2.5-7b-math":
   reasoning: true
+  use_v1: true
   metadata:
     description: DeepSeek R1 Distill Qwen 2.5 Math 7B
     provider: DeepSeek
@@ -371,6 +376,7 @@
   generate_config:
     max_tokens: 1024
 "hermes-3-llama3.1-405b":
+  use_v1: true
   metadata:
     description: Hermes 3 Llama 3.1 405B FP8
     provider: NousResearch
@@ -450,6 +456,7 @@
     tool_call_parser: "mistral"
     enable_auto_tool_choice: true
 "mistral-small-24b-instruct-2501":
+  use_v1: true
   metadata:
     description: Mistral Small 24B Instruct 2501
     provider: Mistral AI
@@ -477,6 +484,7 @@
   generate_config:
     max_tokens: 2048
 "phi4-14b":
+  use_v1: true
   metadata:
     description: Phi 4 14B
     provider: Microsoft
@@ -496,6 +504,7 @@
   generate_config:
     max_tokens: 4096
 "qwen2.5-7b-instruct":
+  use_v1: true
   metadata:
     description: Qwen 2.5 7B Instruct
     provider: Alibaba
@@ -539,6 +548,7 @@
     tool_call_parser: "llama3_json"
 "qwq-32b":
   reasoning: true
+  use_v1: true
   metadata:
     description: QWQ 32B
     provider: Alibaba

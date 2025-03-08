@@ -1,0 +1,11 @@
+bentoml>=1.4.3
+vllm==0.7.3
+kantoku>=0.18.1
+{%- if (reasoning | lower == "true") or (vision | lower == "true") %}
+openai>=1.61.0
+{%- endif %}
+pyyaml
+fastapi
+{%- if vision | lower == "true" %}
+Pillow
+{%- endif %}

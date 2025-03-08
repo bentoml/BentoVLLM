@@ -114,6 +114,12 @@ def generate_jinja_context(model_name, config):
     build_config["exclude"] = []
   build_config["exclude"] = [*build_config["exclude"], "*.pth", "*.pt"]
 
+  if "post" not in build_config:
+    build_config["post"] = []
+  build_config["post"].append(
+    "uv pip install --compile-bytecode flashinfer-python --find-links https://flashinfer.ai/whl/cu124/torch2.5"
+  )
+
   context = {
     "model_name": model_name,
     "model_id": engine_config_struct["model"],

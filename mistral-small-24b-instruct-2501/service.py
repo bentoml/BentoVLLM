@@ -27,20 +27,16 @@ openai_api_app = fastapi.FastAPI()
         {'name': 'HF_HUB_DISABLE_PROGRESS_BARS', 'value': 1},
         {'name': 'VLLM_LOGGING_CONFIG_PATH', 'value': 'logging-config.json'},
         {'name': 'VLLM_ATTENTION_BACKEND', 'value': 'FLASH_ATTN'},
+        {'name': 'VLLM_USE_V1', 'value': 1},
     ],
     labels={'owner': 'bentoml-team', 'type': 'prebuilt'},
     image=bentoml.images.PythonImage(python_version='3.11', lock_python_packages=False)
     .requirements_file('requirements.txt')
-    .run('uv pip install flashinfer-python --find-links https://flashinfer.ai/whl/cu124/torch2.5'),
+    .run('uv pip install --compile-bytecode flashinfer-python --find-links https://flashinfer.ai/whl/cu124/torch2.5'),
 )
 class VLLM:
     model_id = ENGINE_CONFIG['model']
     model = bentoml.models.HuggingFaceModel(model_id, exclude=['consolidated*', '*.pth', '*.pt'])
-
-    def __init__(self):
-        from openai import AsyncOpenAI
-
-        self.openai = AsyncOpenAI(base_url='http://127.0.0.1:3000/v1', api_key='dummy')
 
     @bentoml.on_startup
     async def init_engine(self) -> None:
