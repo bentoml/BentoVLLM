@@ -52,6 +52,7 @@ class VLLM:
         args.served_model_name = [self.model_id]
         args.request_logger = None
         args.disable_log_stats = True
+        args.use_tqdm_on_load = False
         for key, value in ENGINE_CONFIG.items():
             setattr(args, key, value)
 
