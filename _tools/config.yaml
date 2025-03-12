@@ -146,6 +146,26 @@
     reasoning_parser: "deepseek_r1"
   generate_config:
     max_tokens: 2048
+"gemma3-4b-instruct":
+  v1: true
+  metadata:
+    description: Gemma 3 4B Instruct
+    provider: Google
+    gpu_recommendation: an Nvidia GPU with at least 16GB VRAM (e.g about 1 L4 GPU).
+  service_config:
+    name: bentovllm-gemma3-4b-instruct-service
+    traffic:
+      timeout: 300
+    resources:
+      gpu: 1
+      gpu_type: nvidia-l4
+    envs:
+      - name: HF_TOKEN
+  engine_config:
+    model: google/gemma-3-4b-it
+    max_model_len: 16384
+  generate_config:
+    max_tokens: 8192
 "gemma2-2b-instruct":
   metadata:
     description: Gemma 2 2B Instruct

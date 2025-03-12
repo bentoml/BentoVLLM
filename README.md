@@ -3,8 +3,6 @@
 </div>
 
 
-> [!WARNING]
-> This is a nightly branch to test out nightly features from vLLM. It might not work. Please use the main branch.
 
 This repository contains a group of BentoML example projects, showing you how to serve and deploy open-source Large Language Models using [vLLM](https://vllm.ai), a high-throughput and memory-efficient inference engine. Every model directory contains the code to add OpenAI compatible endpoints to the BentoML Service.
 
@@ -187,6 +185,7 @@ In addition to Llama 3.1 8B Instruct, we also have examples for other models in 
 | deepseek-r1-distill-qwen2.5-32b | [GitHub](deepseek-r1-distill-qwen2.5-32b/) • [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-32B) |
 | deepseek-r1-distill-qwen2.5-7b-math | [GitHub](deepseek-r1-distill-qwen2.5-7b-math/) • [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-7B) |
 | deepseek-r1-distill-llama3.1-8b-tool-calling | [GitHub](deepseek-r1-distill-llama3.1-8b-tool-calling/) • [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Llama-8B) |
+| gemma3-4b-instruct | [GitHub](gemma3-4b-instruct/) • [Hugging Face](https://huggingface.co/google/gemma-3-4b-it) |
 | gemma2-2b-instruct | [GitHub](gemma2-2b-instruct/) • [Hugging Face](https://huggingface.co/google/gemma-2-2b-it) |
 | gemma2-27b-instruct | [GitHub](gemma2-27b-instruct/) • [Hugging Face](https://huggingface.co/google/gemma-2-27b-it) |
 | jamba1.5-mini | [GitHub](jamba1.5-mini/) • [Hugging Face](https://huggingface.co/ai21labs/AI21-Jamba-1.5-Mini) |
