@@ -25,8 +25,8 @@ openai_api_app = fastapi.FastAPI()
     resources={'gpu': 8, 'gpu_type': 'nvidia-h200-141gb'},
     envs=[
         {'name': 'HF_TOKEN'},
-        {'name': 'UV_NO_PROGRESS', 'value': 1},
-        {'name': 'HF_HUB_DISABLE_PROGRESS_BARS', 'value': 1},
+        {'name': 'UV_NO_PROGRESS', 'value': '1'},
+        {'name': 'HF_HUB_DISABLE_PROGRESS_BARS', 'value': '1'},
         {'name': 'VLLM_ATTENTION_BACKEND', 'value': 'FLASHMLA'},
     ],
     labels={'owner': 'bentoml-team', 'type': 'prebuilt'},

@@ -23,8 +23,8 @@ openai_api_app = fastapi.FastAPI()
     traffic={'timeout': 300},
     envs=[
         {'name': 'HF_TOKEN'},
-        {'name': 'UV_NO_PROGRESS', 'value': 1},
-        {'name': 'HF_HUB_DISABLE_PROGRESS_BARS', 'value': 1},
+        {'name': 'UV_NO_PROGRESS', 'value': '1'},
+        {'name': 'HF_HUB_DISABLE_PROGRESS_BARS', 'value': '1'},
         {'name': 'VLLM_ATTENTION_BACKEND', 'value': 'FLASH_ATTN'},
     ],
     labels={'owner': 'bentoml-team', 'type': 'prebuilt'},
