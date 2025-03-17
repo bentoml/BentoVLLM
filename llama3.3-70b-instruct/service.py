@@ -48,6 +48,8 @@ class VLLM:
         from vllm.entrypoints.openai.cli_args import make_arg_parser
 
         args = make_arg_parser(FlexibleArgumentParser()).parse_args([])
+        for key, value in ENGINE_CONFIG.items():
+            setattr(args, key, value)
         args.model = self.model
         args.disable_log_requests = True
         args.max_log_len = 1000
@@ -56,8 +58,6 @@ class VLLM:
         args.disable_log_stats = True
         args.ignore_patterns = ['original', 'consolidated*', '*.pth', '*.pt', 'original/**/*']
         args.use_tqdm_on_load = False
-        for key, value in ENGINE_CONFIG.items():
-            setattr(args, key, value)
 
         router = fastapi.APIRouter(lifespan=vllm_api_server.lifespan)
         OPENAI_ENDPOINTS = [
