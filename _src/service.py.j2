@@ -8,6 +8,7 @@ logger = logging.getLogger(__name__)
 ENGINE_CONFIG = {{engine_config}}
 MAX_TOKENS = {{generate_config['max_tokens']|default(engine_config['max_model_len'])}}
 {%- set reqs = requirements|default([]) %}
+{%- set ignore_patterns = exclude | map('tojson') | join(", ")%}
 
 openai_api_app = fastapi.FastAPI()
 
@@ -43,7 +44,7 @@ openai_api_app = fastapi.FastAPI()
 )
 class VLLM:
   model_id = ENGINE_CONFIG["model"]
-  model = bentoml.models.HuggingFaceModel(model_id, exclude=[{{exclude | map('tojson') | join(", ")}}])
+  model = bentoml.models.HuggingFaceModel(model_id, exclude=[{{ignore_patterns}}])
 
   {% if (reasoning | lower == "true") or (vision | lower == "true") %}
   def __init__(self):
@@ -65,6 +66,7 @@ class VLLM:
     args.served_model_name = [self.model_id]
     args.request_logger = None
     args.disable_log_stats = True
+    args.ignore_patterns = [{{ignore_patterns}}]
     args.use_tqdm_on_load = False
     for key, value in ENGINE_CONFIG.items(): setattr(args, key, value)
 

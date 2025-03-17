@@ -112,7 +112,7 @@ def generate_jinja_context(model_name, config):
   build_config = model_config.get("build", {})
   if "exclude" not in build_config:
     build_config["exclude"] = []
-  build_config["exclude"] = [*build_config["exclude"], "*.pth", "*.pt"]
+  build_config["exclude"] = [*build_config["exclude"], "*.pth", "*.pt", "original/**/*"]
 
   if "post" not in build_config:
     build_config["post"] = []
