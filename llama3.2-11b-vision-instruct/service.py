@@ -37,7 +37,7 @@ openai_api_app = fastapi.FastAPI()
 )
 class VLLM:
     model_id = ENGINE_CONFIG['model']
-    model = bentoml.models.HuggingFaceModel(model_id, exclude=['original', '*.pth', '*.pt'])
+    model = bentoml.models.HuggingFaceModel(model_id, exclude=['original', '*.pth', '*.pt', 'original/**/*'])
 
     def __init__(self):
         from openai import AsyncOpenAI
@@ -58,6 +58,7 @@ class VLLM:
         args.served_model_name = [self.model_id]
         args.request_logger = None
         args.disable_log_stats = True
+        args.ignore_patterns = ['original', '*.pth', '*.pt', 'original/**/*']
         args.use_tqdm_on_load = False
         for key, value in ENGINE_CONFIG.items():
             setattr(args, key, value)
