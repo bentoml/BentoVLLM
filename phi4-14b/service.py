@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import logging, typing, uuid
+import logging, os, typing, uuid
 import bentoml, fastapi, typing_extensions, annotated_types
 
 logger = logging.getLogger(__name__)
@@ -17,11 +17,11 @@ openai_api_app = fastapi.FastAPI()
     traffic={'timeout': 300},
     resources={'gpu': 1, 'gpu_type': 'nvidia-a100-80gb'},
     envs=[
-        {'name': 'UV_NO_PROGRESS', 'value': 1},
-        {'name': 'HF_HUB_DISABLE_PROGRESS_BARS', 'value': 1},
-        {'name': 'VLLM_LOGGING_CONFIG_PATH', 'value': 'logging-config.json'},
+        {'name': 'UV_NO_PROGRESS', 'value': '1'},
+        {'name': 'HF_HUB_DISABLE_PROGRESS_BARS', 'value': '1'},
         {'name': 'VLLM_ATTENTION_BACKEND', 'value': 'FLASH_ATTN'},
-        {'name': 'VLLM_USE_V1', 'value': 1},
+        {'name': 'VLLM_USE_V1', 'value': '1'},
+        {'name': 'VLLM_LOGGING_CONFIG_PATH', 'value': os.path.join(os.path.dirname(__file__), 'logging-config.json')},
     ],
     labels={'owner': 'bentoml-team', 'type': 'prebuilt'},
     image=bentoml.images.PythonImage(python_version='3.11', lock_python_packages=False)

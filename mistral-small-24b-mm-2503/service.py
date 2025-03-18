@@ -6,9 +6,13 @@ import bentoml, fastapi, typing_extensions, annotated_types
 logger = logging.getLogger(__name__)
 
 ENGINE_CONFIG = {
-    'model': 'deepseek-ai/DeepSeek-V3',
+    'model': 'mistralai/Mistral-Small-3.1-24B-Instruct-2503',
+    'tokenizer_mode': 'mistral',
+    'config_format': 'mistral',
+    'load_format': 'mistral',
     'max_model_len': 8192,
-    'tensor_parallel_size': 8,
+    'tensor_parallel_size': 2,
+    'limit_mm_per_prompt': {'image': 10},
     'enable_prefix_caching': True,
 }
 MAX_TOKENS = 4096
@@ -18,25 +22,26 @@ openai_api_app = fastapi.FastAPI()
 
 @bentoml.asgi_app(openai_api_app, path='/v1')
 @bentoml.service(
-    name='bentovllm-deepseek-v3-671b-service',
+    name='bentovllm-mistral-small-24b-mm-2503-service',
     traffic={'timeout': 300},
-    resources={'gpu': 8, 'gpu_type': 'nvidia-h200-141gb'},
+    resources={'gpu': 2, 'gpu_type': 'nvidia-a100-80gb'},
     envs=[
         {'name': 'HF_TOKEN'},
         {'name': 'UV_NO_PROGRESS', 'value': '1'},
         {'name': 'HF_HUB_DISABLE_PROGRESS_BARS', 'value': '1'},
-        {'name': 'VLLM_ATTENTION_BACKEND', 'value': 'FLASHMLA'},
+        {'name': 'VLLM_ATTENTION_BACKEND', 'value': 'FLASH_ATTN'},
         {'name': 'VLLM_USE_V1', 'value': '1'},
         {'name': 'VLLM_LOGGING_CONFIG_PATH', 'value': os.path.join(os.path.dirname(__file__), 'logging-config.json')},
     ],
     labels={'owner': 'bentoml-team', 'type': 'prebuilt'},
     image=bentoml.images.PythonImage(python_version='3.11', lock_python_packages=False)
     .requirements_file('requirements.txt')
+    .run('uv pip install --compile-bytecode vllm --pre --extra-index-url https://wheels.vllm.ai/nightly')
     .run('uv pip install --compile-bytecode flashinfer-python --find-links https://flashinfer.ai/whl/cu124/torch2.5'),
 )
 class VLLM:
     model_id = ENGINE_CONFIG['model']
-    model = bentoml.models.HuggingFaceModel(model_id, exclude=['*.pth', '*.pt', 'original/**/*'])
+    model = bentoml.models.HuggingFaceModel(model_id, exclude=['model*', '*.pth', '*.pt', 'original/**/*'])
 
     @bentoml.on_startup
     async def init_engine(self) -> None:
@@ -54,7 +59,7 @@ class VLLM:
         args.served_model_name = [self.model_id]
         args.request_logger = None
         args.disable_log_stats = True
-        args.ignore_patterns = ['*.pth', '*.pt', 'original/**/*']
+        args.ignore_patterns = ['model*', '*.pth', '*.pt', 'original/**/*']
         args.use_tqdm_on_load = False
 
         router = fastapi.APIRouter(lifespan=vllm_api_server.lifespan)
@@ -71,6 +76,8 @@ class VLLM:
         self.engine = await self.engine_context.__aenter__()
         self.model_config = await self.engine.get_model_config()
         self.tokenizer = await self.engine.get_tokenizer()
+        args.enable_auto_tool_choice = True
+        args.tool_call_parser = 'mistral'
 
         await vllm_api_server.init_app_state(self.engine, self.model_config, openai_api_app.state, args)
 
@@ -87,21 +94,11 @@ class VLLM:
         ] = MAX_TOKENS,
     ) -> typing.AsyncGenerator[str, None]:
         from vllm import SamplingParams, TokensPrompt
-        from vllm.entrypoints.chat_utils import parse_chat_messages, apply_hf_chat_template
+        from vllm.entrypoints.chat_utils import apply_mistral_chat_template
 
         params = SamplingParams(max_tokens=max_tokens)
         messages = [dict(role='user', content=[dict(type='text', text=prompt)])]
-        conversation, _ = parse_chat_messages(messages, self.model_config, self.tokenizer, content_format='string')
-        prompt = TokensPrompt(
-            prompt_token_ids=apply_hf_chat_template(
-                self.tokenizer,
-                conversation=conversation,
-                add_generation_prompt=True,
-                continue_final_message=False,
-                chat_template=None,
-                tokenize=True,
-            )
-        )
+        prompt = TokensPrompt(prompt_token_ids=apply_mistral_chat_template(self.tokenizer, messages=messages))
 
         stream = self.engine.generate(request_id=uuid.uuid4().hex, prompt=prompt, sampling_params=params)
 

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import {%- if vision | lower == "true" %} base64, io,{%- endif %} logging{%- if vision | lower == "true" or reasoning | lower == "true" %}, traceback{%- endif %}, typing{%- if reasoning | lower != "true" %}, uuid{%- endif %}
+import {%- if vision | lower == "true" %} base64, io,{%- endif %} logging, os{%- if vision | lower == "true" or reasoning | lower == "true" %}, traceback{%- endif %}, typing{%- if reasoning | lower != "true" %}, uuid{%- endif %}
 import bentoml, fastapi{%- if vision | lower == "true" %}, PIL.Image{%-endif %}, typing_extensions, annotated_types
 
 logger = logging.getLogger(__name__)
@@ -18,7 +18,12 @@ openai_api_app = fastapi.FastAPI()
   {%- if key == "name" -%}
   {{key}}="{{value}}",
   {%- elif key == "envs" and (value|length > 0) %}
-  {{key}}={{value}},
+  {{key}}=[
+    {%- for value in service_config["envs"] %}
+      {{value}},
+    {%- endfor %}
+    {"name": "VLLM_LOGGING_CONFIG_PATH", "value": os.path.join(os.path.dirname(__file__), "logging-config.json")},
+  ],
   {%- else -%}
   {{key}}={{value}},
   {%- endif -%}

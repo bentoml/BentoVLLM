@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import logging, typing, uuid
+import logging, os, typing, uuid
 import bentoml, fastapi, typing_extensions, annotated_types
 
 logger = logging.getLogger(__name__)
@@ -8,8 +8,10 @@ logger = logging.getLogger(__name__)
 ENGINE_CONFIG = {
     'model': 'mistralai/Ministral-8B-Instruct-2410',
     'tokenizer_mode': 'mistral',
+    'config_format': 'mistral',
+    'load_format': 'mistral',
     'max_model_len': 4096,
-    'enable_prefix_caching': False,
+    'enable_prefix_caching': True,
 }
 MAX_TOKENS = 2048
 
@@ -23,11 +25,11 @@ openai_api_app = fastapi.FastAPI()
     resources={'gpu': 1, 'gpu_type': 'nvidia-l4'},
     envs=[
         {'name': 'HF_TOKEN'},
-        {'name': 'UV_NO_PROGRESS', 'value': 1},
-        {'name': 'HF_HUB_DISABLE_PROGRESS_BARS', 'value': 1},
-        {'name': 'VLLM_LOGGING_CONFIG_PATH', 'value': 'logging-config.json'},
+        {'name': 'UV_NO_PROGRESS', 'value': '1'},
+        {'name': 'HF_HUB_DISABLE_PROGRESS_BARS', 'value': '1'},
         {'name': 'VLLM_ATTENTION_BACKEND', 'value': 'FLASH_ATTN'},
-        {'name': 'VLLM_USE_V1', 'value': 1},
+        {'name': 'VLLM_USE_V1', 'value': '1'},
+        {'name': 'VLLM_LOGGING_CONFIG_PATH', 'value': os.path.join(os.path.dirname(__file__), 'logging-config.json')},
     ],
     labels={'owner': 'bentoml-team', 'type': 'prebuilt'},
     image=bentoml.images.PythonImage(python_version='3.11', lock_python_packages=False)
@@ -36,7 +38,7 @@ openai_api_app = fastapi.FastAPI()
 )
 class VLLM:
     model_id = ENGINE_CONFIG['model']
-    model = bentoml.models.HuggingFaceModel(model_id, exclude=['consolidated*', '*.pth', '*.pt', 'original/**/*'])
+    model = bentoml.models.HuggingFaceModel(model_id, exclude=['model*', '*.pth', '*.pt', 'original/**/*'])
 
     @bentoml.on_startup
     async def init_engine(self) -> None:
@@ -54,7 +56,7 @@ class VLLM:
         args.served_model_name = [self.model_id]
         args.request_logger = None
         args.disable_log_stats = True
-        args.ignore_patterns = ['consolidated*', '*.pth', '*.pt', 'original/**/*']
+        args.ignore_patterns = ['model*', '*.pth', '*.pt', 'original/**/*']
         args.use_tqdm_on_load = False
 
         router = fastapi.APIRouter(lifespan=vllm_api_server.lifespan)

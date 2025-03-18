@@ -415,8 +415,8 @@
   engine_config:
     model: mistralai/Pixtral-12B-2409
     tokenizer_mode: mistral
-    enable_prefix_caching: false
-    enable_chunked_prefill: false
+    config_format: mistral
+    load_format: mistral
     limit_mm_per_prompt:
       image: 5
     max_model_len: 32768
@@ -424,6 +424,9 @@
     - mistral_common[opencv]
   generate_config:
     max_tokens: 4096
+  build:
+    exclude:
+      - "model*"
   server_config:
     tool_call_parser: "mistral"
     enable_auto_tool_choice: true
@@ -445,16 +448,55 @@
   engine_config:
     model: mistralai/Ministral-8B-Instruct-2410
     tokenizer_mode: mistral
+    config_format: mistral
+    load_format: mistral
     max_model_len: 4096
-    enable_prefix_caching: false
   build:
     exclude:
-      - "consolidated*"
+      - "model*"
   generate_config:
     max_tokens: 2048
   server_config:
     tool_call_parser: "mistral"
     enable_auto_tool_choice: true
+  requirements:
+    - mistral_common[opencv]
+"mistral-small-24b-mm-2503":
+  use_v1: true
+  metadata:
+    description: Mistral Small 3.1 24B Instruct 2503 with Vision and Reasoning capabilities
+    provider: Mistral AI
+    gpu_recommendation: Nvidia GPUs with at least 80GBx2 VRAM (e.g about 2 H100 GPU).
+  service_config:
+    name: bentovllm-mistral-small-24b-mm-2503-service
+    traffic:
+      timeout: 300
+    resources:
+      gpu: 2
+      gpu_type: nvidia-a100-80gb
+    envs:
+      - name: HF_TOKEN
+  engine_config:
+    model: mistralai/Mistral-Small-3.1-24B-Instruct-2503
+    tokenizer_mode: mistral
+    config_format: mistral
+    load_format: mistral
+    max_model_len: 8192
+    tensor_parallel_size: 2
+    limit_mm_per_prompt:
+      image: 10
+  build:
+    exclude:
+      - "model*"
+    post:
+      - uv pip install --compile-bytecode vllm --pre --extra-index-url https://wheels.vllm.ai/nightly
+  server_config:
+    enable_auto_tool_choice: true
+    tool_call_parser: "mistral"
+  generate_config:
+    max_tokens: 4096
+  requirements:
+    - mistral_common[opencv]
 "mistral-small-24b-instruct-2501":
   use_v1: true
   metadata:
@@ -473,16 +515,19 @@
   engine_config:
     model: mistralai/Mistral-Small-24B-Instruct-2501
     tokenizer_mode: mistral
+    config_format: mistral
+    load_format: mistral
     max_model_len: 4096
-    enable_prefix_caching: false
   build:
     exclude:
-      - "consolidated*"
+      - "model*"
   server_config:
     tool_call_parser: "mistral"
     enable_auto_tool_choice: true
   generate_config:
     max_tokens: 2048
+  requirements:
+    - mistral_common[opencv]
 "phi4-14b":
   use_v1: true
   metadata:
