@@ -1,0 +1,8 @@
+mistral_common>=1.5.4
+accelerate==1.2.1
+bentoml>=1.4.5
+fastapi==0.115.6
+openai==1.57.4
+--pre
+--extra-index-url https://wheels.vllm.ai/nightly
+vllm
