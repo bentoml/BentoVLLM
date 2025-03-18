@@ -16,7 +16,7 @@ See [here](https://docs.bentoml.com/en/latest/examples/overview.html) for a full
 
 ```bash
 git clone https://github.com/bentoml/BentoVLLM.git
-cd BentoVLLM/mistral-small-24b-mm-2503
+cd BentoVLLM/mistral-small-3.1-24b-instruct-2503
 
 # Recommend Python 3.11
 

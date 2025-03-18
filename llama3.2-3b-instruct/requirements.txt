@@ -1,4 +1,4 @@
-bentoml>=1.4.3
+bentoml>=1.4.5
 vllm==0.7.3
 kantoku>=0.18.1
 pyyaml

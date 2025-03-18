@@ -461,14 +461,15 @@
     enable_auto_tool_choice: true
   requirements:
     - mistral_common[opencv]
-"mistral-small-24b-mm-2503":
+"mistral-small-3.1-24b-instruct-2503":
   use_v1: true
+  use_nightly: true
   metadata:
     description: Mistral Small 3.1 24B Instruct 2503 with Vision and Reasoning capabilities
     provider: Mistral AI
     gpu_recommendation: Nvidia GPUs with at least 80GBx2 VRAM (e.g about 2 H100 GPU).
   service_config:
-    name: bentovllm-mistral-small-24b-mm-2503-service
+    name: bentovllm-mistral-small-3.1-24b-instruct-2503-service
     traffic:
       timeout: 300
     resources:

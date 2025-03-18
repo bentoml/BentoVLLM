@@ -22,7 +22,7 @@ openai_api_app = fastapi.FastAPI()
 
 @bentoml.asgi_app(openai_api_app, path='/v1')
 @bentoml.service(
-    name='bentovllm-mistral-small-24b-mm-2503-service',
+    name='bentovllm-mistral-small-3.1-24b-instruct-2503-service',
     traffic={'timeout': 300},
     resources={'gpu': 2, 'gpu_type': 'nvidia-a100-80gb'},
     envs=[
