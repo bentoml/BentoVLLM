@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import logging, os, typing, uuid
-import bentoml, fastapi, typing_extensions, annotated_types
+import base64, io, logging, os, traceback, typing, uuid
+import bentoml, fastapi, PIL.Image, typing_extensions, annotated_types
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +31,11 @@ openai_api_app = fastapi.FastAPI()
 class VLLM:
     model_id = ENGINE_CONFIG['model']
     model = bentoml.models.HuggingFaceModel(model_id, exclude=['*.pth', '*.pt', 'original/**/*'])
+
+    def __init__(self):
+        from openai import AsyncOpenAI
+
+        self.openai = AsyncOpenAI(base_url='http://127.0.0.1:3000/v1', api_key='dummy')
 
     @bentoml.on_startup
     async def init_engine(self) -> None:
@@ -103,3 +108,33 @@ class VLLM:
             text = request_output.outputs[0].text
             yield text[cursor:]
             cursor = len(text)
+
+    @bentoml.api
+    async def sights(
+        self,
+        prompt: str = 'Describe the content of the picture',
+        image: typing.Optional['PIL.Image.Image'] = None,
+        max_tokens: typing_extensions.Annotated[
+            int, annotated_types.Ge(128), annotated_types.Le(MAX_TOKENS)
+        ] = MAX_TOKENS,
+    ) -> typing.AsyncGenerator[str, None]:
+        if image:
+            buffered = io.BytesIO()
+            image.save(buffered, format='PNG')
+            img_str = base64.b64encode(buffered.getvalue()).decode()
+            buffered.close()
+            image_url = f'data:image/png;base64,{img_str}'
+            content = [dict(type='image_url', image_url=dict(url=image_url)), dict(type='text', text=prompt)]
+        else:
+            content = [dict(type='text', text=prompt)]
+
+        try:
+            completion = await self.openai.chat.completions.create(
+                model=self.model_id, messages=[dict(role='user', content=content)], stream=True, max_tokens=max_tokens
+            )
+            async for chunk in completion:
+                yield chunk.choices[0].delta.content or ''
+        except Exception:
+            logger.error(traceback.format_exc())
+            yield 'Internal error found. Check server logs for more information'
+            return

@@ -147,7 +147,7 @@
   generate_config:
     max_tokens: 2048
 "gemma3-4b-instruct":
-  v1: true
+  vision: true
   metadata:
     description: Gemma 3 4B Instruct
     provider: Google
