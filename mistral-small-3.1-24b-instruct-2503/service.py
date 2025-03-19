@@ -14,7 +14,7 @@ ENGINE_CONFIG = {
     'max_model_len': 8192,
     'tensor_parallel_size': 2,
     'limit_mm_per_prompt': {'image': 10},
-    'enable_prefix_caching': True,
+    'enable_prefix_caching': False,
 }
 SYSTEM_PROMPT = """You are Mistral Small 3.1, a Large Language Model (LLM) created by Mistral AI, a French startup headquartered in Paris.
 You power an AI assistant called Le Chat.

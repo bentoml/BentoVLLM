@@ -13,7 +13,7 @@ ENGINE_CONFIG = {
     'load_format': 'mistral',
     'limit_mm_per_prompt': {'image': 5},
     'max_model_len': 32768,
-    'enable_prefix_caching': True,
+    'enable_prefix_caching': False,
 }
 
 openai_api_app = fastapi.FastAPI()

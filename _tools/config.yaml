@@ -386,27 +386,6 @@
     enable_auto_tool_choice: true
   generate_config:
     max_tokens: 1024
-"hermes-3-llama3.1-405b":
-  metadata:
-    description: Hermes 3 Llama 3.1 405B FP8
-    provider: NousResearch
-    gpu_recommendation: Nvidia GPUs with at least 80GBx6 VRAM (e.g about 6 H100 GPUs).
-  service_config:
-    name: bentovllm-hermes-3-llama3.1-405b-service
-    traffic:
-      timeout: 300
-    resources:
-      gpu: 6
-      gpu_type: nvidia-a100-80gb
-  engine_config:
-    model: NousResearch/Hermes-3-Llama-3.1-405B-FP8
-    max_model_len: 2048
-    tensor_parallel_size: 6
-  server_config:
-    tool_call_parser: "hermes"
-    enable_auto_tool_choice: true
-  generate_config:
-    max_tokens: 1024
 "pixtral-12b-2409":
   metadata:
     description: Pixtral 12B 2409
@@ -430,6 +409,7 @@
     limit_mm_per_prompt:
       image: 5
     max_model_len: 32768
+    enable_prefix_caching: false
   requirements:
     - mistral_common[opencv]
   generate_config:
@@ -460,6 +440,7 @@
     config_format: mistral
     load_format: mistral
     max_model_len: 4096
+    enable_prefix_caching: false
   build:
     exclude:
       - "model*"
@@ -494,6 +475,7 @@
     tensor_parallel_size: 2
     limit_mm_per_prompt:
       image: 10
+    enable_prefix_caching: false
   build:
     exclude:
       - "model*"
@@ -546,6 +528,7 @@
     config_format: mistral
     load_format: mistral
     max_model_len: 4096
+    enable_prefix_caching: false
   build:
     exclude:
       - "model*"

@@ -12,7 +12,7 @@ ENGINE_CONFIG = {
     'config_format': 'mistral',
     'load_format': 'mistral',
     'max_model_len': 4096,
-    'enable_prefix_caching': True,
+    'enable_prefix_caching': False,
 }
 
 openai_api_app = fastapi.FastAPI()
