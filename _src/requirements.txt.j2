@@ -1,3 +1,4 @@
+{%- set reqs = requirements|default([]) -%}
 bentoml>=1.4.5
 {%- if not nightly %}
 vllm==0.8.0
@@ -12,4 +13,9 @@ pyyaml
 fastapi
 {%- if vision | lower == "true" %}
 Pillow
+{%- endif %}
+{%- if reqs | length > 0 %}
+{%- for r in reqs %}
+{{r}}
+{%- endfor %}
 {%- endif %}

@@ -3,3 +3,4 @@ vllm==0.8.0
 kantoku>=0.18.1
 pyyaml
 fastapi
+mistral_common[opencv]

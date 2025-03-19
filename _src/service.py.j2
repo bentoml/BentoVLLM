@@ -10,7 +10,6 @@ ENGINE_CONFIG={{engine_config}}
 {%- if system_prompt is not none %}
 SYSTEM_PROMPT="""{{system_prompt -}}"""
 {%- endif %}
-{%- set reqs = requirements|default([]) %}
 {%- set ignore_patterns = exclude | map('tojson') | join(", ")%}
 
 openai_api_app = fastapi.FastAPI()
