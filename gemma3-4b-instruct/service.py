@@ -5,8 +5,8 @@ import bentoml, fastapi, PIL.Image, typing_extensions, annotated_types
 
 logger = logging.getLogger(__name__)
 
-ENGINE_CONFIG = {'model': 'google/gemma-3-4b-it', 'max_model_len': 16384, 'enable_prefix_caching': True}
 MAX_TOKENS = 8192
+ENGINE_CONFIG = {'model': 'google/gemma-3-4b-it', 'max_model_len': 16384, 'enable_prefix_caching': True}
 
 openai_api_app = fastapi.FastAPI()
 
@@ -53,8 +53,6 @@ class VLLM:
         args.served_model_name = [self.model_id]
         args.request_logger = None
         args.disable_log_stats = True
-        args.ignore_patterns = ['*.pth', '*.pt', 'original/**/*']
-        args.use_tqdm_on_load = False
 
         router = fastapi.APIRouter(lifespan=vllm_api_server.lifespan)
         OPENAI_ENDPOINTS = [

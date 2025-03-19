@@ -471,6 +471,7 @@
   requirements:
     - mistral_common[opencv]
 "mistral-small-3.1-24b-instruct-2503":
+  vision: true
   metadata:
     description: Mistral Small 3.1 24B Instruct 2503 with Vision and Reasoning capabilities
     provider: Mistral AI

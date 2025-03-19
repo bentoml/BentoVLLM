@@ -5,13 +5,13 @@ import bentoml, fastapi, typing_extensions, annotated_types
 
 logger = logging.getLogger(__name__)
 
+MAX_TOKENS = 1024
 ENGINE_CONFIG = {
     'model': 'google/gemma-2-2b-it',
     'max_model_len': 2048,
     'dtype': 'half',
     'enable_prefix_caching': False,
 }
-MAX_TOKENS = 1024
 
 openai_api_app = fastapi.FastAPI()
 
@@ -45,16 +45,14 @@ class VLLM:
         from vllm.entrypoints.openai.cli_args import make_arg_parser
 
         args = make_arg_parser(FlexibleArgumentParser()).parse_args([])
+        for key, value in ENGINE_CONFIG.items():
+            setattr(args, key, value)
         args.model = self.model
         args.disable_log_requests = True
         args.max_log_len = 1000
         args.served_model_name = [self.model_id]
         args.request_logger = None
         args.disable_log_stats = True
-        args.ignore_patterns = ['*.pth', '*.pt', 'original/**/*']
-        args.use_tqdm_on_load = False
-        for key, value in ENGINE_CONFIG.items():
-            setattr(args, key, value)
 
         router = fastapi.APIRouter(lifespan=vllm_api_server.lifespan)
         OPENAI_ENDPOINTS = [

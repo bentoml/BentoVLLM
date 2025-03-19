@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-import logging, os, typing, uuid
-import bentoml, fastapi, typing_extensions, annotated_types
+import base64, io, logging, os, traceback, typing, uuid
+import bentoml, fastapi, PIL.Image, typing_extensions, annotated_types
 
 logger = logging.getLogger(__name__)
 
+MAX_TOKENS = 4096
 ENGINE_CONFIG = {
     'model': 'mistralai/Mistral-Small-3.1-24B-Instruct-2503',
     'tokenizer_mode': 'mistral',
@@ -15,7 +16,6 @@ ENGINE_CONFIG = {
     'limit_mm_per_prompt': {'image': 10},
     'enable_prefix_caching': True,
 }
-MAX_TOKENS = 4096
 SYSTEM_PROMPT = """You are Mistral Small 3.1, a Large Language Model (LLM) created by Mistral AI, a French startup headquartered in Paris.
 You power an AI assistant called Le Chat.
 Your knowledge base was last updated on 2023-10-01.
@@ -62,6 +62,11 @@ class VLLM:
     model_id = ENGINE_CONFIG['model']
     model = bentoml.models.HuggingFaceModel(model_id, exclude=['model*', '*.pth', '*.pt', 'original/**/*'])
 
+    def __init__(self):
+        from openai import AsyncOpenAI
+
+        self.openai = AsyncOpenAI(base_url='http://127.0.0.1:3000/v1', api_key='dummy')
+
     @bentoml.on_startup
     async def init_engine(self) -> None:
         import vllm.entrypoints.openai.api_server as vllm_api_server
@@ -78,8 +83,6 @@ class VLLM:
         args.served_model_name = [self.model_id]
         args.request_logger = None
         args.disable_log_stats = True
-        args.ignore_patterns = ['model*', '*.pth', '*.pt', 'original/**/*']
-        args.use_tqdm_on_load = False
 
         router = fastapi.APIRouter(lifespan=vllm_api_server.lifespan)
         OPENAI_ENDPOINTS = [
@@ -134,3 +137,37 @@ class VLLM:
             text = request_output.outputs[0].text
             yield text[cursor:]
             cursor = len(text)
+
+    @bentoml.api
+    async def sights(
+        self,
+        prompt: str = 'Describe the content of the picture',
+        system_prompt: typing.Optional[str] = SYSTEM_PROMPT,
+        image: typing.Optional['PIL.Image.Image'] = None,
+        max_tokens: typing_extensions.Annotated[
+            int, annotated_types.Ge(128), annotated_types.Le(MAX_TOKENS)
+        ] = MAX_TOKENS,
+    ) -> typing.AsyncGenerator[str, None]:
+        if image:
+            buffered = io.BytesIO()
+            image.save(buffered, format='PNG')
+            img_str = base64.b64encode(buffered.getvalue()).decode()
+            buffered.close()
+            image_url = f'data:image/png;base64,{img_str}'
+            content = [dict(type='image_url', image_url=dict(url=image_url)), dict(type='text', text=prompt)]
+        else:
+            content = [dict(type='text', text=prompt)]
+        if system_prompt is None:
+            system_prompt = SYSTEM_PROMPT
+        messages = [{'role': 'system', 'content': system_prompt}, {'role': 'user', 'content': content}]
+
+        try:
+            completion = await self.openai.chat.completions.create(
+                model=self.model_id, messages=messages, stream=True, max_tokens=max_tokens
+            )
+            async for chunk in completion:
+                yield chunk.choices[0].delta.content or ''
+        except Exception:
+            logger.error(traceback.format_exc())
+            yield 'Internal error found. Check server logs for more information'
+            return
