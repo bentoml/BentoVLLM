@@ -117,7 +117,7 @@ def generate_jinja_context(model_name, config):
       "uv pip install --compile-bytecode vllm --pre --extra-index-url https://wheels.vllm.ai/nightly"
     )
   build_config["post"].append(
-    "uv pip install --compile-bytecode flashinfer-python --find-links https://flashinfer.ai/whl/cu124/torch2.5"
+    "uv pip install --compile-bytecode flashinfer-python --find-links https://flashinfer.ai/whl/cu124/torch2.6"
   )
 
   context = {

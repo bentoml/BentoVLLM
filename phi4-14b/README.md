@@ -18,8 +18,10 @@ git clone https://github.com/bentoml/BentoVLLM.git
 cd BentoVLLM/phi4-14b
 
 # Recommend Python 3.11
-
 pip install -r requirements.txt
+
+# if you are running locally, we recommend install additional flashinfer library for better performance.
+pip install flashinfer-python --extra-index-url https://flashinfer.ai/whl/cu124/torch2.6
 ```
 
 ## Run the BentoML Service
