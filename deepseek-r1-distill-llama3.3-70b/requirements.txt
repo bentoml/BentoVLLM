@@ -1,5 +1,5 @@
 bentoml>=1.4.5
-vllm==0.7.3
+vllm==0.8.0
 kantoku>=0.18.1
 openai>=1.67.0
 pyyaml

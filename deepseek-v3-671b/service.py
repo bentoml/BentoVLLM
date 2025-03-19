@@ -26,7 +26,6 @@ openai_api_app = fastapi.FastAPI()
         {'name': 'UV_NO_PROGRESS', 'value': '1'},
         {'name': 'HF_HUB_DISABLE_PROGRESS_BARS', 'value': '1'},
         {'name': 'VLLM_ATTENTION_BACKEND', 'value': 'FLASHMLA'},
-        {'name': 'VLLM_USE_V1', 'value': '1'},
         {'name': 'VLLM_LOGGING_CONFIG_PATH', 'value': os.path.join(os.path.dirname(__file__), 'logging-config.json')},
     ],
     labels={'owner': 'bentoml-team', 'type': 'prebuilt'},
@@ -71,7 +70,6 @@ class VLLM:
         self.engine = await self.engine_context.__aenter__()
         self.model_config = await self.engine.get_model_config()
         self.tokenizer = await self.engine.get_tokenizer()
-
         await vllm_api_server.init_app_state(self.engine, self.model_config, openai_api_app.state, args)
 
     @bentoml.on_shutdown

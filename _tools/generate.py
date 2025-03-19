@@ -82,11 +82,9 @@ def update_model_descriptions(config, template_dir):
 def generate_jinja_context(model_name, config):
   model_config = config[model_name]
   use_mla = model_config.get("use_mla", False)
-  use_v1 = model_config.get("use_v1", False)
   use_nightly = model_config.get("use_nightly", False)
   use_vision = model_config.get("vision", False)
   engine_config_struct = model_config.get("engine_config", {"model": "deepseek-ai/DeepSeek-R1-Distill-Llama-8B"})
-  is_nightly = is_nightly_branch()
 
   service_config = model_config.get("service_config", {})
 
@@ -103,9 +101,6 @@ def generate_jinja_context(model_name, config):
     },
   ])
 
-  if is_nightly and use_v1:
-    service_config["envs"].append({"name": "VLLM_USE_V1", "value": "1"})
-
   if "enable_prefix_caching" not in engine_config_struct:
     engine_config_struct["enable_prefix_caching"] = True
 
@@ -116,6 +111,11 @@ def generate_jinja_context(model_name, config):
 
   if "post" not in build_config:
     build_config["post"] = []
+
+  if use_nightly:
+    build_config["post"].append(
+      "uv pip install --compile-bytecode vllm --pre --extra-index-url https://wheels.vllm.ai/nightly"
+    )
   build_config["post"].append(
     "uv pip install --compile-bytecode flashinfer-python --find-links https://flashinfer.ai/whl/cu124/torch2.5"
   )
@@ -134,6 +134,7 @@ def generate_jinja_context(model_name, config):
     "build": build_config,
     "exclude": build_config["exclude"],
     "reasoning": model_config.get("reasoning", False),
+    "embeddings": model_config.get("embeddings", False),
     "nightly": use_nightly,
   }
 
