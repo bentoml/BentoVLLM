@@ -85,6 +85,7 @@ def generate_jinja_context(model_name, config):
   use_nightly = model_config.get("use_nightly", False)
   use_vision = model_config.get("vision", False)
   engine_config_struct = model_config.get("engine_config", {"model": "deepseek-ai/DeepSeek-R1-Distill-Llama-8B"})
+  model = engine_config_struct.get("model", "")
 
   service_config = model_config.get("service_config", {})
 
@@ -122,7 +123,7 @@ def generate_jinja_context(model_name, config):
 
   context = {
     "model_name": model_name,
-    "model_id": engine_config_struct["model"],
+    "model_id": model,
     "vision": use_vision,
     "generate_config": model_config.get("generate_config", {}),
     "service_config": service_config,

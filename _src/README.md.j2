@@ -11,7 +11,7 @@ See [here](https://docs.bentoml.com/en/latest/examples/overview.html) for a full
 ## Prerequisites
 
 {%- if requires_hf_tokens | lower == "true" %}
-- You have gained access to `{{model_id}}` on [Hugging Face](https://huggingface.co/{{engine_config['model']}}).
+- You have gained access to `{{model_id}}` on [Hugging Face](https://huggingface.co/{{model_id}}).
 {%- endif %}
 - If you want to test the Service locally, we recommend you use {{metadata['gpu_recommendation']}}
 
@@ -59,7 +59,7 @@ client = OpenAI(base_url='http://localhost:3000/v1', api_key='na')
 client.models.list()
 
 chat_completion = client.chat.completions.create(
-    model="{{engine_config['model']}}",
+    model="{{model_id}}",
     messages=[
         {
             "role": "user",
@@ -91,7 +91,7 @@ json_schema = {
 }
 
 chat_completion = client.chat.completions.create(
-    model="{{engine_config['model']}}",
+    model="{{model_id}}",
     messages=[
         {
             "role": "user",

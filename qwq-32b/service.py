@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import logging, os, traceback, typing
+import logging, os, contextlib, traceback, typing
 import bentoml, fastapi, typing_extensions, annotated_types
 
 logger = logging.getLogger(__name__)
@@ -35,13 +35,14 @@ openai_api_app = fastapi.FastAPI()
     .run('uv pip install --compile-bytecode flashinfer-python --find-links https://flashinfer.ai/whl/cu124/torch2.6'),
 )
 class VLLM:
-    model_id = ENGINE_CONFIG['model']
+    model_id = 'Qwen/QwQ-32B'
     model = bentoml.models.HuggingFaceModel(model_id, exclude=['*.pth', '*.pt', 'original/**/*'])
 
     def __init__(self):
         from openai import AsyncOpenAI
 
         self.openai = AsyncOpenAI(base_url='http://127.0.0.1:3000/v1', api_key='dummy')
+        self.exit_stack = contextlib.AsyncExitStack()
 
     @bentoml.on_startup
     async def init_engine(self) -> None:
@@ -51,14 +52,15 @@ class VLLM:
         from vllm.entrypoints.openai.cli_args import make_arg_parser
 
         args = make_arg_parser(FlexibleArgumentParser()).parse_args([])
-        for key, value in ENGINE_CONFIG.items():
-            setattr(args, key, value)
         args.model = self.model
         args.disable_log_requests = True
         args.max_log_len = 1000
         args.served_model_name = [self.model_id]
         args.request_logger = None
         args.disable_log_stats = True
+        args.use_tqdm_on_load = False
+        for key, value in ENGINE_CONFIG.items():
+            setattr(args, key, value)
 
         router = fastapi.APIRouter(lifespan=vllm_api_server.lifespan)
         OPENAI_ENDPOINTS = [
@@ -70,8 +72,7 @@ class VLLM:
             router.add_api_route(path=route, endpoint=endpoint, methods=methods, include_in_schema=True)
         openai_api_app.include_router(router)
 
-        self.engine_context = vllm_api_server.build_async_engine_client(args)
-        self.engine = await self.engine_context.__aenter__()
+        self.engine = await self.exit_stack.enter_async_context(vllm_api_server.build_async_engine_client(args))
         self.model_config = await self.engine.get_model_config()
         self.tokenizer = await self.engine.get_tokenizer()
         args.enable_reasoning = True
@@ -83,7 +84,7 @@ class VLLM:
 
     @bentoml.on_shutdown
     async def teardown_engine(self):
-        await self.engine_context.__aexit__(GeneratorExit, None, None)
+        await self.exit_stack.aclose()
 
     @bentoml.api
     async def generate(

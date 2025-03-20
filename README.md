@@ -192,7 +192,6 @@ In addition to Llama 3.1 8B Instruct, we also have examples for other models in 
 | llama3.2-3b-instruct | [GitHub](llama3.2-3b-instruct/) • [Hugging Face](https://huggingface.co/meta-llama/Llama-3.2-3B-Instruct) |
 | llama3.2-11b-vision-instruct | [GitHub](llama3.2-11b-vision-instruct/) • [Hugging Face](https://huggingface.co/meta-llama/Llama-3.2-11B-Vision-Instruct) |
 | llama3.3-70b-instruct | [GitHub](llama3.3-70b-instruct/) • [Hugging Face](https://huggingface.co/meta-llama/Llama-3.3-70B-Instruct) |
-| hermes-3-llama3.1-405b | [GitHub](hermes-3-llama3.1-405b/) • [Hugging Face](https://huggingface.co/NousResearch/Hermes-3-Llama-3.1-405B-FP8) |
 | pixtral-12b-2409 | [GitHub](pixtral-12b-2409/) • [Hugging Face](https://huggingface.co/mistralai/Pixtral-12B-2409) |
 | ministral-8b-instruct-2410 | [GitHub](ministral-8b-instruct-2410/) • [Hugging Face](https://huggingface.co/mistralai/Ministral-8B-Instruct-2410) |
 | mistral-small-3.1-24b-instruct-2503 | [GitHub](mistral-small-3.1-24b-instruct-2503/) • [Hugging Face](https://huggingface.co/mistralai/Mistral-Small-3.1-24B-Instruct-2503) |

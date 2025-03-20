@@ -1,7 +1,7 @@
 {%- set reqs = requirements|default([]) -%}
 bentoml>=1.4.5
 {%- if not nightly %}
-vllm==0.8.0
+vllm==0.8.1
 {%- else %}
 vllm --pre --extra-index-url https://wheels.vllm.ai/nightly
 {%-endif %}
