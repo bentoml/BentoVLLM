@@ -7,7 +7,6 @@ logger = logging.getLogger(__name__)
 
 MAX_TOKENS = 2048
 ENGINE_CONFIG = {
-    'model': 'mistralai/Mistral-Small-24B-Instruct-2501',
     'tokenizer_mode': 'mistral',
     'config_format': 'mistral',
     'load_format': 'mistral',

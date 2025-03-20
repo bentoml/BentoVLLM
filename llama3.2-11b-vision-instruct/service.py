@@ -7,7 +7,6 @@ logger = logging.getLogger(__name__)
 
 MAX_TOKENS = 8192
 ENGINE_CONFIG = {
-    'model': 'meta-llama/Llama-3.2-11B-Vision-Instruct',
     'enforce_eager': True,
     'limit_mm_per_prompt': {'image': 1},
     'max_model_len': 16384,

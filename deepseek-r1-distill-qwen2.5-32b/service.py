@@ -6,11 +6,7 @@ import bentoml, fastapi, typing_extensions, annotated_types
 logger = logging.getLogger(__name__)
 
 MAX_TOKENS = 4096
-ENGINE_CONFIG = {
-    'model': 'deepseek-ai/DeepSeek-R1-Distill-Qwen-32B',
-    'max_model_len': 8192,
-    'enable_prefix_caching': True,
-}
+ENGINE_CONFIG = {'max_model_len': 8192, 'enable_prefix_caching': True}
 
 openai_api_app = fastapi.FastAPI()
 

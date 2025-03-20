@@ -7,7 +7,6 @@ logger = logging.getLogger(__name__)
 
 MAX_TOKENS = 4096
 ENGINE_CONFIG = {
-    'model': 'deepseek-ai/DeepSeek-R1',
     'tensor_parallel_size': 8,
     'trust_remote_code': True,
     'max_model_len': 8192,

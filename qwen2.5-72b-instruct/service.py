@@ -6,12 +6,7 @@ import bentoml, fastapi, typing_extensions, annotated_types
 logger = logging.getLogger(__name__)
 
 MAX_TOKENS = 1024
-ENGINE_CONFIG = {
-    'model': 'Qwen/Qwen2.5-72B-Instruct',
-    'max_model_len': 2048,
-    'tensor_parallel_size': 2,
-    'enable_prefix_caching': True,
-}
+ENGINE_CONFIG = {'max_model_len': 2048, 'tensor_parallel_size': 2, 'enable_prefix_caching': True}
 
 openai_api_app = fastapi.FastAPI()
 

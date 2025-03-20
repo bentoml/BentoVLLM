@@ -6,12 +6,7 @@ import bentoml, fastapi, typing_extensions, annotated_types
 logger = logging.getLogger(__name__)
 
 MAX_TOKENS = 1024
-ENGINE_CONFIG = {
-    'model': 'google/gemma-2-27b-it',
-    'max_model_len': 2048,
-    'dtype': 'half',
-    'enable_prefix_caching': False,
-}
+ENGINE_CONFIG = {'max_model_len': 2048, 'dtype': 'half', 'enable_prefix_caching': False}
 
 openai_api_app = fastapi.FastAPI()
 

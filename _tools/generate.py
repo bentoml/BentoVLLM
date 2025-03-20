@@ -8,7 +8,7 @@
 #     "pathspec",
 # ]
 # ///
-import yaml, shutil, subprocess, json, argparse, multiprocessing
+import yaml, shutil, copy, subprocess, json, argparse, multiprocessing
 from pathlib import Path
 from jinja2 import Template
 from rich.console import Console
@@ -85,7 +85,7 @@ def generate_jinja_context(model_name, config):
   use_nightly = model_config.get("use_nightly", False)
   use_vision = model_config.get("vision", False)
   engine_config_struct = model_config.get("engine_config", {"model": "deepseek-ai/DeepSeek-R1-Distill-Llama-8B"})
-  model = engine_config_struct.get("model", "")
+  model = engine_config_struct.pop("model")
 
   service_config = model_config.get("service_config", {})
 
@@ -288,6 +288,7 @@ def main() -> int:
   tools_dir = template_dir / "_tools"
   with (tools_dir / "config.yaml").open("r") as f:
     config = yaml.safe_load(f)
+  readme_config = copy.deepcopy(config)
 
   console = Console()
   if args.model_names:
@@ -303,7 +304,7 @@ def main() -> int:
 
   # Generate README.md after all models are processed
   console.print("\n[yellow]Generating README.md...[/]")
-  generate_readme(config, template_dir)
+  generate_readme(readme_config, template_dir)
   console.print("[green]✓ Generated README.md[/]")
 
   # Format all python files

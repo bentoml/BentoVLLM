@@ -6,12 +6,7 @@ import bentoml, fastapi, typing_extensions, annotated_types
 logger = logging.getLogger(__name__)
 
 MAX_TOKENS = 4096
-ENGINE_CONFIG = {
-    'model': 'deepseek-ai/DeepSeek-V3',
-    'max_model_len': 8192,
-    'tensor_parallel_size': 8,
-    'enable_prefix_caching': True,
-}
+ENGINE_CONFIG = {'max_model_len': 8192, 'tensor_parallel_size': 8, 'enable_prefix_caching': True}
 
 openai_api_app = fastapi.FastAPI()
 
