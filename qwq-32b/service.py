@@ -6,7 +6,13 @@ import bentoml, fastapi, typing_extensions, annotated_types
 logger = logging.getLogger(__name__)
 
 MAX_TOKENS = 2048
-ENGINE_CONFIG = {'max_model_len': 4096, 'tensor_parallel_size': 1, 'enable_prefix_caching': True}
+ENGINE_CONFIG = {
+    'max_model_len': 4096,
+    'tensor_parallel_size': 1,
+    'enable_reasoning': True,
+    'reasoning_parser': 'deepseek_r1',
+    'enable_prefix_caching': True,
+}
 
 openai_api_app = fastapi.FastAPI()
 
@@ -70,8 +76,6 @@ class VLLM:
         self.engine = await self.exit_stack.enter_async_context(vllm_api_server.build_async_engine_client(args))
         self.model_config = await self.engine.get_model_config()
         self.tokenizer = await self.engine.get_tokenizer()
-        args.enable_reasoning = True
-        args.reasoning_parser = 'deepseek_r1'
         args.enable_auto_tool_choice = True
         args.tool_call_parser = 'llama3_json'
 

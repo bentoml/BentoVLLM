@@ -40,7 +40,6 @@
     tensor_parallel_size: 8
     trust_remote_code: true
     max_model_len: 8192
-  server_config:
     enable_reasoning: true
     reasoning_parser: "deepseek_r1"
   generate_config:
@@ -64,11 +63,11 @@
     model: deepseek-ai/DeepSeek-R1-Distill-Llama-70B
     tensor_parallel_size: 2
     max_model_len: 8192
-  server_config:
     enable_reasoning: true
+    reasoning_parser: "deepseek_r1"
+  server_config:
     enable_auto_tool_choice: true
     tool_call_parser: "llama3_json"
-    reasoning_parser: "deepseek_r1"
   generate_config:
     max_tokens: 4096
 "deepseek-r1-distill-qwen2.5-32b":
@@ -89,10 +88,10 @@
   engine_config:
     model: deepseek-ai/DeepSeek-R1-Distill-Qwen-32B
     max_model_len: 8192
-  server_config:
     enable_reasoning: true
-    enable_auto_tool_choice: true
     reasoning_parser: "deepseek_r1"
+  server_config:
+    enable_auto_tool_choice: true
     tool_call_parser: "hermes"
   generate_config:
     max_tokens: 4096
@@ -114,10 +113,10 @@
   engine_config:
     model: deepseek-ai/DeepSeek-R1-Distill-Qwen-7B
     max_model_len: 8192
-  server_config:
     enable_reasoning: true
-    enable_auto_tool_choice: true
     reasoning_parser: "deepseek_r1"
+  server_config:
+    enable_auto_tool_choice: true
     tool_call_parser: "hermes"
   generate_config:
     max_tokens: 4096
@@ -139,11 +138,11 @@
   engine_config:
     model: deepseek-ai/DeepSeek-R1-Distill-Llama-8B
     max_model_len: 4096
-  server_config:
     enable_reasoning: true
+    reasoning_parser: "deepseek_r1"
+  server_config:
     enable_auto_tool_choice: true
     tool_call_parser: "llama3_json"
-    reasoning_parser: "deepseek_r1"
   generate_config:
     max_tokens: 2048
 "gemma3-4b-instruct":
@@ -620,9 +619,9 @@
     model: Qwen/QwQ-32B
     max_model_len: 4096
     tensor_parallel_size: 1
-  server_config:
     enable_reasoning: true
     reasoning_parser: "deepseek_r1"
+  server_config:
     enable_auto_tool_choice: true
     tool_call_parser: "llama3_json"
   generate_config:
