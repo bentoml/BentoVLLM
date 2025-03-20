@@ -66,6 +66,8 @@ class VLLM:
         args.use_tqdm_on_load = False
         for key, value in ENGINE_CONFIG.items():
             setattr(args, key, value)
+        args.enable_auto_tool_choice = True
+        args.tool_call_parser = 'jamba'
 
         router = fastapi.APIRouter(lifespan=vllm_api_server.lifespan)
         OPENAI_ENDPOINTS = [
@@ -80,9 +82,6 @@ class VLLM:
         self.engine = await self.exit_stack.enter_async_context(vllm_api_server.build_async_engine_client(args))
         self.model_config = await self.engine.get_model_config()
         self.tokenizer = await self.engine.get_tokenizer()
-        args.enable_auto_tool_choice = True
-        args.tool_call_parser = 'jamba'
-
         await vllm_api_server.init_app_state(self.engine, self.model_config, openai_api_app.state, args)
 
     @bentoml.on_shutdown
