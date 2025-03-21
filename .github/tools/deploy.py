@@ -182,8 +182,8 @@ def main() -> int:
   )
   args = parser.parse_args()
 
-  template_dir = Path(__file__).parent.parent
-  builds_file = template_dir / "successful_builds.txt"
+  git_dir = Path(__file__).parent.parent.parent
+  builds_file = git_dir / "successful_builds.txt"
 
   if not builds_file.exists():
     print("Error: successful_builds.txt not found. Run build.py first.")
@@ -218,7 +218,7 @@ def main() -> int:
   console.print(f"Failed deployments: {len(results) - len(successful)}")
 
   # Write successful deployments to file
-  successful_deploys_file = template_dir / "successful_deploys.txt"
+  successful_deploys_file = git_dir / "successful_deploys.txt"
   with open(successful_deploys_file, "w") as f:
     for result in successful:
       f.write(f"{result.bento_tag}\n")

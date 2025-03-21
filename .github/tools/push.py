@@ -80,8 +80,8 @@ def main() -> int:
   )
   args = parser.parse_args()
 
-  template_dir = Path(__file__).parent.parent
-  builds_file = template_dir / "successful_builds.txt"
+  git_dir = Path(__file__).parent.parent.parent
+  builds_file = git_dir / "successful_builds.txt"
 
   if not builds_file.exists():
     print("Error: successful_builds.txt not found. Run build.py first.")

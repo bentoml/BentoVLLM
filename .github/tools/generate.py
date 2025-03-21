@@ -20,19 +20,14 @@ from dataclasses import dataclass
 def is_nightly_branch():
   """Check if we are on the nightly branch."""
   try:
-    result = subprocess.run(
-      ["git", "rev-parse", "--abbrev-ref", "HEAD"],
-      check=True,
-      capture_output=True,
-      text=True,
-    )
+    result = subprocess.run(["git", "rev-parse", "--abbrev-ref", "HEAD"], check=True, capture_output=True, text=True)
     return result.stdout.strip() == "nightly"
   except subprocess.SubprocessError:
     return False
 
 
-def update_model_descriptions(config, template_dir):
-  certified_repos_path = template_dir / "bentocloud-homepage-news" / "certified-bento-repositories.json"
+def update_model_descriptions(config, git_dir):
+  certified_repos_path = git_dir / "bentocloud-homepage-news" / "certified-bento-repositories.json"
   if not certified_repos_path.exists():
     print("Warning: certified-bento-repositories.json not found, skipping description updates")
     return
@@ -96,10 +91,7 @@ def generate_jinja_context(model_name, config):
   service_config["envs"].extend([
     {"name": "UV_NO_PROGRESS", "value": "1"},
     {"name": "HF_HUB_DISABLE_PROGRESS_BARS", "value": "1"},
-    {
-      "name": "VLLM_ATTENTION_BACKEND",
-      "value": "FLASHMLA" if use_mla else "FLASH_ATTN",
-    },
+    {"name": "VLLM_ATTENTION_BACKEND", "value": "FLASHMLA" if use_mla else "FLASH_ATTN"},
     # FIXME: @aarnphm remove this once 0.8.2 is released with the CUDA graph problem fixed
     {"name": "VLLM_USE_V1", "value": "0"},
   ])
@@ -149,17 +141,11 @@ def generate_jinja_context(model_name, config):
   return context
 
 
-def generate_readme(config, template_dir):
+def generate_readme(config, git_dir: Path, skip_nightly):
   models = [{"name": name, "engine_config": cfg.get("engine_config", {})} for name, cfg in config.items()]
-  is_nightly = is_nightly_branch()
-
-  with open(template_dir / "README.md.tpl", "r") as f:
-    template_content = f.read()
-
-  rendered = Template(template_content).render(models=models, nightly=is_nightly)
-
-  with open(template_dir / "README.md", "w") as f:
-    f.write(rendered)
+  is_nightly = not skip_nightly and is_nightly_branch()
+  with open((git_dir / ".github" / "README.md"), "w") as f:
+    f.write(Template((git_dir / ".github" / "README.md.j2").read_text()).render(models=models, nightly=is_nightly))
 
 
 @dataclass
@@ -170,11 +156,9 @@ class GenerateResult:
   no_changes: bool = False
 
 
-def generate_model(
-  model_name: str, config: dict, template_dir: Path, progress: Progress, task_id: int
-) -> GenerateResult:
+def generate_model(model_name: str, config: dict, git_dir: Path, progress: Progress, task_id: int) -> GenerateResult:
   """Generate a single model's project."""
-  output_dir = template_dir / model_name
+  output_dir = git_dir / model_name
   try:
     progress.update(task_id, description=f"[blue]Generating {model_name}...[/]")
 
@@ -188,7 +172,7 @@ def generate_model(
       temp_output_dir.mkdir(parents=True)
 
       # Walk through template directory and render each file
-      template_source = template_dir / "_src"
+      template_source = git_dir / ".github" / "src"
 
       shutil.copytree(
         template_source,
@@ -232,7 +216,7 @@ def generate_model(
     return GenerateResult(model_name, False, str(e))
 
 
-def generate_all_models(config: dict, template_dir: Path, force: bool = False, workers: int = 1) -> bool:
+def generate_all_models(config: dict, git_dir: Path, force: bool = False, workers: int = 1) -> bool:
   """Generate all model projects in parallel."""
   console = Console()
   models = list(config.keys())
@@ -248,7 +232,7 @@ def generate_all_models(config: dict, template_dir: Path, force: bool = False, w
 
     with ThreadPoolExecutor(max_workers=workers) as executor:
       future_to_model = {
-        executor.submit(generate_model, model_name, config, template_dir, progress, gen_tasks[model_name]): model_name
+        executor.submit(generate_model, model_name, config, git_dir, progress, gen_tasks[model_name]): model_name
         for model_name in models
       }
 
@@ -284,10 +268,16 @@ def main() -> int:
     default=multiprocessing.cpu_count(),
     help=f"Number of parallel workers (default: {multiprocessing.cpu_count()})",
   )
+  parser.add_argument(
+    "--skip-readme-nightly",
+    action=argparse.BooleanOptionalAction,
+    default=False,
+    help="whether to skip generating nightly readme.",
+  )
   args = parser.parse_args()
 
-  template_dir = Path(__file__).parent.parent
-  tools_dir = template_dir / "_tools"
+  git_dir = Path(__file__).parent.parent.parent
+  tools_dir = git_dir / ".github" / "tools"
   with (tools_dir / "config.yaml").open("r") as f:
     config = yaml.safe_load(f)
   readme_config = copy.deepcopy(config)
@@ -302,16 +292,16 @@ def main() -> int:
   else:
     filtered_config = config
 
-  success = generate_all_models(filtered_config, template_dir, args.force, args.workers)
+  success = generate_all_models(filtered_config, git_dir, args.force, args.workers)
 
   # Generate README.md after all models are processed
   console.print("\n[yellow]Generating README.md...[/]")
-  generate_readme(readme_config, template_dir)
+  generate_readme(readme_config, git_dir, args.skip_readme_nightly)
   console.print("[green]✓ Generated README.md[/]")
 
   # Format all python files
   console.print("\n[yellow]Formatting Python files...[/]")
-  subprocess.run(["ruff", "format", template_dir.__fspath__()], check=True, capture_output=True)
+  subprocess.run(["ruff", "format", git_dir.__fspath__()], check=True, capture_output=True)
   subprocess.run(
     [
       "ruff",
@@ -332,7 +322,7 @@ def main() -> int:
 
   # Update model descriptions
   console.print("\n[yellow]Updating model descriptions...[/]")
-  update_model_descriptions(config, template_dir)
+  update_model_descriptions(config, git_dir)
   console.print("[green]✓ Updated model descriptions[/]")
 
   return 0 if success else 1

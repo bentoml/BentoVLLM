@@ -58,15 +58,15 @@ def ensure_venv(req_txt, venv_dir, cfg):
 
 
 def build_model(
-  model_name: str, cfg: Dict[str, Any], template_dir: pathlib.Path, progress: Progress, task_id: int
+  model_name: str, cfg: Dict[str, Any], git_dir: pathlib.Path, progress: Progress, task_id: int
 ) -> BuildResult:
   """Build a single model's bento."""
-  model_dir = template_dir / model_name
+  model_dir = git_dir / model_name
   if not model_dir.exists():
     return BuildResult(model_name, "", False, f"Directory {model_dir} does not exist")
 
   req_txt_file = model_dir / "requirements.txt"
-  venv_dir = template_dir / "venv" / f"{model_name}-{hash_file(req_txt_file)[:7]}"
+  venv_dir = git_dir / "venv" / f"{model_name}-{hash_file(req_txt_file)[:7]}"
   version_path = ensure_venv(req_txt_file, venv_dir, cfg)
 
   try:
@@ -96,7 +96,7 @@ def build_model(
     return BuildResult(model_name, "", False, str(e))
 
 
-def build_bentos(config: Dict[str, Any], template_dir: pathlib.Path, workers: int) -> List[BuildResult]:
+def build_bentos(config: Dict[str, Any], git_dir: pathlib.Path, workers: int) -> List[BuildResult]:
   """Build all models in parallel using a thread pool."""
   console = Console()
   results = []
@@ -111,7 +111,7 @@ def build_bentos(config: Dict[str, Any], template_dir: pathlib.Path, workers: in
 
     with ThreadPoolExecutor(max_workers=workers) as executor:
       future_to_model = {
-        executor.submit(build_model, model, cfg, template_dir, progress, build_tasks[model]): model
+        executor.submit(build_model, model, cfg, git_dir, progress, build_tasks[model]): model
         for model, cfg in config.items()
       }
 
@@ -142,8 +142,8 @@ def main() -> int:
   )
   args = parser.parse_args()
 
-  template_dir = pathlib.Path(__file__).parent.parent
-  tools_dir = template_dir / "_tools"
+  git_dir = pathlib.Path(__file__).parent.parent.parent
+  tools_dir = git_dir / ".github" / "tools"
   with (tools_dir / "config.yaml").open("r") as f:
     config = yaml.safe_load(f)
 
@@ -159,7 +159,7 @@ def main() -> int:
 
   console.print(f"[bold]Building {len(filtered_config)} bentos with {args.workers} workers[/]")
 
-  results = build_bentos(filtered_config, template_dir, args.workers)
+  results = build_bentos(filtered_config, git_dir, args.workers)
   successful_builds = [r for r in results if r.success]
 
   # Print summary
@@ -171,7 +171,7 @@ def main() -> int:
   # Save successful bento tags to file for later use
   if successful_builds:
     bento_tags = [r.bento_tag for r in successful_builds]
-    with open(template_dir / "successful_builds.txt", "w") as f:
+    with open(git_dir / "successful_builds.txt", "w") as f:
       f.write("\n".join(bento_tags))
     console.print("\n[green]Saved successful build tags to successful_builds.txt[/]")
 
