@@ -1,1 +1,4 @@
-README.md linguist-generated
+**/README.md linguist-generated
+**/logging-config.json linguist-generated
+*.py linguist-generated
+.github/**/*.py -linguist-generated
