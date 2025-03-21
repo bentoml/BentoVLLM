@@ -1,8 +1,8 @@
 <div align="center">
-    <h1 align="center">Self-host Mistral Small 3.1 24B Instruct 2503 with vLLM and BentoML</h1>
+    <h1 align="center">Self-host Mistral Small 3.1 24B Instruct 2503 with Vision and Reasoning capabilities with vLLM and BentoML</h1>
 </div>
 
-This is a BentoML example project, showing you how to serve and deploy Mistral Small 3.1 24B Instruct 2503 using [vLLM](https://vllm.ai), a high-throughput and memory-efficient inference engine.
+This is a BentoML example project, showing you how to serve and deploy Mistral Small 3.1 24B Instruct 2503 with Vision and Reasoning capabilities using [vLLM](https://vllm.ai), a high-throughput and memory-efficient inference engine.
 
 See [here](https://docs.bentoml.com/en/latest/examples/overview.html) for a full list of BentoML example projects.
 
@@ -10,17 +10,19 @@ See [here](https://docs.bentoml.com/en/latest/examples/overview.html) for a full
 
 ## Prerequisites
 - You have gained access to `mistralai/Mistral-Small-3.1-24B-Instruct-2503` on [Hugging Face](https://huggingface.co/mistralai/Mistral-Small-3.1-24B-Instruct-2503).
-- If you want to test the Service locally, we recommend you use an Nvidia GPU with at least 80GB VRAM (e.g about 1 A100/H100 GPU).
+- If you want to test the Service locally, we recommend you use Nvidia GPUs with at least 80GBx2 VRAM (e.g about 2 H100 GPU).
 
 ## Install dependencies
 
 ```bash
 git clone https://github.com/bentoml/BentoVLLM.git
-cd BentoVLLM/mistral-small-3.1-24b-Instruct-2503
+cd BentoVLLM/mistral-small-3.1-24b-instruct-2503
 
 # Recommend Python 3.11
-
 pip install -r requirements.txt
+
+# if you are running locally, we recommend install additional flashinfer library for better performance.
+pip install flashinfer-python --extra-index-url https://flashinfer.ai/whl/cu124/torch2.6
 
 export HF_TOKEN=<your-api-key>
 ```
@@ -36,7 +38,7 @@ $ bentoml serve service.py:VLLM
 The server is now active at [http://localhost:3000](http://localhost:3000/). You can interact with it using the Swagger UI or in other different ways.
 
 > [!NOTE]
-> This ships with a default `max_model_len=4096`. If you wish to change this value, set `MAX_MODEL_LEN=<target_context_len>`. Make sure that you have enough VRAM to use this context length. BentoVLLM will only set a conservative value based on this model configuration.
+> This ships with a default `max_model_len=8192`. If you wish to change this value, set `MAX_MODEL_LEN=<target_context_len>`. Make sure that you have enough VRAM to use this context length. BentoVLLM will only set a conservative value based on this model configuration.
 
 <details open>
 
@@ -125,6 +127,16 @@ curl -X 'POST' \
   "prompt": "Who are you? Please respond in pirate speak!",
 }'
 ```
+This is also a vision LM. there is also a `/sights` endpoint:
+
+```bash
+curl -X 'POST' \
+  'http://localhost:3000/sights' \
+  -H 'accept: text/event-stream' \
+  -H 'Content-Type: multipart/form-data' \
+  -F 'prompt=Describe this image' \
+  -F 'image=@file.jpeg;type=image/jpeg'
+```
 
 </details>
 
@@ -138,6 +150,19 @@ import bentoml
 with bentoml.SyncHTTPClient("http://localhost:3000") as client:
     response_generator = client.generate(
         prompt="Who are you? Please respond in pirate speak!",
+    )
+    for response in response_generator:
+        print(response, end='')
+```
+This is also a vision LM. there is also a `/sights` endpoint:
+
+```python
+import bentoml
+
+with bentoml.SyncHTTPClient("http://localhost:3000") as client:
+    response_generator = client.sights(
+        prompt="Describe this image",
+        image="./file.jpeg",
     )
     for response in response_generator:
         print(response, end='')

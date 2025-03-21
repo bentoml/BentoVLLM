@@ -1,7 +1,6 @@
-bentoml>=1.4.3
-vllm==0.7.3
+bentoml>=1.4.5
+vllm==0.8.1
 kantoku>=0.18.1
-openai>=1.61.0
+openai>=1.67.0
 pyyaml
 fastapi
-Pillow

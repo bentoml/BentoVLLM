@@ -19,8 +19,10 @@ git clone https://github.com/bentoml/BentoVLLM.git
 cd BentoVLLM/jamba1.5-large
 
 # Recommend Python 3.11
-
 pip install -r requirements.txt
+
+# if you are running locally, we recommend install additional flashinfer library for better performance.
+pip install flashinfer-python --extra-index-url https://flashinfer.ai/whl/cu124/torch2.6
 
 export HF_TOKEN=<your-api-key>
 ```

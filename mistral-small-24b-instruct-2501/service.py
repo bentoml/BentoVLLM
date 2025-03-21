@@ -1,18 +1,18 @@
 from __future__ import annotations
 
-import logging, typing, uuid
+import logging, os, contextlib, typing, uuid
 import bentoml, fastapi, typing_extensions, annotated_types
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
 
+MAX_TOKENS = 2048
 ENGINE_CONFIG = {
-    'model': 'mistralai/Mistral-Small-24B-Instruct-2501',
     'tokenizer_mode': 'mistral',
+    'config_format': 'mistral',
+    'load_format': 'mistral',
     'max_model_len': 4096,
     'enable_prefix_caching': False,
 }
-MAX_TOKENS = 2048
 
 openai_api_app = fastapi.FastAPI()
 
@@ -27,20 +27,20 @@ openai_api_app = fastapi.FastAPI()
         {'name': 'UV_NO_PROGRESS', 'value': '1'},
         {'name': 'HF_HUB_DISABLE_PROGRESS_BARS', 'value': '1'},
         {'name': 'VLLM_ATTENTION_BACKEND', 'value': 'FLASH_ATTN'},
+        {'name': 'VLLM_USE_V1', 'value': '0'},
+        {'name': 'VLLM_LOGGING_CONFIG_PATH', 'value': os.path.join(os.path.dirname(__file__), 'logging-config.json')},
     ],
     labels={'owner': 'bentoml-team', 'type': 'prebuilt'},
     image=bentoml.images.PythonImage(python_version='3.11', lock_python_packages=False)
     .requirements_file('requirements.txt')
-    .run('uv pip install flashinfer-python --find-links https://flashinfer.ai/whl/cu124/torch2.5'),
+    .run('uv pip install --compile-bytecode flashinfer-python --find-links https://flashinfer.ai/whl/cu124/torch2.6'),
 )
 class VLLM:
-    model_id = ENGINE_CONFIG['model']
-    model = bentoml.models.HuggingFaceModel(model_id, exclude=['consolidated*', '*.pth', '*.pt'])
+    model_id = 'mistralai/Mistral-Small-24B-Instruct-2501'
+    model = bentoml.models.HuggingFaceModel(model_id, exclude=['model*', '*.pth', '*.pt', 'original/**/*'])
 
     def __init__(self):
-        from openai import AsyncOpenAI
-
-        self.openai = AsyncOpenAI(base_url='http://127.0.0.1:3000/v1', api_key='dummy')
+        self.exit_stack = contextlib.AsyncExitStack()
 
     @bentoml.on_startup
     async def init_engine(self) -> None:
@@ -50,14 +50,17 @@ class VLLM:
         from vllm.entrypoints.openai.cli_args import make_arg_parser
 
         args = make_arg_parser(FlexibleArgumentParser()).parse_args([])
-        for key, value in ENGINE_CONFIG.items():
-            setattr(args, key, value)
         args.model = self.model
         args.disable_log_requests = True
         args.max_log_len = 1000
         args.served_model_name = [self.model_id]
         args.request_logger = None
         args.disable_log_stats = True
+        args.use_tqdm_on_load = False
+        for key, value in ENGINE_CONFIG.items():
+            setattr(args, key, value)
+        args.tool_call_parser = 'mistral'
+        args.enable_auto_tool_choice = True
 
         router = fastapi.APIRouter(lifespan=vllm_api_server.lifespan)
         OPENAI_ENDPOINTS = [
@@ -69,18 +72,14 @@ class VLLM:
             router.add_api_route(path=route, endpoint=endpoint, methods=methods, include_in_schema=True)
         openai_api_app.include_router(router)
 
-        self.engine_context = vllm_api_server.build_async_engine_client(args)
-        self.engine = await self.engine_context.__aenter__()
+        self.engine = await self.exit_stack.enter_async_context(vllm_api_server.build_async_engine_client(args))
         self.model_config = await self.engine.get_model_config()
         self.tokenizer = await self.engine.get_tokenizer()
-        args.tool_call_parser = 'mistral'
-        args.enable_auto_tool_choice = True
-
         await vllm_api_server.init_app_state(self.engine, self.model_config, openai_api_app.state, args)
 
     @bentoml.on_shutdown
     async def teardown_engine(self):
-        await self.engine_context.__aexit__(GeneratorExit, None, None)
+        await self.exit_stack.aclose()
 
     @bentoml.api
     async def generate(
@@ -93,8 +92,9 @@ class VLLM:
         from vllm import SamplingParams, TokensPrompt
         from vllm.entrypoints.chat_utils import apply_mistral_chat_template
 
+        messages = [{'role': 'user', 'content': [{'type': 'text', 'text': prompt}]}]
+
         params = SamplingParams(max_tokens=max_tokens)
-        messages = [dict(role='user', content=[dict(type='text', text=prompt)])]
         prompt = TokensPrompt(prompt_token_ids=apply_mistral_chat_template(self.tokenizer, messages=messages))
 
         stream = self.engine.generate(request_id=uuid.uuid4().hex, prompt=prompt, sampling_params=params)

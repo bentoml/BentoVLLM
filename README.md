@@ -183,6 +183,7 @@ In addition to Llama 3.1 8B Instruct, we also have examples for other models in 
 | deepseek-r1-distill-qwen2.5-32b | [GitHub](deepseek-r1-distill-qwen2.5-32b/) • [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-32B) |
 | deepseek-r1-distill-qwen2.5-7b-math | [GitHub](deepseek-r1-distill-qwen2.5-7b-math/) • [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-7B) |
 | deepseek-r1-distill-llama3.1-8b-tool-calling | [GitHub](deepseek-r1-distill-llama3.1-8b-tool-calling/) • [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Llama-8B) |
+| gemma3-4b-instruct | [GitHub](gemma3-4b-instruct/) • [Hugging Face](https://huggingface.co/google/gemma-3-4b-it) |
 | gemma2-2b-instruct | [GitHub](gemma2-2b-instruct/) • [Hugging Face](https://huggingface.co/google/gemma-2-2b-it) |
 | gemma2-27b-instruct | [GitHub](gemma2-27b-instruct/) • [Hugging Face](https://huggingface.co/google/gemma-2-27b-it) |
 | jamba1.5-mini | [GitHub](jamba1.5-mini/) • [Hugging Face](https://huggingface.co/ai21labs/AI21-Jamba-1.5-Mini) |
@@ -191,9 +192,9 @@ In addition to Llama 3.1 8B Instruct, we also have examples for other models in 
 | llama3.2-3b-instruct | [GitHub](llama3.2-3b-instruct/) • [Hugging Face](https://huggingface.co/meta-llama/Llama-3.2-3B-Instruct) |
 | llama3.2-11b-vision-instruct | [GitHub](llama3.2-11b-vision-instruct/) • [Hugging Face](https://huggingface.co/meta-llama/Llama-3.2-11B-Vision-Instruct) |
 | llama3.3-70b-instruct | [GitHub](llama3.3-70b-instruct/) • [Hugging Face](https://huggingface.co/meta-llama/Llama-3.3-70B-Instruct) |
-| hermes-3-llama3.1-405b | [GitHub](hermes-3-llama3.1-405b/) • [Hugging Face](https://huggingface.co/NousResearch/Hermes-3-Llama-3.1-405B-FP8) |
 | pixtral-12b-2409 | [GitHub](pixtral-12b-2409/) • [Hugging Face](https://huggingface.co/mistralai/Pixtral-12B-2409) |
 | ministral-8b-instruct-2410 | [GitHub](ministral-8b-instruct-2410/) • [Hugging Face](https://huggingface.co/mistralai/Ministral-8B-Instruct-2410) |
+| mistral-small-3.1-24b-instruct-2503 | [GitHub](mistral-small-3.1-24b-instruct-2503/) • [Hugging Face](https://huggingface.co/mistralai/Mistral-Small-3.1-24B-Instruct-2503) |
 | mistral-small-24b-instruct-2501 | [GitHub](mistral-small-24b-instruct-2501/) • [Hugging Face](https://huggingface.co/mistralai/Mistral-Small-24B-Instruct-2501) |
 | phi4-14b | [GitHub](phi4-14b/) • [Hugging Face](https://huggingface.co/microsoft/phi-4) |
 | qwen2.5-7b-instruct | [GitHub](qwen2.5-7b-instruct/) • [Hugging Face](https://huggingface.co/Qwen/Qwen2.5-7B-Instruct) |

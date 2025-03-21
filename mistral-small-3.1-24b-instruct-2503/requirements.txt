@@ -1,8 +1,8 @@
-mistral_common>=1.5.4
-accelerate==1.2.1
 bentoml>=1.4.5
-fastapi==0.115.6
-openai==1.57.4
---pre
---extra-index-url https://wheels.vllm.ai/nightly
-vllm
+vllm==0.8.1
+kantoku>=0.18.1
+openai>=1.67.0
+pyyaml
+fastapi
+Pillow
+mistral_common[opencv]

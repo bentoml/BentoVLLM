@@ -1,0 +1,21 @@
+{%- set reqs = requirements|default([]) -%}
+bentoml>=1.4.5
+{%- if not nightly %}
+vllm==0.8.1
+{%- else %}
+vllm --pre --extra-index-url https://wheels.vllm.ai/nightly
+{%-endif %}
+kantoku>=0.18.1
+{%- if (reasoning | lower == "true") or (vision | lower == "true") or (embeddings | lower == "true") %}
+openai>=1.67.0
+{%- endif %}
+pyyaml
+fastapi
+{%- if vision | lower == "true" %}
+Pillow
+{%- endif %}
+{%- if reqs | length > 0 %}
+{%- for r in reqs %}
+{{r}}
+{%- endfor %}
+{%- endif %}
