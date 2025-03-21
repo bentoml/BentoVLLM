@@ -100,8 +100,7 @@ def generate_jinja_context(model_name, config):
       "name": "VLLM_ATTENTION_BACKEND",
       "value": "FLASHMLA" if use_mla else "FLASH_ATTN",
     },
-    # FIXME: @aarnphm remove this once 0.8.2 is released with the CUDA graph problem fixed
-    {"name": "VLLM_USE_V1", "value": "0"},
+    {"name": "VLLM_USE_V1", "value": "1"},
   ])
 
   if "enable_prefix_caching" not in engine_config_struct:
@@ -149,9 +148,9 @@ def generate_jinja_context(model_name, config):
   return context
 
 
-def generate_readme(config, template_dir):
+def generate_readme(config, template_dir, skip_nightly):
   models = [{"name": name, "engine_config": cfg.get("engine_config", {})} for name, cfg in config.items()]
-  is_nightly = is_nightly_branch()
+  is_nightly = not skip_nightly and is_nightly_branch()
 
   with open(template_dir / "README.md.tpl", "r") as f:
     template_content = f.read()
@@ -284,6 +283,13 @@ def main() -> int:
     default=multiprocessing.cpu_count(),
     help=f"Number of parallel workers (default: {multiprocessing.cpu_count()})",
   )
+  parser.add_argument(
+    "--skip-readme-nightly",
+    action=argparse.BooleanOptionalAction,
+    type=bool,
+    default=False,
+    help="Whether to skip generating readme for nightly (useful for merging onto main)",
+  )
   args = parser.parse_args()
 
   template_dir = Path(__file__).parent.parent
@@ -306,7 +312,7 @@ def main() -> int:
 
   # Generate README.md after all models are processed
   console.print("\n[yellow]Generating README.md...[/]")
-  generate_readme(readme_config, template_dir)
+  generate_readme(readme_config, template_dir, args.skip_readme_nightly)
   console.print("[green]✓ Generated README.md[/]")
 
   # Format all python files
