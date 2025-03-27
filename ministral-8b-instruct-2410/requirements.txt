@@ -1,5 +1,5 @@
 bentoml>=1.4.5
-vllm==0.8.1
+vllm==0.8.2
 kantoku>=0.18.1
 pyyaml
 fastapi
