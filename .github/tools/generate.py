@@ -92,8 +92,7 @@ def generate_jinja_context(model_name, config):
     {"name": "UV_NO_PROGRESS", "value": "1"},
     {"name": "HF_HUB_DISABLE_PROGRESS_BARS", "value": "1"},
     {"name": "VLLM_ATTENTION_BACKEND", "value": "FLASHMLA" if use_mla else "FLASH_ATTN"},
-    # FIXME: @aarnphm remove this once 0.8.2 is released with the CUDA graph problem fixed
-    {"name": "VLLM_USE_V1", "value": "0"},
+    {"name": "VLLM_USE_V1", "value": "1"},
   ])
 
   if "enable_prefix_caching" not in engine_config_struct:
