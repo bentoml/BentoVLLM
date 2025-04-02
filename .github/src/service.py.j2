@@ -24,7 +24,6 @@ openai_api_app = fastapi.FastAPI()
     {%- for value in service_config["envs"] %}
       {{value}},
     {%- endfor %}
-    {"name": "VLLM_LOGGING_CONFIG_PATH", "value": os.path.join(os.path.dirname(__file__), "logging-config.json")},
   ],
   {%- else -%}
   {{key}}={{value}},
