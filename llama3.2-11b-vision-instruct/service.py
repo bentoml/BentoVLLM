@@ -10,7 +10,7 @@ ENGINE_CONFIG = {
     'enforce_eager': True,
     'limit_mm_per_prompt': {'image': 1},
     'max_model_len': 16384,
-    'max_num_seqs': 16,
+    'max_num_seqs': 1024,
     'enable_prefix_caching': True,
 }
 

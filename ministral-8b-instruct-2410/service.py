@@ -12,6 +12,7 @@ ENGINE_CONFIG = {
     'load_format': 'mistral',
     'max_model_len': 4096,
     'enable_prefix_caching': False,
+    'max_num_seqs': 256,
 }
 
 openai_api_app = fastapi.FastAPI()

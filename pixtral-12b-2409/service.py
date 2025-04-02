@@ -13,6 +13,7 @@ ENGINE_CONFIG = {
     'limit_mm_per_prompt': {'image': 5},
     'max_model_len': 32768,
     'enable_prefix_caching': False,
+    'max_num_seqs': 1024,
 }
 
 openai_api_app = fastapi.FastAPI()

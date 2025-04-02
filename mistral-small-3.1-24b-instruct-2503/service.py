@@ -12,6 +12,7 @@ ENGINE_CONFIG = {
     'load_format': 'mistral',
     'max_model_len': 8192,
     'tensor_parallel_size': 2,
+    'max_num_seqs': 1024,
     'limit_mm_per_prompt': {'image': 10},
     'enable_prefix_caching': False,
 }

@@ -12,6 +12,7 @@ ENGINE_CONFIG = {
     'max_model_len': 8192,
     'enable_reasoning': True,
     'reasoning_parser': 'deepseek_r1',
+    'max_num_seqs': 1024,
     'enable_prefix_caching': True,
 }
 

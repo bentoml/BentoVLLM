@@ -11,6 +11,7 @@ ENGINE_CONFIG = {
     'enable_reasoning': True,
     'reasoning_parser': 'deepseek_r1',
     'enable_prefix_caching': True,
+    'max_num_seqs': 256,
 }
 
 openai_api_app = fastapi.FastAPI()

@@ -97,6 +97,8 @@ def generate_jinja_context(model_name, config):
 
   if "enable_prefix_caching" not in engine_config_struct:
     engine_config_struct["enable_prefix_caching"] = True
+  if "max_num_seqs" not in engine_config_struct:
+    engine_config_struct["max_num_seqs"] = 256  # Aligned with v0
 
   build_config = model_config.get("build", {})
   if "exclude" not in build_config:

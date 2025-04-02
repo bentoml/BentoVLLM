@@ -17,6 +17,7 @@
     model: deepseek-ai/DeepSeek-V3
     max_model_len: 8192
     tensor_parallel_size: 8
+    max_num_seqs: 1024
   generate_config:
     max_tokens: 4096
 "deepseek-r1-671b":
@@ -42,6 +43,7 @@
     max_model_len: 8192
     enable_reasoning: true
     reasoning_parser: "deepseek_r1"
+    max_num_seqs: 1024
   generate_config:
     max_tokens: 4096
 "deepseek-r1-distill-llama3.3-70b":
@@ -65,6 +67,7 @@
     max_model_len: 8192
     enable_reasoning: true
     reasoning_parser: "deepseek_r1"
+    max_num_seqs: 1024
   server_config:
     enable_auto_tool_choice: true
     tool_call_parser: "llama3_json"
@@ -90,6 +93,7 @@
     max_model_len: 8192
     enable_reasoning: true
     reasoning_parser: "deepseek_r1"
+    max_num_seqs: 1024
   server_config:
     enable_auto_tool_choice: true
     tool_call_parser: "hermes"
@@ -207,6 +211,7 @@
     max_model_len: 2048
     dtype: half
     enable_prefix_caching: false
+    max_num_seqs: 1024
   server_config:
     chat_template: "{% if messages[0]['role'] == 'system' %}\n    {% set loop_messages = messages[1:] %}\n    {% set system_message = messages[0]['content'].strip() + '\\n\\n' %}\n{% else %}\n    {% set loop_messages = messages %}\n    {% set system_message = '' %}\n{% endif %}\n\n{% for message in loop_messages %}\n    {% if (message['role'] == 'user') != (loop.index0 % 2 == 0) %}\n        {{ raise_exception('Conversation roles must alternate user/assistant/user/assistant/...') }}\n    {% endif %}\n\n    {% if loop.index0 == 0 %}\n        {% set content = system_message + message['content'] %}\n    {% else %}\n        {% set content = message['content'] %}\n    {% endif %}\n\n    {% if (message['role'] == 'assistant') %}\n        {% set role = 'model' %}\n    {% else %}\n        {% set role = message['role'] %}\n    {% endif %}\n\n    {{ '<start_of_turn>' + role + '\\n' + content.strip() + '<end_of_turn>\\n' }}\n\n    {% if loop.last and message['role'] == 'user' and add_generation_prompt %}\n        {{'<start_of_turn>model\\n'}}\n    {% endif %}\n{% endfor %}\n"
   generate_config:
@@ -232,6 +237,7 @@
     max_model_len: 204800
     tensor_parallel_size: 2
     enable_prefix_caching: false
+    max_num_seqs: 1024
   server_config:
     enable_auto_tool_choice: true
     tool_call_parser: "jamba"
@@ -269,6 +275,7 @@
     tensor_parallel_size: 8
     quantization: "experts_int8"
     enable_prefix_caching: false
+    max_num_seqs: 1024
   build:
     system_packages:
       - curl
@@ -350,6 +357,7 @@
       image: 1
     max_model_len: 16384
     max_num_seqs: 16
+    max_num_seqs: 1024
   build:
     exclude:
       - "original"
@@ -376,6 +384,7 @@
     model: meta-llama/Llama-3.3-70B-Instruct
     max_model_len: 2048
     tensor_parallel_size: 2
+    max_num_seqs: 1024
   build:
     exclude:
       - "original"
@@ -409,6 +418,7 @@
       image: 5
     max_model_len: 32768
     enable_prefix_caching: false
+    max_num_seqs: 1024
   requirements:
     - mistral_common[opencv]
   generate_config:
@@ -472,6 +482,7 @@
     load_format: mistral
     max_model_len: 8192
     tensor_parallel_size: 2
+    max_num_seqs: 1024
     limit_mm_per_prompt:
       image: 10
     enable_prefix_caching: false
@@ -528,6 +539,7 @@
     load_format: mistral
     max_model_len: 4096
     enable_prefix_caching: false
+    max_num_seqs: 1024
   build:
     exclude:
       - "model*"
@@ -553,6 +565,7 @@
   engine_config:
     model: microsoft/phi-4
     max_model_len: 8192
+    max_num_seqs: 1024
   server_config:
     chat_template: "{% if messages[0]['role'] == 'system' %}\n    {% set offset = 1 %}\n{% else %}\n    {% set offset = 0 %}\n{% endif %}\n\n{% for message in messages %}\n    {% if (message['role'] == 'user') != (loop.index0 % 2 == offset) %}\n        {{ raise_exception('Conversation roles must alternate user/assistant/user/assistant/...') }}\n    {% endif %}\n\n    {{ '<|' + message['role'] + '|>\\n' + message['content'].strip() + '<|end|>' + '\\n' }}\n\n    {% if loop.last and message['role'] == 'user' and add_generation_prompt %}\n        {{ '<|assistant|>\\n' }}\n    {% endif %}\n{% endfor %}\n"
   generate_config:
@@ -593,6 +606,7 @@
     model: Qwen/Qwen2.5-72B-Instruct
     max_model_len: 2048
     tensor_parallel_size: 2
+    max_num_seqs: 1024
   generate_config:
     max_tokens: 1024
   server_config:
@@ -621,6 +635,7 @@
     tensor_parallel_size: 1
     enable_reasoning: true
     reasoning_parser: "deepseek_r1"
+    max_num_seqs: 1024
   server_config:
     enable_auto_tool_choice: true
     tool_call_parser: "llama3_json"
