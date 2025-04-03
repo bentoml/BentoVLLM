@@ -113,6 +113,7 @@ class VLLM:
             prompt_token_ids=apply_hf_chat_template(
                 self.tokenizer,
                 conversation=conversation,
+                tools=None,
                 add_generation_prompt=True,
                 continue_final_message=False,
                 chat_template=None,
