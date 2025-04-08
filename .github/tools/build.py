@@ -42,7 +42,7 @@ def ensure_venv(req_txt, venv_dir, cfg):
         "install",
         "--compile-bytecode",
         "--prerelease=allow",
-        "bentoml==1.4.0a2",
+        "bentoml>=1.4.7",
         "-p",
         venv_dir / "bin" / "python",
       ],

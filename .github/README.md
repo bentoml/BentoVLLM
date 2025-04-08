@@ -116,39 +116,6 @@ client = OpenAI(base_url='your_bentocloud_deployment_endpoint_url/v1')
 </details>
 
 
-<details>
-
-<summary>cURL</summary>
-
-```bash
-curl -X 'POST' \
-  'http://localhost:3000/generate' \
-  -H 'accept: text/event-stream' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "prompt": "Who are you? Please respond in pirate speak!",
-}'
-```
-
-</details>
-
-<details>
-
-<summary>Python SDK</summary>
-
-```python
-import bentoml
-
-with bentoml.SyncHTTPClient("http://localhost:3000") as client:
-    response_generator = client.generate(
-        prompt="Who are you? Please respond in pirate speak!",
-    )
-    for response in response_generator:
-        print(response, end='')
-```
-
-</details>
-
 For detailed explanations of the Service code, see [vLLM inference](https://docs.bentoml.org/en/latest/examples/vllm.html).
 
 ## Deploy to BentoCloud
@@ -191,6 +158,7 @@ In addition to Llama 3.1 8B Instruct, we also have examples for other models in 
 | llama3.1-8b-instruct | [GitHub](llama3.1-8b-instruct/) • [Hugging Face](https://huggingface.co/meta-llama/Meta-Llama-3.1-8B-Instruct) |
 | llama3.2-3b-instruct | [GitHub](llama3.2-3b-instruct/) • [Hugging Face](https://huggingface.co/meta-llama/Llama-3.2-3B-Instruct) |
 | llama3.2-11b-vision-instruct | [GitHub](llama3.2-11b-vision-instruct/) • [Hugging Face](https://huggingface.co/meta-llama/Llama-3.2-11B-Vision-Instruct) |
+| llama4-17B-scout-instruct | [GitHub](llama4-17B-scout-instruct/) • [Hugging Face](https://huggingface.co/meta-llama/Llama-4-Scout-17B-16E-Instruct) |
 | llama3.3-70b-instruct | [GitHub](llama3.3-70b-instruct/) • [Hugging Face](https://huggingface.co/meta-llama/Llama-3.3-70B-Instruct) |
 | pixtral-12b-2409 | [GitHub](pixtral-12b-2409/) • [Hugging Face](https://huggingface.co/mistralai/Pixtral-12B-2409) |
 | ministral-8b-instruct-2410 | [GitHub](ministral-8b-instruct-2410/) • [Hugging Face](https://huggingface.co/mistralai/Ministral-8B-Instruct-2410) |
