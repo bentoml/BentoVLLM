@@ -1,14 +1,13 @@
 from __future__ import annotations
 
-import logging, contextlib, typing, uuid
-import bentoml, pydantic, fastapi, typing_extensions, annotated_types
+import logging, os, contextlib, typing
+import bentoml, fastapi, pydantic
 
 logger = logging.getLogger(__name__)
 
 
 class BentoArgs(pydantic.BaseModel):
     bentovllm_model_id: str = 'mistralai/Ministral-8B-Instruct-2410'
-    bentovllm_max_tokens: int = 2048
 
     disable_log_requests: bool = True
     max_log_len: int = 1000
@@ -85,27 +84,3 @@ class VLLM:
     @bentoml.on_shutdown
     async def teardown_engine(self):
         await self.exit_stack.aclose()
-
-    @bentoml.api
-    async def generate(
-        self,
-        prompt: str = 'Who are you? Please respond in pirate speak!',
-        max_tokens: typing_extensions.Annotated[
-            int, annotated_types.Ge(128), annotated_types.Le(bento_args.bentovllm_max_tokens)
-        ] = bento_args.bentovllm_max_tokens,
-    ) -> typing.AsyncGenerator[str, None]:
-        from vllm import SamplingParams, TokensPrompt
-        from vllm.entrypoints.chat_utils import apply_mistral_chat_template
-
-        messages = [{'role': 'user', 'content': [{'type': 'text', 'text': prompt}]}]
-
-        params = SamplingParams(max_tokens=max_tokens)
-        prompt = TokensPrompt(prompt_token_ids=apply_mistral_chat_template(self.tokenizer, messages=messages))
-
-        stream = self.engine.generate(request_id=uuid.uuid4().hex, prompt=prompt, sampling_params=params)
-
-        cursor = 0
-        async for request_output in stream:
-            text = request_output.outputs[0].text
-            yield text[cursor:]
-            cursor = len(text)

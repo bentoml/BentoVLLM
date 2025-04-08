@@ -1,14 +1,13 @@
 from __future__ import annotations
 
-import logging, contextlib, traceback, typing
-import bentoml, pydantic, fastapi, typing_extensions, annotated_types
+import logging, os, contextlib, typing
+import bentoml, fastapi, pydantic
 
 logger = logging.getLogger(__name__)
 
 
 class BentoArgs(pydantic.BaseModel):
     bentovllm_model_id: str = 'deepseek-ai/DeepSeek-R1-Distill-Llama-8B'
-    bentovllm_max_tokens: int = 2048
 
     disable_log_requests: bool = True
     max_log_len: int = 1000
@@ -48,9 +47,6 @@ class VLLM:
     model = bentoml.models.HuggingFaceModel(bento_args.bentovllm_model_id, exclude=['*.pth', '*.pt', 'original/**/*'])
 
     def __init__(self):
-        from openai import AsyncOpenAI
-
-        self.openai = AsyncOpenAI(base_url='http://127.0.0.1:3000/v1', api_key='dummy')
         self.exit_stack = contextlib.AsyncExitStack()
 
     @bentoml.on_startup
@@ -84,23 +80,3 @@ class VLLM:
     @bentoml.on_shutdown
     async def teardown_engine(self):
         await self.exit_stack.aclose()
-
-    @bentoml.api
-    async def generate(
-        self,
-        prompt: str = 'Who are you? Please respond in pirate speak!',
-        max_tokens: typing_extensions.Annotated[
-            int, annotated_types.Ge(128), annotated_types.Le(bento_args.bentovllm_max_tokens)
-        ] = bento_args.bentovllm_max_tokens,
-    ) -> typing.AsyncGenerator[str, None]:
-        messages = [{'role': 'user', 'content': [{'type': 'text', 'text': prompt}]}]
-        try:
-            completion = await self.openai.chat.completions.create(
-                model=bento_args.bentovllm_model_id, messages=messages, stream=True, max_tokens=max_tokens
-            )
-            async for chunk in completion:
-                yield chunk.choices[0].delta.content or ''
-        except Exception:
-            logger.error(traceback.format_exc())
-            yield 'Internal error found. Check server logs for more information'
-            return
