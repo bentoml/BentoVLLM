@@ -111,39 +111,6 @@ client = OpenAI(base_url='your_bentocloud_deployment_endpoint_url/v1')
 </details>
 
 
-<details>
-
-<summary>cURL</summary>
-
-```bash
-curl -X 'POST' \
-  'http://localhost:3000/generate' \
-  -H 'accept: text/event-stream' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "prompt": "Who are you? Please respond in pirate speak!",
-}'
-```
-
-</details>
-
-<details>
-
-<summary>Python SDK</summary>
-
-```python
-import bentoml
-
-with bentoml.SyncHTTPClient("http://localhost:3000") as client:
-    response_generator = client.generate(
-        prompt="Who are you? Please respond in pirate speak!",
-    )
-    for response in response_generator:
-        print(response, end='')
-```
-
-</details>
-
 For detailed explanations of the Service code, see [vLLM inference](https://docs.bentoml.org/en/latest/examples/vllm.html).
 
 ## Deploy to BentoCloud
