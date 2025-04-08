@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import base64, io, logging, os, contextlib, traceback, typing, uuid
-import bentoml, fastapi, PIL.Image, typing_extensions, annotated_types
+import logging, os, contextlib, typing
+import bentoml, fastapi
 
 logger = logging.getLogger(__name__)
 
@@ -16,26 +16,6 @@ ENGINE_CONFIG = {
     'limit_mm_per_prompt': {'image': 10},
     'enable_prefix_caching': False,
 }
-SYSTEM_PROMPT = """You are Mistral Small 3.1, a Large Language Model (LLM) created by Mistral AI, a French startup headquartered in Paris.
-You power an AI assistant called Le Chat.
-Your knowledge base was last updated on 2023-10-01.
-The current date is {today}.
-
-When you're not sure about some information, you say that you don't have the information and don't make up anything.
-If the user's question is not clear, ambiguous, or does not provide enough context for you to accurately answer the question, you do not try to answer it right away and you rather ask the user to clarify their request (e.g. "What are some good restaurants around me?" => "Where are you?" or "When is the next flight to Tokyo" => "Where do you travel from?").
-You are always very attentive to dates, in particular you try to resolve dates (e.g. "yesterday" is {yesterday}) and when asked about information at specific dates, you discard information that is at another date.
-You follow these instructions in all languages, and always respond to the user in the language they use or request.
-Next sections describe the capabilities that you have.
-
-# WEB BROWSING INSTRUCTIONS
-
-You cannot perform any web search or access internet to open URLs, links etc. If it seems like the user is expecting you to do so, you clarify the situation and ask the user to copy paste the text directly in the chat.
-
-# MULTI-MODAL INSTRUCTIONS
-
-You have the ability to read images, but you cannot generate images. You also cannot transcribe audio files or videos.
-You cannot read nor transcribe audio files or videos.
-"""
 
 openai_api_app = fastapi.FastAPI()
 
@@ -106,68 +86,3 @@ class VLLM:
     @bentoml.on_shutdown
     async def teardown_engine(self):
         await self.exit_stack.aclose()
-
-    @bentoml.api
-    async def generate(
-        self,
-        prompt: str = 'Who are you? Please respond in pirate speak!',
-        system_prompt: typing.Optional[str] = SYSTEM_PROMPT,
-        max_tokens: typing_extensions.Annotated[
-            int, annotated_types.Ge(128), annotated_types.Le(MAX_TOKENS)
-        ] = MAX_TOKENS,
-    ) -> typing.AsyncGenerator[str, None]:
-        from vllm import SamplingParams, TokensPrompt
-        from vllm.entrypoints.chat_utils import apply_mistral_chat_template
-
-        if system_prompt is None:
-            system_prompt = SYSTEM_PROMPT
-
-        messages = [
-            {'role': 'system', 'content': system_prompt},
-            {'role': 'user', 'content': [{'type': 'text', 'text': prompt}]},
-        ]
-
-        params = SamplingParams(max_tokens=max_tokens)
-        prompt = TokensPrompt(prompt_token_ids=apply_mistral_chat_template(self.tokenizer, messages=messages))
-
-        stream = self.engine.generate(request_id=uuid.uuid4().hex, prompt=prompt, sampling_params=params)
-
-        cursor = 0
-        async for request_output in stream:
-            text = request_output.outputs[0].text
-            yield text[cursor:]
-            cursor = len(text)
-
-    @bentoml.api
-    async def sights(
-        self,
-        prompt: str = 'Describe the content of the picture',
-        system_prompt: typing.Optional[str] = SYSTEM_PROMPT,
-        image: typing.Optional['PIL.Image.Image'] = None,
-        max_tokens: typing_extensions.Annotated[
-            int, annotated_types.Ge(128), annotated_types.Le(MAX_TOKENS)
-        ] = MAX_TOKENS,
-    ) -> typing.AsyncGenerator[str, None]:
-        if image:
-            buffered = io.BytesIO()
-            image.save(buffered, format='PNG')
-            img_str = base64.b64encode(buffered.getvalue()).decode()
-            buffered.close()
-            image_url = f'data:image/png;base64,{img_str}'
-            content = [dict(type='image_url', image_url=dict(url=image_url)), dict(type='text', text=prompt)]
-        else:
-            content = [dict(type='text', text=prompt)]
-        if system_prompt is None:
-            system_prompt = SYSTEM_PROMPT
-        messages = [{'role': 'system', 'content': system_prompt}, {'role': 'user', 'content': content}]
-
-        try:
-            completion = await self.openai.chat.completions.create(
-                model=self.model_id, messages=messages, stream=True, max_tokens=max_tokens
-            )
-            async for chunk in completion:
-                yield chunk.choices[0].delta.content or ''
-        except Exception:
-            logger.error(traceback.format_exc())
-            yield 'Internal error found. Check server logs for more information'
-            return
