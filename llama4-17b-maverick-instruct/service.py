@@ -13,7 +13,7 @@ openai_api_app = fastapi.FastAPI()
 
 @bentoml.asgi_app(openai_api_app, path='/v1')
 @bentoml.service(
-    name='bentovllm-llama4-17B-maverick-instruct-service',
+    name='bentovllm-llama4-17b-maverick-instruct-service',
     traffic={'timeout': 300},
     resources={'gpu': 8, 'gpu_type': 'nvidia-a100-80gb'},
     envs=[

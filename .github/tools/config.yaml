@@ -373,7 +373,7 @@
     provider: Meta
     gpu_recommendation: Nvidia GPUs with at least 80GBx8 VRAM (e.g about 8 H100 GPUs).
   service_config:
-    name: bentovllm-llama4-17B-maverick-instruct-service
+    name: bentovllm-llama4-17b-maverick-instruct-service
     traffic:
       timeout: 300
     resources:
@@ -403,7 +403,7 @@
     provider: Meta
     gpu_recommendation: Nvidia GPUs with at least 80GBx2 VRAM (e.g about 2 H100 GPUs).
   service_config:
-    name: bentovllm-llama4-17B-scout-instruct-service
+    name: bentovllm-llama4-17b-scout-instruct-service
     traffic:
       timeout: 300
     resources:
