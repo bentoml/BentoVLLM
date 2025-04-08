@@ -1,7 +1,7 @@
 # /// script
 # requires-python = ">=3.12"
 # dependencies = [
-#     "bentoml==1.4.0a1",
+#     "bentoml>=1.4.7",
 #     "huggingface-hub",
 #     "rich",
 # ]

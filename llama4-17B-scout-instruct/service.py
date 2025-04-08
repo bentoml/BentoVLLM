@@ -5,23 +5,17 @@ import bentoml, fastapi, PIL.Image, typing_extensions, annotated_types
 
 logger = logging.getLogger(__name__)
 
-MAX_TOKENS = 8192
-ENGINE_CONFIG = {
-    'enforce_eager': True,
-    'limit_mm_per_prompt': {'image': 1},
-    'max_model_len': 16384,
-    'max_num_seqs': 16,
-    'enable_prefix_caching': True,
-}
+MAX_TOKENS = 2048
+ENGINE_CONFIG = {'max_model_len': 4096, 'tensor_parallel_size': 2, 'max_num_seqs': 16, 'enable_prefix_caching': True}
 
 openai_api_app = fastapi.FastAPI()
 
 
 @bentoml.asgi_app(openai_api_app, path='/v1')
 @bentoml.service(
-    name='bentovllm-llama3.2-11b-vision-instruct-service',
+    name='bentovllm-llama4-17B-scout-instruct-service',
     traffic={'timeout': 300},
-    resources={'gpu': 1, 'gpu_type': 'nvidia-a100-80gb'},
+    resources={'gpu': 2, 'gpu_type': 'nvidia-a100-80gb'},
     envs=[
         {'name': 'HF_TOKEN'},
         {'name': 'UV_NO_PROGRESS', 'value': '1'},
@@ -35,8 +29,10 @@ openai_api_app = fastapi.FastAPI()
     .run('uv pip install --compile-bytecode flashinfer-python --find-links https://flashinfer.ai/whl/cu124/torch2.6'),
 )
 class VLLM:
-    model_id = 'meta-llama/Llama-3.2-11B-Vision-Instruct'
-    model = bentoml.models.HuggingFaceModel(model_id, exclude=['original', '*.pth', '*.pt', 'original/**/*'])
+    model_id = 'meta-llama/Llama-4-Scout-17B-16E-Instruct'
+    model = bentoml.models.HuggingFaceModel(
+        model_id, exclude=['original', 'consolidated*', '*.pth', '*.pt', 'original/**/*']
+    )
 
     def __init__(self):
         from openai import AsyncOpenAI
@@ -61,8 +57,8 @@ class VLLM:
         args.use_tqdm_on_load = False
         for key, value in ENGINE_CONFIG.items():
             setattr(args, key, value)
-        args.enable_auto_tool_choice = True
         args.tool_call_parser = 'pythonic'
+        args.enable_auto_tool_choice = True
 
         router = fastapi.APIRouter(lifespan=vllm_api_server.lifespan)
         OPENAI_ENDPOINTS = [
