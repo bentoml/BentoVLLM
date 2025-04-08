@@ -6,7 +6,13 @@ import bentoml, fastapi, PIL.Image, typing_extensions, annotated_types
 logger = logging.getLogger(__name__)
 
 MAX_TOKENS = 2048
-ENGINE_CONFIG = {'max_model_len': 4096, 'tensor_parallel_size': 2, 'max_num_seqs': 16, 'enable_prefix_caching': True}
+ENGINE_CONFIG = {
+    'max_model_len': 1000000,
+    'tensor_parallel_size': 2,
+    'override_generation_config': {'attn_temperature_tuning': True},
+    'enable_prefix_caching': True,
+    'max_num_seqs': 256,
+}
 
 openai_api_app = fastapi.FastAPI()
 
@@ -18,6 +24,7 @@ openai_api_app = fastapi.FastAPI()
     resources={'gpu': 2, 'gpu_type': 'nvidia-a100-80gb'},
     envs=[
         {'name': 'HF_TOKEN'},
+        {'name': 'VLLM_DISABLE_COMPILE_CACHE', 'value': '1'},
         {'name': 'UV_NO_PROGRESS', 'value': '1'},
         {'name': 'HF_HUB_DISABLE_PROGRESS_BARS', 'value': '1'},
         {'name': 'VLLM_ATTENTION_BACKEND', 'value': 'FLASH_ATTN'},

@@ -381,11 +381,14 @@
       gpu_type: nvidia-a100-80gb
     envs:
       - name: HF_TOKEN
+      - name: VLLM_DISABLE_COMPILE_CACHE
+        value: "1"
   engine_config:
     model: meta-llama/Llama-4-Maverick-17B-128E-Instruct
-    max_model_len: 4096
+    max_model_len: 430000
     tensor_parallel_size: 8
-    max_num_seqs: 16
+    override_generation_config:
+      attn_temperature_tuning: true
   build:
     exclude:
       - "original"
@@ -411,11 +414,14 @@
       gpu_type: nvidia-a100-80gb
     envs:
       - name: HF_TOKEN
+      - name: VLLM_DISABLE_COMPILE_CACHE
+        value: "1"
   engine_config:
     model: meta-llama/Llama-4-Scout-17B-16E-Instruct
-    max_model_len: 4096
+    max_model_len: 1000000
     tensor_parallel_size: 2
-    max_num_seqs: 16
+    override_generation_config:
+      attn_temperature_tuning: true
   build:
     exclude:
       - "original"
