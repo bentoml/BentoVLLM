@@ -1,22 +1,23 @@
 <div align="center">
-    <h1 align="center">Self-host Llama 4 Scout 17B-16E Instruct with vLLM and BentoML</h1>
+    <h1 align="center">Self-host Llama 4 Maverick 17B-128E Instruct with vLLM and BentoML</h1>
 </div>
 
-This is a BentoML example project, showing you how to serve and deploy Llama 4 Scout 17B-16E Instruct using [vLLM](https://vllm.ai), a high-throughput and memory-efficient inference engine.
+Follow this guide to self-host the Llama 4 Maverick 17B-128E Instruct model with BentoCloud in your own cloud account. If your team doesn’t already have access to BentoCloud, please use the link below to contact us and set it up in your cloud environment.
+
+[![Deploy on BentoCloud](https://img.shields.io/badge/Deploy_on_BentoCloud-d0bfff?style=for-the-badge)](https://cloud.bentoml.com/)
+[![Talk to sales](https://img.shields.io/badge/Talk_to_sales-eefbe4?style=for-the-badge)](https://bentoml.com/contact)
 
 See [here](https://docs.bentoml.com/en/latest/examples/overview.html) for a full list of BentoML example projects.
 
-💡 This example is served as a basis for advanced code customization, such as custom model, inference logic or vLLM options. For simple LLM hosting with OpenAI compatible endpoint without writing any code, see [OpenLLM](https://github.com/bentoml/OpenLLM).
-
 ## Prerequisites
-- You have gained access to `meta-llama/Llama-4-Scout-17B-16E-Instruct` on [Hugging Face](https://huggingface.co/meta-llama/Llama-4-Scout-17B-16E-Instruct).
-- If you want to test the Service locally, we recommend you use Nvidia GPUs with at least 80GBx2 VRAM (e.g about 2 H100 GPUs).
+- You have gained access to `meta-llama/Llama-4-Maverick-17B-128E-Instruct` on [Hugging Face](https://huggingface.co/meta-llama/Llama-4-Maverick-17B-128E-Instruct).
+- If you want to test the Service locally, we recommend you use Nvidia GPUs with at least 80GBx8 VRAM (e.g about 8 H100 GPUs).
 
 ## Install dependencies
 
 ```bash
 git clone https://github.com/bentoml/BentoVLLM.git
-cd BentoVLLM/llama4-17B-scout-instruct
+cd BentoVLLM/llama4-17b-maverick-instruct
 
 # Recommend Python 3.11
 pip install -r requirements.txt
@@ -53,7 +54,7 @@ client = OpenAI(base_url='http://localhost:3000/v1', api_key='na')
 client.models.list()
 
 chat_completion = client.chat.completions.create(
-    model="meta-llama/Llama-4-Scout-17B-16E-Instruct",
+    model="meta-llama/Llama-4-Maverick-17B-128E-Instruct",
     messages=[
         {
             "role": "user",
@@ -85,7 +86,7 @@ json_schema = {
 }
 
 chat_completion = client.chat.completions.create(
-    model="meta-llama/Llama-4-Scout-17B-16E-Instruct",
+    model="meta-llama/Llama-4-Maverick-17B-128E-Instruct",
     messages=[
         {
             "role": "user",
