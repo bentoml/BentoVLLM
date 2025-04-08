@@ -1,38 +1,23 @@
 <div align="center">
-    <h1 align="center">Self-host {{metadata['description']}} with vLLM and BentoML</h1>
+    <h1 align="center">Self-host Llama 4 Scout 17B-16E Instruct with vLLM and BentoML</h1>
 </div>
 
-{%- if c2a %}
-
-Follow this guide to self-host the {{metadata['description']}} model with BentoCloud in your own cloud account. If your team doesn’t already have access to BentoCloud, please use the link below to contact us and set it up in your cloud environment.
+Follow this guide to self-host the Llama 4 Scout 17B-16E Instruct model with BentoCloud in your own cloud account. If your team doesn’t already have access to BentoCloud, please use the link below to contact us and set it up in your cloud environment.
 
 [![Deploy on BentoCloud](https://img.shields.io/badge/Deploy_on_BentoCloud-d0bfff?style=for-the-badge)](https://cloud.bentoml.com/)
 [![Talk to sales](https://img.shields.io/badge/Talk_to_sales-eefbe4?style=for-the-badge)](https://bentoml.com/contact)
 
 See [here](https://docs.bentoml.com/en/latest/examples/overview.html) for a full list of BentoML example projects.
 
-{%- else %}
-
-This is a BentoML example project, showing you how to serve and deploy {{metadata['description']}} using [vLLM](https://vllm.ai), a high-throughput and memory-efficient inference engine.
-
-See [here](https://docs.bentoml.com/en/latest/examples/overview.html) for a full list of BentoML example projects.
-
-💡 This example is served as a basis for advanced code customization, such as custom model, inference logic or vLLM options. For simple LLM hosting with OpenAI compatible endpoint without writing any code, see [OpenLLM](https://github.com/bentoml/OpenLLM).
-
-{%- endif %}
-
 ## Prerequisites
-
-{%- if requires_hf_tokens | lower == "true" %}
-- You have gained access to `{{model_id}}` on [Hugging Face](https://huggingface.co/{{model_id}}).
-{%- endif %}
-- If you want to test the Service locally, we recommend you use {{metadata['gpu_recommendation']}}
+- You have gained access to `meta-llama/Llama-4-Scout-17B-16E-Instruct` on [Hugging Face](https://huggingface.co/meta-llama/Llama-4-Scout-17B-16E-Instruct).
+- If you want to test the Service locally, we recommend you use Nvidia GPUs with at least 80GBx2 VRAM (e.g about 2 H100 GPUs).
 
 ## Install dependencies
 
 ```bash
 git clone https://github.com/bentoml/BentoVLLM.git
-cd BentoVLLM/{{model_name}}
+cd BentoVLLM/llama4-17b-scout-instruct
 
 # Recommend Python 3.11
 pip install -r requirements.txt
@@ -40,10 +25,7 @@ pip install -r requirements.txt
 # if you are running locally, we recommend install additional flashinfer library for better performance.
 pip install flashinfer-python --extra-index-url https://flashinfer.ai/whl/cu124/torch2.6
 
-{%- if requires_hf_tokens | lower == "true" %}
-
 export HF_TOKEN=<your-api-key>
-{%- endif %}
 ```
 
 ## Run the BentoML Service
@@ -57,7 +39,7 @@ $ bentoml serve service.py:VLLM
 The server is now active at [http://localhost:3000](http://localhost:3000/). You can interact with it using the Swagger UI or in other different ways.
 
 > [!NOTE]
-> This ships with a default `max_model_len={{engine_config['max_model_len']}}`. If you wish to change this value, set `MAX_MODEL_LEN=<target_context_len>`. Make sure that you have enough VRAM to use this context length. BentoVLLM will only set a conservative value based on this model configuration.
+> This ships with a default `max_model_len=4096`. If you wish to change this value, set `MAX_MODEL_LEN=<target_context_len>`. Make sure that you have enough VRAM to use this context length. BentoVLLM will only set a conservative value based on this model configuration.
 
 <details open>
 
@@ -72,7 +54,7 @@ client = OpenAI(base_url='http://localhost:3000/v1', api_key='na')
 client.models.list()
 
 chat_completion = client.chat.completions.create(
-    model="{{model_id}}",
+    model="meta-llama/Llama-4-Scout-17B-16E-Instruct",
     messages=[
         {
             "role": "user",
@@ -104,7 +86,7 @@ json_schema = {
 }
 
 chat_completion = client.chat.completions.create(
-    model="{{model_id}}",
+    model="meta-llama/Llama-4-Scout-17B-16E-Instruct",
     messages=[
         {
             "role": "user",
@@ -115,13 +97,6 @@ chat_completion = client.chat.completions.create(
 )
 print(chat_completion.choices[0].message.content)  # will return something like: {"city": "Paris"}
 ```
-
-{%- if reasoning | lower == "true" %}
-
-> [!NOTE]
-> This is also a reasoning model. Structured Outputs might not work if you enable reasoning! Please check upstream vLLM for support on this use-case.
-
-{%- endif %}
 
 All supported extra parameters are listed in [vLLM documentation](https://docs.vllm.ai/en/latest/serving/openai_compatible_server.html#extra-parameters).
 
@@ -153,8 +128,6 @@ curl -X 'POST' \
   "prompt": "Who are you? Please respond in pirate speak!",
 }'
 ```
-
-{%- if vision | lower == "true" %}
 This is also a vision LM. there is also a `/sights` endpoint:
 
 ```bash
@@ -165,7 +138,6 @@ curl -X 'POST' \
   -F 'prompt=Describe this image' \
   -F 'image=@file.jpeg;type=image/jpeg'
 ```
-{%- endif %}
 
 </details>
 
@@ -183,8 +155,6 @@ with bentoml.SyncHTTPClient("http://localhost:3000") as client:
     for response in response_generator:
         print(response, end='')
 ```
-
-{%- if vision | lower == "true" %}
 This is also a vision LM. there is also a `/sights` endpoint:
 
 ```python
@@ -198,8 +168,6 @@ with bentoml.SyncHTTPClient("http://localhost:3000") as client:
     for response in response_generator:
         print(response, end='')
 ```
-
-{%- endif %}
 
 </details>
 
@@ -215,8 +183,6 @@ Make sure you have [logged in to BentoCloud](https://docs.bentoml.com/en/latest/
 bentoml cloud login
 ```
 
-{%- if requires_hf_tokens | lower == "true" %}
-
 Create a BentoCloud secret to store the required environment variable and reference it for deployment.
 
 ```bash
@@ -224,14 +190,6 @@ bentoml secret create huggingface HF_TOKEN=$HF_TOKEN
 
 bentoml deploy service:VLLM --secret huggingface
 ```
-{%- else %}
-
-Create a BentoCloud deployment from this service:
-
-```bash
-bentoml deploy service:VLLM
-```
-{%- endif %}
 
 Once the application is up and running on BentoCloud, you can access it via the exposed URL.
 

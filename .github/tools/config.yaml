@@ -365,8 +365,39 @@
     tool_call_parser: "pythonic"
   generate_config:
     max_tokens: 8192
-"llama4-17B-scout-instruct":
+"llama4-17b-maverick-instruct":
   vision: true
+  c2a: true
+  metadata:
+    description: Llama 4 Maverick 17B-128E Instruct
+    provider: Meta
+    gpu_recommendation: Nvidia GPUs with at least 80GBx8 VRAM (e.g about 8 H100 GPUs).
+  service_config:
+    name: bentovllm-llama4-17B-maverick-instruct-service
+    traffic:
+      timeout: 300
+    resources:
+      gpu: 8
+      gpu_type: nvidia-a100-80gb
+    envs:
+      - name: HF_TOKEN
+  engine_config:
+    model: meta-llama/Llama-4-Maverick-17B-128E-Instruct
+    max_model_len: 4096
+    tensor_parallel_size: 8
+    max_num_seqs: 16
+  build:
+    exclude:
+      - "original"
+      - "consolidated*"
+  server_config:
+    tool_call_parser: "pythonic"
+    enable_auto_tool_choice: true
+  generate_config:
+    max_tokens: 2048
+"llama4-17b-scout-instruct":
+  vision: true
+  c2a: true
   metadata:
     description: Llama 4 Scout 17B-16E Instruct
     provider: Meta
