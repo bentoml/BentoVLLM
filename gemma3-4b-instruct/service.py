@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import logging, os, contextlib, typing
-import bentoml, fastapi
+import base64, io, logging, os, contextlib, traceback, typing, uuid
+import bentoml, fastapi, PIL.Image, typing_extensions, annotated_types
 
 logger = logging.getLogger(__name__)
 
@@ -74,3 +74,69 @@ class VLLM:
     @bentoml.on_shutdown
     async def teardown_engine(self):
         await self.exit_stack.aclose()
+
+    @bentoml.api
+    async def generate(
+        self,
+        prompt: str = 'Who are you? Please respond in pirate speak!',
+        max_tokens: typing_extensions.Annotated[
+            int, annotated_types.Ge(128), annotated_types.Le(MAX_TOKENS)
+        ] = MAX_TOKENS,
+    ) -> typing.AsyncGenerator[str, None]:
+        from vllm import SamplingParams, TokensPrompt
+        from vllm.entrypoints.chat_utils import parse_chat_messages, apply_hf_chat_template
+
+        messages = [{'role': 'user', 'content': [{'type': 'text', 'text': prompt}]}]
+
+        params = SamplingParams(max_tokens=max_tokens)
+        conversation, _ = parse_chat_messages(messages, self.model_config, self.tokenizer, content_format='string')
+        prompt = TokensPrompt(
+            prompt_token_ids=apply_hf_chat_template(
+                self.tokenizer,
+                conversation=conversation,
+                tools=None,
+                add_generation_prompt=True,
+                continue_final_message=False,
+                chat_template=None,
+                tokenize=True,
+            )
+        )
+
+        stream = self.engine.generate(request_id=uuid.uuid4().hex, prompt=prompt, sampling_params=params)
+
+        cursor = 0
+        async for request_output in stream:
+            text = request_output.outputs[0].text
+            yield text[cursor:]
+            cursor = len(text)
+
+    @bentoml.api
+    async def sights(
+        self,
+        prompt: str = 'Describe the content of the picture',
+        image: typing.Optional['PIL.Image.Image'] = None,
+        max_tokens: typing_extensions.Annotated[
+            int, annotated_types.Ge(128), annotated_types.Le(MAX_TOKENS)
+        ] = MAX_TOKENS,
+    ) -> typing.AsyncGenerator[str, None]:
+        if image:
+            buffered = io.BytesIO()
+            image.save(buffered, format='PNG')
+            img_str = base64.b64encode(buffered.getvalue()).decode()
+            buffered.close()
+            image_url = f'data:image/png;base64,{img_str}'
+            content = [dict(type='image_url', image_url=dict(url=image_url)), dict(type='text', text=prompt)]
+        else:
+            content = [dict(type='text', text=prompt)]
+        messages = [{'role': 'user', 'content': content}]
+
+        try:
+            completion = await self.openai.chat.completions.create(
+                model=self.model_id, messages=messages, stream=True, max_tokens=max_tokens
+            )
+            async for chunk in completion:
+                yield chunk.choices[0].delta.content or ''
+        except Exception:
+            logger.error(traceback.format_exc())
+            yield 'Internal error found. Check server logs for more information'
+            return

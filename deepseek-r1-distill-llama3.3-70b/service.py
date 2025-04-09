@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import logging, os, contextlib, typing
-import bentoml, fastapi
+import logging, os, contextlib, traceback, typing
+import bentoml, fastapi, typing_extensions, annotated_types
 
 logger = logging.getLogger(__name__)
 
@@ -83,3 +83,23 @@ class VLLM:
     @bentoml.on_shutdown
     async def teardown_engine(self):
         await self.exit_stack.aclose()
+
+    @bentoml.api
+    async def generate(
+        self,
+        prompt: str = 'Who are you? Please respond in pirate speak!',
+        max_tokens: typing_extensions.Annotated[
+            int, annotated_types.Ge(128), annotated_types.Le(MAX_TOKENS)
+        ] = MAX_TOKENS,
+    ) -> typing.AsyncGenerator[str, None]:
+        messages = [{'role': 'user', 'content': [{'type': 'text', 'text': prompt}]}]
+        try:
+            completion = await self.openai.chat.completions.create(
+                model=self.model_id, messages=messages, stream=True, max_tokens=max_tokens
+            )
+            async for chunk in completion:
+                yield chunk.choices[0].delta.content or ''
+        except Exception:
+            logger.error(traceback.format_exc())
+            yield 'Internal error found. Check server logs for more information'
+            return
