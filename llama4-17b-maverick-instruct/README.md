@@ -10,7 +10,7 @@ Follow this guide to self-host the Llama 4 Maverick 17B-128E Instruct model with
 See [here](https://docs.bentoml.com/en/latest/examples/overview.html) for a full list of BentoML example projects.
 
 ## Prerequisites
-- You have gained access to `meta-llama/Llama-4-Maverick-17B-128E-Instruct` on [Hugging Face](https://huggingface.co/meta-llama/Llama-4-Maverick-17B-128E-Instruct).
+- You have gained access to `meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8` on [Hugging Face](https://huggingface.co/meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8).
 - If you want to test the Service locally, we recommend you use Nvidia GPUs with at least 80GBx8 VRAM (e.g about 8 H100 GPUs).
 
 ## Install dependencies
@@ -54,7 +54,7 @@ client = OpenAI(base_url='http://localhost:3000/v1', api_key='na')
 client.models.list()
 
 chat_completion = client.chat.completions.create(
-    model="meta-llama/Llama-4-Maverick-17B-128E-Instruct",
+    model="meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
     messages=[
         {
             "role": "user",
@@ -86,7 +86,7 @@ json_schema = {
 }
 
 chat_completion = client.chat.completions.create(
-    model="meta-llama/Llama-4-Maverick-17B-128E-Instruct",
+    model="meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
     messages=[
         {
             "role": "user",

@@ -191,7 +191,7 @@ In addition to Llama 3.1 8B Instruct, we also have examples for other models in 
 | llama3.1-8b-instruct | [GitHub](llama3.1-8b-instruct/) • [Hugging Face](https://huggingface.co/meta-llama/Meta-Llama-3.1-8B-Instruct) |
 | llama3.2-3b-instruct | [GitHub](llama3.2-3b-instruct/) • [Hugging Face](https://huggingface.co/meta-llama/Llama-3.2-3B-Instruct) |
 | llama3.2-11b-vision-instruct | [GitHub](llama3.2-11b-vision-instruct/) • [Hugging Face](https://huggingface.co/meta-llama/Llama-3.2-11B-Vision-Instruct) |
-| llama4-17b-maverick-instruct | [GitHub](llama4-17b-maverick-instruct/) • [Hugging Face](https://huggingface.co/meta-llama/Llama-4-Maverick-17B-128E-Instruct) |
+| llama4-17b-maverick-instruct | [GitHub](llama4-17b-maverick-instruct/) • [Hugging Face](https://huggingface.co/meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8) |
 | llama4-17b-scout-instruct | [GitHub](llama4-17b-scout-instruct/) • [Hugging Face](https://huggingface.co/meta-llama/Llama-4-Scout-17B-16E-Instruct) |
 | llama3.3-70b-instruct | [GitHub](llama3.3-70b-instruct/) • [Hugging Face](https://huggingface.co/meta-llama/Llama-3.3-70B-Instruct) |
 | pixtral-12b-2409 | [GitHub](pixtral-12b-2409/) • [Hugging Face](https://huggingface.co/mistralai/Pixtral-12B-2409) |

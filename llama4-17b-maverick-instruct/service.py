@@ -21,7 +21,7 @@ openai_api_app = fastapi.FastAPI()
 @bentoml.service(
     name='bentovllm-llama4-17b-maverick-instruct-service',
     traffic={'timeout': 300},
-    resources={'gpu': 8, 'gpu_type': 'nvidia-a100-80gb'},
+    resources={'gpu': 8, 'gpu_type': 'nvidia-tesla-h100'},
     envs=[
         {'name': 'HF_TOKEN'},
         {'name': 'VLLM_DISABLE_COMPILE_CACHE', 'value': '1'},
@@ -36,7 +36,7 @@ openai_api_app = fastapi.FastAPI()
     .run('uv pip install --compile-bytecode flashinfer-python --find-links https://flashinfer.ai/whl/cu124/torch2.6'),
 )
 class VLLM:
-    model_id = 'meta-llama/Llama-4-Maverick-17B-128E-Instruct'
+    model_id = 'meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8'
     model = bentoml.models.HuggingFaceModel(
         model_id, exclude=['original', 'consolidated*', '*.pth', '*.pt', 'original/**/*']
     )

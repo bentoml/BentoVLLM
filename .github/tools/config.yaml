@@ -378,13 +378,13 @@
       timeout: 300
     resources:
       gpu: 8
-      gpu_type: nvidia-a100-80gb
+      gpu_type: nvidia-tesla-h100
     envs:
       - name: HF_TOKEN
       - name: VLLM_DISABLE_COMPILE_CACHE
         value: "1"
   engine_config:
-    model: meta-llama/Llama-4-Maverick-17B-128E-Instruct
+    model: meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8
     max_model_len: 430000
     tensor_parallel_size: 8
     max_num_seqs: 256
