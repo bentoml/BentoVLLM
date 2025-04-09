@@ -9,9 +9,9 @@ MAX_TOKENS = 2048
 ENGINE_CONFIG = {
     'max_model_len': 430000,
     'tensor_parallel_size': 8,
+    'max_num_seqs': 256,
     'override_generation_config': {'attn_temperature_tuning': True},
     'enable_prefix_caching': True,
-    'max_num_seqs': 256,
 }
 
 openai_api_app = fastapi.FastAPI()

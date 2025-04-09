@@ -7,11 +7,11 @@ logger = logging.getLogger(__name__)
 
 MAX_TOKENS = 2048
 ENGINE_CONFIG = {
-    'max_model_len': 1000000,
-    'tensor_parallel_size': 2,
+    'max_model_len': 16384,
+    'tensor_parallel_size': 4,
+    'max_num_seqs': 256,
     'override_generation_config': {'attn_temperature_tuning': True},
     'enable_prefix_caching': True,
-    'max_num_seqs': 256,
 }
 
 openai_api_app = fastapi.FastAPI()
@@ -21,7 +21,7 @@ openai_api_app = fastapi.FastAPI()
 @bentoml.service(
     name='bentovllm-llama4-17b-scout-instruct-service',
     traffic={'timeout': 300},
-    resources={'gpu': 2, 'gpu_type': 'nvidia-a100-80gb'},
+    resources={'gpu': 4, 'gpu_type': 'nvidia-a100-80gb'},
     envs=[
         {'name': 'HF_TOKEN'},
         {'name': 'VLLM_DISABLE_COMPILE_CACHE', 'value': '1'},
