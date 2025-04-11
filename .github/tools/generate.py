@@ -95,8 +95,6 @@ def generate_jinja_context(model_name, config):
     {"name": "VLLM_USE_V1", "value": "1"},
   ])
 
-  if "enable_prefix_caching" not in engine_config_struct:
-    engine_config_struct["enable_prefix_caching"] = True
   if "max_num_seqs" not in engine_config_struct:
     engine_config_struct["max_num_seqs"] = 256  # Aligned with v0
 

@@ -38,7 +38,11 @@ $ bentoml serve service.py:VLLM
 The server is now active at [http://localhost:3000](http://localhost:3000/). You can interact with it using the Swagger UI or in other different ways.
 
 > [!NOTE]
-> This ships with a default `max_model_len=4096`. If you wish to change this value, set `MAX_MODEL_LEN=<target_context_len>`. Make sure that you have enough VRAM to use this context length. BentoVLLM will only set a conservative value based on this model configuration.
+> This ships with a default `max_model_len=4096`. If you wish to change this value, uses `--arg` at serve [time](https://docs.bentoml.com/en/latest/reference/bentoml/bento-build-options.html#args). Make sure that you have enough VRAM to use this context length. BentoVLLM will only set a conservative value based on this model configuration.
+>
+> ```bash
+> bentoml serve --arg max_model_len=8192 service.py:VLLM
+> ```
 
 <details open>
 
