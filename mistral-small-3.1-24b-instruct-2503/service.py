@@ -4,8 +4,6 @@ import base64, io, logging, contextlib, traceback, typing, uuid
 import bentoml, pydantic, fastapi, PIL.Image, typing_extensions, annotated_types
 
 logger = logging.getLogger(__name__)
-
-MAX_TOKENS = 4096
 SYSTEM_PROMPT = """You are Mistral Small 3.1, a Large Language Model (LLM) created by Mistral AI, a French startup headquartered in Paris.
 You power an AI assistant called Le Chat.
 Your knowledge base was last updated on 2023-10-01.
@@ -30,6 +28,8 @@ You cannot read nor transcribe audio files or videos.
 
 class BentoArgs(pydantic.BaseModel):
     bentovllm_model_id: str = 'mistralai/Mistral-Small-3.1-24B-Instruct-2503'
+    bentovllm_max_tokens: int = 4096
+
     disable_log_requests: bool = True
     max_log_len: int = 1000
     request_logger: typing.Any = None
@@ -48,7 +48,6 @@ class BentoArgs(pydantic.BaseModel):
 
 
 bento_args = bentoml.use_arguments(BentoArgs)
-
 openai_api_app = fastapi.FastAPI()
 
 
@@ -118,8 +117,8 @@ class VLLM:
         prompt: str = 'Who are you? Please respond in pirate speak!',
         system_prompt: typing.Optional[str] = SYSTEM_PROMPT,
         max_tokens: typing_extensions.Annotated[
-            int, annotated_types.Ge(128), annotated_types.Le(MAX_TOKENS)
-        ] = MAX_TOKENS,
+            int, annotated_types.Ge(128), annotated_types.Le(bento_args.bentovllm_max_tokens)
+        ] = bento_args.bentovllm_max_tokens,
     ) -> typing.AsyncGenerator[str, None]:
         from vllm import SamplingParams, TokensPrompt
         from vllm.entrypoints.chat_utils import apply_mistral_chat_template
@@ -150,8 +149,8 @@ class VLLM:
         system_prompt: typing.Optional[str] = SYSTEM_PROMPT,
         image: typing.Optional['PIL.Image.Image'] = None,
         max_tokens: typing_extensions.Annotated[
-            int, annotated_types.Ge(128), annotated_types.Le(MAX_TOKENS)
-        ] = MAX_TOKENS,
+            int, annotated_types.Ge(128), annotated_types.Le(bento_args.bentovllm_max_tokens)
+        ] = bento_args.bentovllm_max_tokens,
     ) -> typing.AsyncGenerator[str, None]:
         if image:
             buffered = io.BytesIO()

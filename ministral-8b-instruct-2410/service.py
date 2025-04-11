@@ -5,11 +5,11 @@ import bentoml, pydantic, fastapi, typing_extensions, annotated_types
 
 logger = logging.getLogger(__name__)
 
-MAX_TOKENS = 2048
-
 
 class BentoArgs(pydantic.BaseModel):
     bentovllm_model_id: str = 'mistralai/Ministral-8B-Instruct-2410'
+    bentovllm_max_tokens: int = 2048
+
     disable_log_requests: bool = True
     max_log_len: int = 1000
     request_logger: typing.Any = None
@@ -26,7 +26,6 @@ class BentoArgs(pydantic.BaseModel):
 
 
 bento_args = bentoml.use_arguments(BentoArgs)
-
 openai_api_app = fastapi.FastAPI()
 
 
@@ -91,8 +90,8 @@ class VLLM:
         self,
         prompt: str = 'Who are you? Please respond in pirate speak!',
         max_tokens: typing_extensions.Annotated[
-            int, annotated_types.Ge(128), annotated_types.Le(MAX_TOKENS)
-        ] = MAX_TOKENS,
+            int, annotated_types.Ge(128), annotated_types.Le(bento_args.bentovllm_max_tokens)
+        ] = bento_args.bentovllm_max_tokens,
     ) -> typing.AsyncGenerator[str, None]:
         from vllm import SamplingParams, TokensPrompt
         from vllm.entrypoints.chat_utils import apply_mistral_chat_template
