@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import logging, contextlib, typing, bentoml, fastapi, pydantic
+import contextlib, typing, bentoml, fastapi, pydantic
 
 
 class BentoArgs(pydantic.BaseModel):
