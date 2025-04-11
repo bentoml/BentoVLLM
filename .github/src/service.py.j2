@@ -14,10 +14,6 @@ class BentoArgs(pydantic.BaseModel):
   use_tqdm_on_load : bool = False
 
   {%- set all_configs = engine_config.copy() %}
-  {%- if server_config | length > 0 %}
-  {%- set _ = all_configs.update(server_config) %}
-  {%- endif %}
-
   {%- for key, value in all_configs.items() %}
   {%- if key == "chat_template" %}
   {{key}}: str = """{{value}}"""
