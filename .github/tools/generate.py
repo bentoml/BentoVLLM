@@ -119,7 +119,6 @@ def generate_jinja_context(model_name, config):
     "model_id": model,
     "vision": use_vision,
     "c2a": model_config.get("c2a", False),
-    "generate_config": model_config.get("generate_config", {}),
     "service_config": service_config,
     "engine_config": engine_config_struct,
     "server_config": model_config.get("server_config", {}),

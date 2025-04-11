@@ -144,69 +144,6 @@ client = OpenAI(base_url='your_bentocloud_deployment_endpoint_url/v1')
 </details>
 
 
-<details>
-
-<summary>cURL</summary>
-
-```bash
-curl -X 'POST' \
-  'http://localhost:3000/generate' \
-  -H 'accept: text/event-stream' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "prompt": "Who are you? Please respond in pirate speak!",
-}'
-```
-
-{%- if vision | lower == "true" %}
-This is also a vision LM. there is also a `/sights` endpoint:
-
-```bash
-curl -X 'POST' \
-  'http://localhost:3000/sights' \
-  -H 'accept: text/event-stream' \
-  -H 'Content-Type: multipart/form-data' \
-  -F 'prompt=Describe this image' \
-  -F 'image=@file.jpeg;type=image/jpeg'
-```
-{%- endif %}
-
-</details>
-
-<details>
-
-<summary>Python SDK</summary>
-
-```python
-import bentoml
-
-with bentoml.SyncHTTPClient("http://localhost:3000") as client:
-    response_generator = client.generate(
-        prompt="Who are you? Please respond in pirate speak!",
-    )
-    for response in response_generator:
-        print(response, end='')
-```
-
-{%- if vision | lower == "true" %}
-This is also a vision LM. there is also a `/sights` endpoint:
-
-```python
-import bentoml
-
-with bentoml.SyncHTTPClient("http://localhost:3000") as client:
-    response_generator = client.sights(
-        prompt="Describe this image",
-        image="./file.jpeg",
-    )
-    for response in response_generator:
-        print(response, end='')
-```
-
-{%- endif %}
-
-</details>
-
 For detailed explanations of the Service code, see [vLLM inference](https://docs.bentoml.org/en/latest/examples/vllm.html).
 
 ## Deploy to BentoCloud

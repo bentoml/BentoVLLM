@@ -1,14 +1,10 @@
 from __future__ import annotations
 
-import logging, contextlib, typing, uuid
-import bentoml, pydantic, fastapi, typing_extensions, annotated_types
-
-logger = logging.getLogger(__name__)
+import logging, contextlib, typing, bentoml, fastapi, pydantic
 
 
 class BentoArgs(pydantic.BaseModel):
     bentovllm_model_id: str = 'mistralai/Ministral-8B-Instruct-2410'
-    bentovllm_max_tokens: int = 2048
 
     disable_log_requests: bool = True
     max_log_len: int = 1000
@@ -72,40 +68,14 @@ class VLLM:
             ['/chat/completions', vllm_api_server.create_chat_completion, ['POST']],
             ['/models', vllm_api_server.show_available_models, ['GET']],
         ]
-
         for route, endpoint, methods in OPENAI_ENDPOINTS:
             router.add_api_route(path=route, endpoint=endpoint, methods=methods, include_in_schema=True)
         openai_api_app.include_router(router)
 
         self.engine = await self.exit_stack.enter_async_context(vllm_api_server.build_async_engine_client(args))
         self.model_config = await self.engine.get_model_config()
-        self.tokenizer = await self.engine.get_tokenizer()
         await vllm_api_server.init_app_state(self.engine, self.model_config, openai_api_app.state, args)
 
     @bentoml.on_shutdown
     async def teardown_engine(self):
         await self.exit_stack.aclose()
-
-    @bentoml.api
-    async def generate(
-        self,
-        prompt: str = 'Who are you? Please respond in pirate speak!',
-        max_tokens: typing_extensions.Annotated[
-            int, annotated_types.Ge(128), annotated_types.Le(bento_args.bentovllm_max_tokens)
-        ] = bento_args.bentovllm_max_tokens,
-    ) -> typing.AsyncGenerator[str, None]:
-        from vllm import SamplingParams, TokensPrompt
-        from vllm.entrypoints.chat_utils import apply_mistral_chat_template
-
-        messages = [{'role': 'user', 'content': [{'type': 'text', 'text': prompt}]}]
-
-        params = SamplingParams(max_tokens=max_tokens)
-        prompt = TokensPrompt(prompt_token_ids=apply_mistral_chat_template(self.tokenizer, messages=messages))
-
-        stream = self.engine.generate(request_id=uuid.uuid4().hex, prompt=prompt, sampling_params=params)
-
-        cursor = 0
-        async for request_output in stream:
-            text = request_output.outputs[0].text
-            yield text[cursor:]
-            cursor = len(text)

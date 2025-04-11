@@ -18,8 +18,6 @@
     max_model_len: 8192
     tensor_parallel_size: 8
     max_num_seqs: 1024
-  generate_config:
-    max_tokens: 4096
 "deepseek-r1-671b":
   reasoning: true
   use_mla: true
@@ -44,8 +42,6 @@
     enable_reasoning: true
     reasoning_parser: "deepseek_r1"
     max_num_seqs: 1024
-  generate_config:
-    max_tokens: 4096
 "deepseek-r1-distill-llama3.3-70b":
   reasoning: true
   metadata:
@@ -71,8 +67,6 @@
   server_config:
     enable_auto_tool_choice: true
     tool_call_parser: "llama3_json"
-  generate_config:
-    max_tokens: 4096
 "deepseek-r1-distill-qwen2.5-32b":
   reasoning: true
   metadata:
@@ -97,8 +91,6 @@
   server_config:
     enable_auto_tool_choice: true
     tool_call_parser: "hermes"
-  generate_config:
-    max_tokens: 4096
 "deepseek-r1-distill-qwen2.5-7b-math":
   reasoning: true
   metadata:
@@ -122,8 +114,6 @@
   server_config:
     enable_auto_tool_choice: true
     tool_call_parser: "hermes"
-  generate_config:
-    max_tokens: 4096
 "deepseek-r1-distill-llama3.1-8b-tool-calling":
   reasoning: true
   metadata:
@@ -147,8 +137,6 @@
   server_config:
     enable_auto_tool_choice: true
     tool_call_parser: "llama3_json"
-  generate_config:
-    max_tokens: 2048
 "gemma3-4b-instruct":
   vision: true
   metadata:
@@ -167,8 +155,6 @@
   engine_config:
     model: google/gemma-3-4b-it
     max_model_len: 16384
-  generate_config:
-    max_tokens: 8192
 "gemma2-2b-instruct":
   metadata:
     description: Gemma 2 2B Instruct
@@ -190,8 +176,6 @@
     enable_prefix_caching: false
   server_config:
     chat_template: "{% if messages[0]['role'] == 'system' %}\n    {% set loop_messages = messages[1:] %}\n    {% set system_message = messages[0]['content'].strip() + '\\n\\n' %}\n{% else %}\n    {% set loop_messages = messages %}\n    {% set system_message = '' %}\n{% endif %}\n\n{% for message in loop_messages %}\n    {% if (message['role'] == 'user') != (loop.index0 % 2 == 0) %}\n        {{ raise_exception('Conversation roles must alternate user/assistant/user/assistant/...') }}\n    {% endif %}\n\n    {% if loop.index0 == 0 %}\n        {% set content = system_message + message['content'] %}\n    {% else %}\n        {% set content = message['content'] %}\n    {% endif %}\n\n    {% if (message['role'] == 'assistant') %}\n        {% set role = 'model' %}\n    {% else %}\n        {% set role = message['role'] %}\n    {% endif %}\n\n    {{ '<start_of_turn>' + role + '\\n' + content.strip() + '<end_of_turn>\\n' }}\n\n    {% if loop.last and message['role'] == 'user' and add_generation_prompt %}\n        {{'<start_of_turn>model\\n'}}\n    {% endif %}\n{% endfor %}\n"
-  generate_config:
-    max_tokens: 1024
 "gemma2-27b-instruct":
   metadata:
     description: Gemma 2 27B Instruct
@@ -214,8 +198,6 @@
     max_num_seqs: 1024
   server_config:
     chat_template: "{% if messages[0]['role'] == 'system' %}\n    {% set loop_messages = messages[1:] %}\n    {% set system_message = messages[0]['content'].strip() + '\\n\\n' %}\n{% else %}\n    {% set loop_messages = messages %}\n    {% set system_message = '' %}\n{% endif %}\n\n{% for message in loop_messages %}\n    {% if (message['role'] == 'user') != (loop.index0 % 2 == 0) %}\n        {{ raise_exception('Conversation roles must alternate user/assistant/user/assistant/...') }}\n    {% endif %}\n\n    {% if loop.index0 == 0 %}\n        {% set content = system_message + message['content'] %}\n    {% else %}\n        {% set content = message['content'] %}\n    {% endif %}\n\n    {% if (message['role'] == 'assistant') %}\n        {% set role = 'model' %}\n    {% else %}\n        {% set role = message['role'] %}\n    {% endif %}\n\n    {{ '<start_of_turn>' + role + '\\n' + content.strip() + '<end_of_turn>\\n' }}\n\n    {% if loop.last and message['role'] == 'user' and add_generation_prompt %}\n        {{'<start_of_turn>model\\n'}}\n    {% endif %}\n{% endfor %}\n"
-  generate_config:
-    max_tokens: 1024
 "jamba1.5-mini":
   metadata:
     description: Jamba 1.5 Mini
@@ -251,8 +233,6 @@
       - uv pip install --compile-bytecode ./causal_conv1d-1.5.0.post8+cu12torch2.5cxx11abiFALSE-cp311-cp311-linux_x86_64.whl
       - curl -L -o ./mamba_ssm-2.2.4+cu12torch2.5cxx11abiFALSE-cp311-cp311-linux_x86_64.whl https://github.com/state-spaces/mamba/releases/download/v2.2.4/mamba_ssm-2.2.4+cu12torch2.5cxx11abiFALSE-cp311-cp311-linux_x86_64.whl
       - uv pip install --compile-bytecode ./mamba_ssm-2.2.4+cu12torch2.5cxx11abiFALSE-cp311-cp311-linux_x86_64.whl
-  generate_config:
-    max_tokens: 4096
 "jamba1.5-large":
   metadata:
     description: Jamba 1.5 Large
@@ -289,8 +269,6 @@
   server_config:
     enable_auto_tool_choice: true
     tool_call_parser: "jamba"
-  generate_config:
-    max_tokens: 4096
 "llama3.1-8b-instruct":
   metadata:
     description: Llama 3.1 8B Instruct
@@ -311,8 +289,6 @@
   server_config:
     enable_auto_tool_choice: true
     tool_call_parser: "llama3_json"
-  generate_config:
-    max_tokens: 2048
 "llama3.2-3b-instruct":
   metadata:
     description: Llama 3.1 3B Instruct
@@ -333,8 +309,6 @@
   server_config:
     enable_auto_tool_choice: true
     tool_call_parser: "pythonic"
-  generate_config:
-    max_tokens: 4096
 "llama3.2-11b-vision-instruct":
   metadata:
     description: Llama 3.2 11B Vision Instruct
@@ -363,8 +337,6 @@
   server_config:
     enable_auto_tool_choice: true
     tool_call_parser: "pythonic"
-  generate_config:
-    max_tokens: 8192
 "llama4-17b-maverick-instruct":
   vision: true
   c2a: true
@@ -397,8 +369,6 @@
   server_config:
     tool_call_parser: "pythonic"
     enable_auto_tool_choice: true
-  generate_config:
-    max_tokens: 2048
 "llama4-17b-scout-instruct":
   vision: true
   c2a: true
@@ -431,8 +401,6 @@
   server_config:
     tool_call_parser: "pythonic"
     enable_auto_tool_choice: true
-  generate_config:
-    max_tokens: 2048
 "llama3.3-70b-instruct":
   metadata:
     description: Llama 3.3 70B Instruct
@@ -459,8 +427,6 @@
   server_config:
     tool_call_parser: "pythonic"
     enable_auto_tool_choice: true
-  generate_config:
-    max_tokens: 1024
 "pixtral-12b-2409":
   metadata:
     description: Pixtral 12B 2409
@@ -488,8 +454,6 @@
     max_num_seqs: 1024
   requirements:
     - mistral_common[opencv]
-  generate_config:
-    max_tokens: 4096
   build:
     exclude:
       - "model*"
@@ -520,8 +484,6 @@
   build:
     exclude:
       - "model*"
-  generate_config:
-    max_tokens: 2048
   server_config:
     tool_call_parser: "mistral"
     enable_auto_tool_choice: true
@@ -581,8 +543,6 @@
 
     You have the ability to read images, but you cannot generate images. You also cannot transcribe audio files or videos.
     You cannot read nor transcribe audio files or videos.
-  generate_config:
-    max_tokens: 4096
   requirements:
     - mistral_common[opencv]
 "mistral-small-24b-instruct-2501":
@@ -613,8 +573,6 @@
   server_config:
     tool_call_parser: "mistral"
     enable_auto_tool_choice: true
-  generate_config:
-    max_tokens: 2048
   requirements:
     - mistral_common[opencv]
 "phi4-14b":
@@ -635,8 +593,6 @@
     max_num_seqs: 1024
   server_config:
     chat_template: "{% if messages[0]['role'] == 'system' %}\n    {% set offset = 1 %}\n{% else %}\n    {% set offset = 0 %}\n{% endif %}\n\n{% for message in messages %}\n    {% if (message['role'] == 'user') != (loop.index0 % 2 == offset) %}\n        {{ raise_exception('Conversation roles must alternate user/assistant/user/assistant/...') }}\n    {% endif %}\n\n    {{ '<|' + message['role'] + '|>\\n' + message['content'].strip() + '<|end|>' + '\\n' }}\n\n    {% if loop.last and message['role'] == 'user' and add_generation_prompt %}\n        {{ '<|assistant|>\\n' }}\n    {% endif %}\n{% endfor %}\n"
-  generate_config:
-    max_tokens: 4096
 "qwen2.5-7b-instruct":
   metadata:
     description: Qwen 2.5 7B Instruct
@@ -652,8 +608,6 @@
   engine_config:
     model: Qwen/Qwen2.5-7B-Instruct
     max_model_len: 2048
-  generate_config:
-    max_tokens: 1024
   server_config:
     enable_auto_tool_choice: true
     tool_call_parser: "llama3_json"
@@ -674,8 +628,6 @@
     max_model_len: 2048
     tensor_parallel_size: 2
     max_num_seqs: 1024
-  generate_config:
-    max_tokens: 1024
   server_config:
     enable_auto_tool_choice: true
     tool_call_parser: "llama3_json"
@@ -706,5 +658,3 @@
   server_config:
     enable_auto_tool_choice: true
     tool_call_parser: "llama3_json"
-  generate_config:
-    max_tokens: 2048
