@@ -21,10 +21,6 @@ class BentoArgs(pydantic.BaseModel):
   use_tqdm_on_load : bool = False
 
   {%- set all_configs = engine_config.copy() %}
-  {%- if server_config | length > 0 %}
-  {%- set _ = all_configs.update(server_config) %}
-  {%- endif %}
-
   {%- for key, value in all_configs.items() %}
   {%- if key == "chat_template" %}
   {{key}}: str = """{{value}}"""
@@ -129,7 +125,7 @@ class VLLM:
   ) -> typing.AsyncGenerator[str, None]:
     {%- if reasoning | lower != "true" %}
     from vllm import SamplingParams, TokensPrompt
-    {%- if server_config['tool_call_parser'] == "mistral" %}
+    {%- if all_configs['tool_call_parser'] == "mistral" %}
     from vllm.entrypoints.chat_utils import apply_mistral_chat_template
     {%- else %}
     from vllm.entrypoints.chat_utils import parse_chat_messages, apply_hf_chat_template
@@ -159,7 +155,7 @@ class VLLM:
 
     params = SamplingParams(max_tokens=max_tokens)
 
-    {%- if server_config['tool_call_parser'] == "mistral" %}
+    {%- if all_configs['tool_call_parser'] == "mistral" %}
     prompt = TokensPrompt(prompt_token_ids=apply_mistral_chat_template(self.tokenizer, messages=messages))
     {%- else %}
     conversation, _ = parse_chat_messages(messages, self.model_config, self.tokenizer, content_format="string")

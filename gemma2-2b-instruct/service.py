@@ -18,7 +18,6 @@ class BentoArgs(pydantic.BaseModel):
     max_model_len: int = 2048
     dtype: str = 'half'
     enable_prefix_caching: bool = False
-    max_num_seqs: int = 256
     chat_template: str = """{% if messages[0]['role'] == 'system' %}
     {% set loop_messages = messages[1:] %}
     {% set system_message = messages[0]['content'].strip() + '\n\n' %}
@@ -51,6 +50,7 @@ class BentoArgs(pydantic.BaseModel):
     {% endif %}
 {% endfor %}
 """
+    max_num_seqs: int = 256
 
 
 bento_args = bentoml.use_arguments(BentoArgs)

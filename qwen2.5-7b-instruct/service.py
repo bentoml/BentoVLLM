@@ -16,9 +16,9 @@ class BentoArgs(pydantic.BaseModel):
     disable_log_stats: bool = True
     use_tqdm_on_load: bool = False
     max_model_len: int = 2048
-    max_num_seqs: int = 256
     enable_auto_tool_choice: bool = True
     tool_call_parser: str = 'llama3_json'
+    max_num_seqs: int = 256
 
 
 bento_args = bentoml.use_arguments(BentoArgs)

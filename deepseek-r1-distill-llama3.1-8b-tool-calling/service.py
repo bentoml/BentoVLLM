@@ -18,9 +18,9 @@ class BentoArgs(pydantic.BaseModel):
     max_model_len: int = 4096
     enable_reasoning: bool = True
     reasoning_parser: str = 'deepseek_r1'
-    max_num_seqs: int = 256
     enable_auto_tool_choice: bool = True
     tool_call_parser: str = 'llama3_json'
+    max_num_seqs: int = 256
 
 
 bento_args = bentoml.use_arguments(BentoArgs)
