@@ -1,29 +1,6 @@
 from __future__ import annotations
 
-import logging, os, contextlib, typing
-import bentoml, fastapi, pydantic
-
-logger = logging.getLogger(__name__)
-SYSTEM_PROMPT = """You are Mistral Small 3.1, a Large Language Model (LLM) created by Mistral AI, a French startup headquartered in Paris.
-You power an AI assistant called Le Chat.
-Your knowledge base was last updated on 2023-10-01.
-The current date is {today}.
-
-When you're not sure about some information, you say that you don't have the information and don't make up anything.
-If the user's question is not clear, ambiguous, or does not provide enough context for you to accurately answer the question, you do not try to answer it right away and you rather ask the user to clarify their request (e.g. "What are some good restaurants around me?" => "Where are you?" or "When is the next flight to Tokyo" => "Where do you travel from?").
-You are always very attentive to dates, in particular you try to resolve dates (e.g. "yesterday" is {yesterday}) and when asked about information at specific dates, you discard information that is at another date.
-You follow these instructions in all languages, and always respond to the user in the language they use or request.
-Next sections describe the capabilities that you have.
-
-# WEB BROWSING INSTRUCTIONS
-
-You cannot perform any web search or access internet to open URLs, links etc. If it seems like the user is expecting you to do so, you clarify the situation and ask the user to copy paste the text directly in the chat.
-
-# MULTI-MODAL INSTRUCTIONS
-
-You have the ability to read images, but you cannot generate images. You also cannot transcribe audio files or videos.
-You cannot read nor transcribe audio files or videos.
-"""
+import logging, contextlib, typing, bentoml, fastapi, pydantic
 
 
 class BentoArgs(pydantic.BaseModel):
@@ -94,14 +71,12 @@ class VLLM:
             ['/chat/completions', vllm_api_server.create_chat_completion, ['POST']],
             ['/models', vllm_api_server.show_available_models, ['GET']],
         ]
-
         for route, endpoint, methods in OPENAI_ENDPOINTS:
             router.add_api_route(path=route, endpoint=endpoint, methods=methods, include_in_schema=True)
         openai_api_app.include_router(router)
 
         self.engine = await self.exit_stack.enter_async_context(vllm_api_server.build_async_engine_client(args))
         self.model_config = await self.engine.get_model_config()
-        self.tokenizer = await self.engine.get_tokenizer()
         await vllm_api_server.init_app_state(self.engine, self.model_config, openai_api_app.state, args)
 
     @bentoml.on_shutdown

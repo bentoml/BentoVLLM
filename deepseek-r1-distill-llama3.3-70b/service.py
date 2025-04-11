@@ -1,9 +1,6 @@
 from __future__ import annotations
 
-import logging, os, contextlib, typing
-import bentoml, fastapi, pydantic
-
-logger = logging.getLogger(__name__)
+import logging, contextlib, typing, bentoml, fastapi, pydantic
 
 
 class BentoArgs(pydantic.BaseModel):
@@ -68,14 +65,12 @@ class VLLM:
             ['/chat/completions', vllm_api_server.create_chat_completion, ['POST']],
             ['/models', vllm_api_server.show_available_models, ['GET']],
         ]
-
         for route, endpoint, methods in OPENAI_ENDPOINTS:
             router.add_api_route(path=route, endpoint=endpoint, methods=methods, include_in_schema=True)
         openai_api_app.include_router(router)
 
         self.engine = await self.exit_stack.enter_async_context(vllm_api_server.build_async_engine_client(args))
         self.model_config = await self.engine.get_model_config()
-        self.tokenizer = await self.engine.get_tokenizer()
         await vllm_api_server.init_app_state(self.engine, self.model_config, openai_api_app.state, args)
 
     @bentoml.on_shutdown
