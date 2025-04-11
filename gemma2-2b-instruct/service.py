@@ -75,8 +75,7 @@ openai_api_app = fastapi.FastAPI()
     .run('uv pip install --compile-bytecode flashinfer-python --find-links https://flashinfer.ai/whl/cu124/torch2.6'),
 )
 class VLLM:
-    model_id = bento_args.bentovllm_model_id
-    model = bentoml.models.HuggingFaceModel(model_id, exclude=['*.pth', '*.pt', 'original/**/*'])
+    model = bentoml.models.HuggingFaceModel(bento_args.bentovllm_model_id, exclude=['*.pth', '*.pt', 'original/**/*'])
 
     def __init__(self):
         self.exit_stack = contextlib.AsyncExitStack()
@@ -90,7 +89,7 @@ class VLLM:
 
         args = make_arg_parser(FlexibleArgumentParser()).parse_args([])
         args.model = self.model
-        args.served_model_name = [self.model_id]
+        args.served_model_name = [bento_args.bentovllm_model_id]
         for key, value in bento_args.model_dump().items():
             setattr(args, key, value)
 
