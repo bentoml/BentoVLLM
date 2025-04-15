@@ -1,0 +1,14 @@
+[project]
+dependencies = [
+  "bentoml==1.4.8",
+  "vllm==0.8.4",
+  "kantoku>=0.18.1",
+  "openai>=1.67.0",
+  "pyyaml",
+  "fastapi",
+  "mistral_common[opencv]",
+]
+
+[tool.bentoml.build]
+service = "service.py:VLLM"
+include = ["LICENCE", "*.py", "*.yaml", "*.md", "*.toml"]

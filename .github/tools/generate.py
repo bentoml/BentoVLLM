@@ -140,13 +140,6 @@ def generate_jinja_context(model_name, config):
   return context
 
 
-def generate_readme(config, git_dir: Path, skip_nightly):
-  models = [{"name": name, "engine_config": cfg.get("engine_config", {})} for name, cfg in config.items()]
-  is_nightly = not skip_nightly and is_nightly_branch()
-  with open((git_dir / ".github" / "README.md"), "w") as f:
-    f.write(Template((git_dir / ".github" / "README.md.j2").read_text()).render(models=models, nightly=is_nightly))
-
-
 @dataclass
 class GenerateResult:
   model_name: str
@@ -292,11 +285,6 @@ def main() -> int:
     filtered_config = config
 
   success = generate_all_models(filtered_config, git_dir, args.force, args.workers)
-
-  # Generate README.md after all models are processed
-  console.print("\n[yellow]Generating README.md...[/]")
-  generate_readme(readme_config, git_dir, args.skip_readme_nightly)
-  console.print("[green]✓ Generated README.md[/]")
 
   # Format all python files
   console.print("\n[yellow]Formatting Python files...[/]")

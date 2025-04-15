@@ -45,10 +45,6 @@ openai_api_app = fastapi.FastAPI()
     .run('uv pip install --compile-bytecode flashinfer-python --find-links https://flashinfer.ai/whl/cu124/torch2.6'),
 )
 class VLLM:
-    model = bentoml.models.HuggingFaceModel(
-        bento_args.bentovllm_model_id, exclude=['original', 'consolidated*', '*.pth', '*.pt', 'original/**/*']
-    )
-
     def __init__(self):
         self.exit_stack = contextlib.AsyncExitStack()
 
@@ -60,7 +56,8 @@ class VLLM:
         from vllm.entrypoints.openai.cli_args import make_arg_parser
 
         args = make_arg_parser(FlexibleArgumentParser()).parse_args([])
-        args.model = self.model
+        args.model = bento_args.bentovllm_model_id
+        args.ignore_patterns = ['original', 'consolidated*', '*.pth', '*.pt', 'original/**/*']
         args.served_model_name = [bento_args.bentovllm_model_id]
         for key, value in bento_args.model_dump().items():
             setattr(args, key, value)
@@ -77,7 +74,6 @@ class VLLM:
 
         self.engine = await self.exit_stack.enter_async_context(vllm_api_server.build_async_engine_client(args))
         self.model_config = await self.engine.get_model_config()
-        self.tokenizer = await self.engine.get_tokenizer()
         await vllm_api_server.init_app_state(self.engine, self.model_config, openai_api_app.state, args)
 
     @bentoml.on_shutdown
