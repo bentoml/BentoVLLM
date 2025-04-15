@@ -2,11 +2,12 @@
     <h1 align="center">Self-host DeepSeek R1 Distill Qwen 2.5 32B with vLLM and BentoML</h1>
 </div>
 
-This is a BentoML example project, showing you how to serve and deploy DeepSeek R1 Distill Qwen 2.5 32B using [vLLM](https://vllm.ai), a high-throughput and memory-efficient inference engine.
+Follow this guide to self-host the DeepSeek R1 Distill Qwen 2.5 32B model with BentoCloud in your own cloud account. If your team doesn’t already have access to BentoCloud, please use the link below to contact us and set it up in your cloud environment.
+
+[![Deploy on BentoCloud](https://img.shields.io/badge/Deploy_on_BentoCloud-d0bfff?style=for-the-badge)](https://cloud.bentoml.com/)
+[![Talk to sales](https://img.shields.io/badge/Talk_to_sales-eefbe4?style=for-the-badge)](https://bentoml.com/contact)
 
 See [here](https://docs.bentoml.com/en/latest/examples/overview.html) for a full list of BentoML example projects.
-
-💡 This example is served as a basis for advanced code customization, such as custom model, inference logic or vLLM options. For simple LLM hosting with OpenAI compatible endpoint without writing any code, see [OpenLLM](https://github.com/bentoml/OpenLLM).
 
 ## Prerequisites
 - You have gained access to `deepseek-ai/DeepSeek-R1-Distill-Qwen-32B` on [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-32B).

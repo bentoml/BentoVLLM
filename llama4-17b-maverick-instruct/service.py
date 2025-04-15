@@ -17,8 +17,7 @@ class BentoArgs(pydantic.BaseModel):
     use_tqdm_on_load: bool = False
     max_model_len: int = 430000
     tensor_parallel_size: int = 8
-    max_num_seqs: int = 256
-    override_generation_config: typing.Any = {'attn_temperature_tuning': True}
+    max_num_seqs: int = 64
     tool_call_parser: str = 'pythonic'
     enable_auto_tool_choice: bool = True
 

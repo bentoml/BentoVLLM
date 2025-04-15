@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 class BentoArgs(pydantic.BaseModel):
     bentovllm_model_id: str = 'meta-llama/Llama-4-Scout-17B-16E-Instruct'
-    bentovllm_max_tokens: int = 2048
+    bentovllm_max_tokens: int = 4096
 
     disable_log_requests: bool = True
     max_log_len: int = 1000
@@ -17,8 +17,7 @@ class BentoArgs(pydantic.BaseModel):
     use_tqdm_on_load: bool = False
     max_model_len: int = 16384
     tensor_parallel_size: int = 4
-    max_num_seqs: int = 256
-    override_generation_config: typing.Any = {'attn_temperature_tuning': True}
+    max_num_seqs: int = 64
     tool_call_parser: str = 'pythonic'
     enable_auto_tool_choice: bool = True
 
