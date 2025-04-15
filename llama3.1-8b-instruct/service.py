@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import logging, os, contextlib, typing
+import logging, contextlib, typing
 import bentoml, fastapi, pydantic
 
 logger = logging.getLogger(__name__)

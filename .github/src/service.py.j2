@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import logging, os, contextlib, typing
+import logging, contextlib, typing
 import bentoml, fastapi, pydantic
 
 logger = logging.getLogger(__name__)
@@ -27,6 +27,8 @@ class BentoArgs(pydantic.BaseModel):
   {{key}}: int = {{value}}
   {%- elif value is boolean %}
   {{key}}: bool = {{value}}
+  {%- elif value is mapping %}
+  {{key}}: dict[str, typing.Any] = {{value}}
   {%- else %}
   {{key}}: typing.Any = {{value}}
   {%- endif %}

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import logging, os, contextlib, typing
+import logging, contextlib, typing
 import bentoml, fastapi, pydantic
 
 logger = logging.getLogger(__name__)
@@ -21,7 +21,7 @@ class BentoArgs(pydantic.BaseModel):
     max_model_len: int = 8192
     tensor_parallel_size: int = 2
     max_num_seqs: int = 1024
-    limit_mm_per_prompt: typing.Any = {'image': 10}
+    limit_mm_per_prompt: dict[str, typing.Any] = {'image': 10}
     enable_prefix_caching: bool = False
     enable_auto_tool_choice: bool = True
     tool_call_parser: str = 'mistral'
