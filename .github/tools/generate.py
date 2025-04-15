@@ -95,8 +95,6 @@ def generate_jinja_context(model_name, config):
     {"name": "VLLM_USE_V1", "value": "1"},
   ])
 
-  if "enable_prefix_caching" not in engine_config_struct:
-    engine_config_struct["enable_prefix_caching"] = True
   if "max_num_seqs" not in engine_config_struct:
     engine_config_struct["max_num_seqs"] = 256  # Aligned with v0
 
@@ -120,11 +118,10 @@ def generate_jinja_context(model_name, config):
     "model_name": model_name,
     "model_id": model,
     "vision": use_vision,
-    "c2a": model_config.get("c2a", False),
+    "c2a": model_config.get("c2a", True),
     "generate_config": model_config.get("generate_config", {}),
     "service_config": service_config,
     "engine_config": engine_config_struct,
-    "server_config": model_config.get("server_config", {}),
     "labels": dict(owner="bentoml-team", type="prebuilt"),
     "metadata": model_config["metadata"],
     "requires_hf_tokens": requires_hf_tokens,

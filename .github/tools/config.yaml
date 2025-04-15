@@ -18,8 +18,6 @@
     max_model_len: 8192
     tensor_parallel_size: 8
     max_num_seqs: 1024
-  generate_config:
-    max_tokens: 4096
 "deepseek-r1-671b":
   reasoning: true
   use_mla: true
@@ -44,8 +42,6 @@
     enable_reasoning: true
     reasoning_parser: "deepseek_r1"
     max_num_seqs: 1024
-  generate_config:
-    max_tokens: 4096
 "deepseek-r1-distill-llama3.3-70b":
   reasoning: true
   metadata:
@@ -68,11 +64,8 @@
     enable_reasoning: true
     reasoning_parser: "deepseek_r1"
     max_num_seqs: 1024
-  server_config:
     enable_auto_tool_choice: true
-    tool_call_parser: "llama3_json"
-  generate_config:
-    max_tokens: 4096
+    tool_call_parser: "pythonic"
 "deepseek-r1-distill-qwen2.5-32b":
   reasoning: true
   metadata:
@@ -94,11 +87,8 @@
     enable_reasoning: true
     reasoning_parser: "deepseek_r1"
     max_num_seqs: 1024
-  server_config:
     enable_auto_tool_choice: true
     tool_call_parser: "hermes"
-  generate_config:
-    max_tokens: 4096
 "deepseek-r1-distill-qwen2.5-7b-math":
   reasoning: true
   metadata:
@@ -119,11 +109,8 @@
     max_model_len: 8192
     enable_reasoning: true
     reasoning_parser: "deepseek_r1"
-  server_config:
     enable_auto_tool_choice: true
     tool_call_parser: "hermes"
-  generate_config:
-    max_tokens: 4096
 "deepseek-r1-distill-llama3.1-8b-tool-calling":
   reasoning: true
   metadata:
@@ -144,11 +131,8 @@
     max_model_len: 4096
     enable_reasoning: true
     reasoning_parser: "deepseek_r1"
-  server_config:
     enable_auto_tool_choice: true
     tool_call_parser: "llama3_json"
-  generate_config:
-    max_tokens: 2048
 "gemma3-4b-instruct":
   vision: true
   metadata:
@@ -167,8 +151,6 @@
   engine_config:
     model: google/gemma-3-4b-it
     max_model_len: 16384
-  generate_config:
-    max_tokens: 8192
 "gemma2-2b-instruct":
   metadata:
     description: Gemma 2 2B Instruct
@@ -188,10 +170,7 @@
     max_model_len: 2048
     dtype: half
     enable_prefix_caching: false
-  server_config:
     chat_template: "{% if messages[0]['role'] == 'system' %}\n    {% set loop_messages = messages[1:] %}\n    {% set system_message = messages[0]['content'].strip() + '\\n\\n' %}\n{% else %}\n    {% set loop_messages = messages %}\n    {% set system_message = '' %}\n{% endif %}\n\n{% for message in loop_messages %}\n    {% if (message['role'] == 'user') != (loop.index0 % 2 == 0) %}\n        {{ raise_exception('Conversation roles must alternate user/assistant/user/assistant/...') }}\n    {% endif %}\n\n    {% if loop.index0 == 0 %}\n        {% set content = system_message + message['content'] %}\n    {% else %}\n        {% set content = message['content'] %}\n    {% endif %}\n\n    {% if (message['role'] == 'assistant') %}\n        {% set role = 'model' %}\n    {% else %}\n        {% set role = message['role'] %}\n    {% endif %}\n\n    {{ '<start_of_turn>' + role + '\\n' + content.strip() + '<end_of_turn>\\n' }}\n\n    {% if loop.last and message['role'] == 'user' and add_generation_prompt %}\n        {{'<start_of_turn>model\\n'}}\n    {% endif %}\n{% endfor %}\n"
-  generate_config:
-    max_tokens: 1024
 "gemma2-27b-instruct":
   metadata:
     description: Gemma 2 27B Instruct
@@ -212,10 +191,7 @@
     dtype: half
     enable_prefix_caching: false
     max_num_seqs: 1024
-  server_config:
     chat_template: "{% if messages[0]['role'] == 'system' %}\n    {% set loop_messages = messages[1:] %}\n    {% set system_message = messages[0]['content'].strip() + '\\n\\n' %}\n{% else %}\n    {% set loop_messages = messages %}\n    {% set system_message = '' %}\n{% endif %}\n\n{% for message in loop_messages %}\n    {% if (message['role'] == 'user') != (loop.index0 % 2 == 0) %}\n        {{ raise_exception('Conversation roles must alternate user/assistant/user/assistant/...') }}\n    {% endif %}\n\n    {% if loop.index0 == 0 %}\n        {% set content = system_message + message['content'] %}\n    {% else %}\n        {% set content = message['content'] %}\n    {% endif %}\n\n    {% if (message['role'] == 'assistant') %}\n        {% set role = 'model' %}\n    {% else %}\n        {% set role = message['role'] %}\n    {% endif %}\n\n    {{ '<start_of_turn>' + role + '\\n' + content.strip() + '<end_of_turn>\\n' }}\n\n    {% if loop.last and message['role'] == 'user' and add_generation_prompt %}\n        {{'<start_of_turn>model\\n'}}\n    {% endif %}\n{% endfor %}\n"
-  generate_config:
-    max_tokens: 1024
 "jamba1.5-mini":
   metadata:
     description: Jamba 1.5 Mini
@@ -238,7 +214,6 @@
     tensor_parallel_size: 2
     enable_prefix_caching: false
     max_num_seqs: 1024
-  server_config:
     enable_auto_tool_choice: true
     tool_call_parser: "jamba"
   build:
@@ -251,8 +226,6 @@
       - uv pip install --compile-bytecode ./causal_conv1d-1.5.0.post8+cu12torch2.5cxx11abiFALSE-cp311-cp311-linux_x86_64.whl
       - curl -L -o ./mamba_ssm-2.2.4+cu12torch2.5cxx11abiFALSE-cp311-cp311-linux_x86_64.whl https://github.com/state-spaces/mamba/releases/download/v2.2.4/mamba_ssm-2.2.4+cu12torch2.5cxx11abiFALSE-cp311-cp311-linux_x86_64.whl
       - uv pip install --compile-bytecode ./mamba_ssm-2.2.4+cu12torch2.5cxx11abiFALSE-cp311-cp311-linux_x86_64.whl
-  generate_config:
-    max_tokens: 4096
 "jamba1.5-large":
   metadata:
     description: Jamba 1.5 Large
@@ -276,6 +249,8 @@
     quantization: "experts_int8"
     enable_prefix_caching: false
     max_num_seqs: 1024
+    enable_auto_tool_choice: true
+    tool_call_parser: "jamba"
   build:
     system_packages:
       - curl
@@ -286,11 +261,6 @@
       - uv pip install --compile-bytecode ./causal_conv1d-1.5.0.post8+cu12torch2.5cxx11abiFALSE-cp311-cp311-linux_x86_64.whl
       - curl -L -o ./mamba_ssm-2.2.4+cu12torch2.5cxx11abiFALSE-cp311-cp311-linux_x86_64.whl https://github.com/state-spaces/mamba/releases/download/v2.2.4/mamba_ssm-2.2.4+cu12torch2.5cxx11abiFALSE-cp311-cp311-linux_x86_64.whl
       - uv pip install --compile-bytecode ./mamba_ssm-2.2.4+cu12torch2.5cxx11abiFALSE-cp311-cp311-linux_x86_64.whl
-  server_config:
-    enable_auto_tool_choice: true
-    tool_call_parser: "jamba"
-  generate_config:
-    max_tokens: 4096
 "llama3.1-8b-instruct":
   metadata:
     description: Llama 3.1 8B Instruct
@@ -308,11 +278,8 @@
   engine_config:
     model: meta-llama/Meta-Llama-3.1-8B-Instruct
     max_model_len: 4096
-  server_config:
     enable_auto_tool_choice: true
     tool_call_parser: "llama3_json"
-  generate_config:
-    max_tokens: 2048
 "llama3.2-3b-instruct":
   metadata:
     description: Llama 3.1 3B Instruct
@@ -330,11 +297,8 @@
   engine_config:
     model: meta-llama/Llama-3.2-3B-Instruct
     max_model_len: 8192
-  server_config:
     enable_auto_tool_choice: true
     tool_call_parser: "pythonic"
-  generate_config:
-    max_tokens: 4096
 "llama3.2-11b-vision-instruct":
   metadata:
     description: Llama 3.2 11B Vision Instruct
@@ -357,14 +321,11 @@
       image: 1
     max_model_len: 16384
     max_num_seqs: 16
+    enable_auto_tool_choice: true
+    tool_call_parser: "pythonic"
   build:
     exclude:
       - "original"
-  server_config:
-    enable_auto_tool_choice: true
-    tool_call_parser: "pythonic"
-  generate_config:
-    max_tokens: 8192
 "llama4-17b-maverick-instruct":
   vision: true
   c2a: true
@@ -378,26 +339,22 @@
       timeout: 300
     resources:
       gpu: 8
-      gpu_type: nvidia-a100-80gb
+      gpu_type: nvidia-tesla-h100
     envs:
       - name: HF_TOKEN
       - name: VLLM_DISABLE_COMPILE_CACHE
         value: "1"
   engine_config:
-    model: meta-llama/Llama-4-Maverick-17B-128E-Instruct
-    max_model_len: 16384
+    model: meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8
+    max_model_len: 430000
     tensor_parallel_size: 8
-    override_generation_config:
-      attn_temperature_tuning: true
+    max_num_seqs: 64
+    tool_call_parser: "pythonic"
+    enable_auto_tool_choice: true
   build:
     exclude:
       - "original"
       - "consolidated*"
-  server_config:
-    tool_call_parser: "pythonic"
-    enable_auto_tool_choice: true
-  generate_config:
-    max_tokens: 2048
 "llama4-17b-scout-instruct":
   vision: true
   c2a: true
@@ -410,7 +367,7 @@
     traffic:
       timeout: 300
     resources:
-      gpu: 2
+      gpu: 4
       gpu_type: nvidia-a100-80gb
     envs:
       - name: HF_TOKEN
@@ -418,19 +375,15 @@
         value: "1"
   engine_config:
     model: meta-llama/Llama-4-Scout-17B-16E-Instruct
-    max_model_len: 4096
-    tensor_parallel_size: 2
-    override_generation_config:
-      attn_temperature_tuning: true
+    max_model_len: 16384
+    tensor_parallel_size: 4
+    max_num_seqs: 64
+    tool_call_parser: "pythonic"
+    enable_auto_tool_choice: true
   build:
     exclude:
       - "original"
       - "consolidated*"
-  server_config:
-    tool_call_parser: "pythonic"
-    enable_auto_tool_choice: true
-  generate_config:
-    max_tokens: 2048
 "llama3.3-70b-instruct":
   metadata:
     description: Llama 3.3 70B Instruct
@@ -450,15 +403,12 @@
     max_model_len: 2048
     tensor_parallel_size: 2
     max_num_seqs: 1024
+    tool_call_parser: "pythonic"
+    enable_auto_tool_choice: true
   build:
     exclude:
       - "original"
       - "consolidated*"
-  server_config:
-    tool_call_parser: "pythonic"
-    enable_auto_tool_choice: true
-  generate_config:
-    max_tokens: 1024
 "pixtral-12b-2409":
   metadata:
     description: Pixtral 12B 2409
@@ -484,16 +434,13 @@
     max_model_len: 32768
     enable_prefix_caching: false
     max_num_seqs: 1024
+    tool_call_parser: "mistral"
+    enable_auto_tool_choice: true
   requirements:
     - mistral_common[opencv]
-  generate_config:
-    max_tokens: 4096
   build:
     exclude:
       - "model*"
-  server_config:
-    tool_call_parser: "mistral"
-    enable_auto_tool_choice: true
 "ministral-8b-instruct-2410":
   metadata:
     description: Ministral 8B Instruct 2410
@@ -515,14 +462,11 @@
     load_format: mistral
     max_model_len: 4096
     enable_prefix_caching: false
+    tool_call_parser: "mistral"
+    enable_auto_tool_choice: true
   build:
     exclude:
       - "model*"
-  generate_config:
-    max_tokens: 2048
-  server_config:
-    tool_call_parser: "mistral"
-    enable_auto_tool_choice: true
   requirements:
     - mistral_common[opencv]
 "mistral-small-3.1-24b-instruct-2503":
@@ -551,14 +495,13 @@
     limit_mm_per_prompt:
       image: 10
     enable_prefix_caching: false
+    enable_auto_tool_choice: true
+    tool_call_parser: "mistral"
   build:
     exclude:
       - "model*"
     post:
       - uv pip install --compile-bytecode vllm --pre --extra-index-url https://wheels.vllm.ai/nightly
-  server_config:
-    enable_auto_tool_choice: true
-    tool_call_parser: "mistral"
   system_prompt: |
     You are Mistral Small 3.1, a Large Language Model (LLM) created by Mistral AI, a French startup headquartered in Paris.
     You power an AI assistant called Le Chat.
@@ -579,8 +522,6 @@
 
     You have the ability to read images, but you cannot generate images. You also cannot transcribe audio files or videos.
     You cannot read nor transcribe audio files or videos.
-  generate_config:
-    max_tokens: 4096
   requirements:
     - mistral_common[opencv]
 "mistral-small-24b-instruct-2501":
@@ -605,14 +546,11 @@
     max_model_len: 4096
     enable_prefix_caching: false
     max_num_seqs: 1024
+    tool_call_parser: "mistral"
+    enable_auto_tool_choice: true
   build:
     exclude:
       - "model*"
-  server_config:
-    tool_call_parser: "mistral"
-    enable_auto_tool_choice: true
-  generate_config:
-    max_tokens: 2048
   requirements:
     - mistral_common[opencv]
 "phi4-14b":
@@ -630,11 +568,7 @@
   engine_config:
     model: microsoft/phi-4
     max_model_len: 8192
-    max_num_seqs: 1024
-  server_config:
     chat_template: "{% if messages[0]['role'] == 'system' %}\n    {% set offset = 1 %}\n{% else %}\n    {% set offset = 0 %}\n{% endif %}\n\n{% for message in messages %}\n    {% if (message['role'] == 'user') != (loop.index0 % 2 == offset) %}\n        {{ raise_exception('Conversation roles must alternate user/assistant/user/assistant/...') }}\n    {% endif %}\n\n    {{ '<|' + message['role'] + '|>\\n' + message['content'].strip() + '<|end|>' + '\\n' }}\n\n    {% if loop.last and message['role'] == 'user' and add_generation_prompt %}\n        {{ '<|assistant|>\\n' }}\n    {% endif %}\n{% endfor %}\n"
-  generate_config:
-    max_tokens: 4096
 "qwen2.5-7b-instruct":
   metadata:
     description: Qwen 2.5 7B Instruct
@@ -650,11 +584,9 @@
   engine_config:
     model: Qwen/Qwen2.5-7B-Instruct
     max_model_len: 2048
-  generate_config:
-    max_tokens: 1024
-  server_config:
+    max_num_seqs: 256
     enable_auto_tool_choice: true
-    tool_call_parser: "llama3_json"
+    tool_call_parser: "hermes"
 "qwen2.5-72b-instruct":
   metadata:
     description: Qwen 2.5 72B Instruct
@@ -672,11 +604,8 @@
     max_model_len: 2048
     tensor_parallel_size: 2
     max_num_seqs: 1024
-  generate_config:
-    max_tokens: 1024
-  server_config:
     enable_auto_tool_choice: true
-    tool_call_parser: "llama3_json"
+    tool_call_parser: "hermes"
 "qwq-32b":
   reasoning: true
   metadata:
@@ -701,8 +630,5 @@
     enable_reasoning: true
     reasoning_parser: "deepseek_r1"
     max_num_seqs: 1024
-  server_config:
     enable_auto_tool_choice: true
-    tool_call_parser: "llama3_json"
-  generate_config:
-    max_tokens: 2048
+    tool_call_parser: "hermes"

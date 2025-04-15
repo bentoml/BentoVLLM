@@ -1,21 +1,29 @@
 from __future__ import annotations
 
 import logging, os, contextlib, typing
-import bentoml, fastapi
+import bentoml, fastapi, pydantic
 
 logger = logging.getLogger(__name__)
 
-MAX_TOKENS = 4096
-ENGINE_CONFIG = {
-    'tensor_parallel_size': 8,
-    'trust_remote_code': True,
-    'max_model_len': 8192,
-    'enable_reasoning': True,
-    'reasoning_parser': 'deepseek_r1',
-    'max_num_seqs': 1024,
-    'enable_prefix_caching': True,
-}
 
+class BentoArgs(pydantic.BaseModel):
+    bentovllm_model_id: str = 'deepseek-ai/DeepSeek-R1'
+    bentovllm_max_tokens: int = 8192
+
+    disable_log_requests: bool = True
+    max_log_len: int = 1000
+    request_logger: typing.Any = None
+    disable_log_stats: bool = True
+    use_tqdm_on_load: bool = False
+    tensor_parallel_size: int = 8
+    trust_remote_code: bool = True
+    max_model_len: int = 8192
+    enable_reasoning: bool = True
+    reasoning_parser: str = 'deepseek_r1'
+    max_num_seqs: int = 1024
+
+
+bento_args = bentoml.use_arguments(BentoArgs)
 openai_api_app = fastapi.FastAPI()
 
 
@@ -32,13 +40,12 @@ openai_api_app = fastapi.FastAPI()
         {'name': 'VLLM_USE_V1', 'value': '1'},
     ],
     labels={'owner': 'bentoml-team', 'type': 'prebuilt'},
-    image=bentoml.images.PythonImage(python_version='3.11', lock_python_packages=False)
+    image=bentoml.images.Image(python_version='3.11', lock_python_packages=False)
     .requirements_file('requirements.txt')
     .run('uv pip install --compile-bytecode flashinfer-python --find-links https://flashinfer.ai/whl/cu124/torch2.6'),
 )
 class VLLM:
-    model_id = 'deepseek-ai/DeepSeek-R1'
-    model = bentoml.models.HuggingFaceModel(model_id, exclude=['*.pth', '*.pt', 'original/**/*'])
+    model = bentoml.models.HuggingFaceModel(bento_args.bentovllm_model_id, exclude=['*.pth', '*.pt', 'original/**/*'])
 
     def __init__(self):
         self.exit_stack = contextlib.AsyncExitStack()
@@ -52,13 +59,8 @@ class VLLM:
 
         args = make_arg_parser(FlexibleArgumentParser()).parse_args([])
         args.model = self.model
-        args.disable_log_requests = True
-        args.max_log_len = 1000
-        args.served_model_name = [self.model_id]
-        args.request_logger = None
-        args.disable_log_stats = True
-        args.use_tqdm_on_load = False
-        for key, value in ENGINE_CONFIG.items():
+        args.served_model_name = [bento_args.bentovllm_model_id]
+        for key, value in bento_args.model_dump().items():
             setattr(args, key, value)
 
         router = fastapi.APIRouter(lifespan=vllm_api_server.lifespan)

@@ -1,19 +1,30 @@
 from __future__ import annotations
 
 import logging, os, contextlib, typing
-import bentoml, fastapi
+import bentoml, fastapi, pydantic
 
 logger = logging.getLogger(__name__)
 
-MAX_TOKENS = 4096
-ENGINE_CONFIG = {
-    'max_model_len': 225280,
-    'tensor_parallel_size': 8,
-    'quantization': 'experts_int8',
-    'enable_prefix_caching': False,
-    'max_num_seqs': 1024,
-}
 
+class BentoArgs(pydantic.BaseModel):
+    bentovllm_model_id: str = 'ai21labs/AI21-Jamba-1.5-Large'
+    bentovllm_max_tokens: int = 225280
+
+    disable_log_requests: bool = True
+    max_log_len: int = 1000
+    request_logger: typing.Any = None
+    disable_log_stats: bool = True
+    use_tqdm_on_load: bool = False
+    max_model_len: int = 225280
+    tensor_parallel_size: int = 8
+    quantization: str = 'experts_int8'
+    enable_prefix_caching: bool = False
+    max_num_seqs: int = 1024
+    enable_auto_tool_choice: bool = True
+    tool_call_parser: str = 'jamba'
+
+
+bento_args = bentoml.use_arguments(BentoArgs)
 openai_api_app = fastapi.FastAPI()
 
 
@@ -31,7 +42,7 @@ openai_api_app = fastapi.FastAPI()
         {'name': 'VLLM_USE_V1', 'value': '1'},
     ],
     labels={'owner': 'bentoml-team', 'type': 'prebuilt'},
-    image=bentoml.images.PythonImage(python_version='3.11', lock_python_packages=False)
+    image=bentoml.images.Image(python_version='3.11', lock_python_packages=False)
     .system_packages('curl')
     .system_packages('git')
     .requirements_file('requirements.txt')
@@ -49,8 +60,7 @@ openai_api_app = fastapi.FastAPI()
     .run('uv pip install --compile-bytecode flashinfer-python --find-links https://flashinfer.ai/whl/cu124/torch2.6'),
 )
 class VLLM:
-    model_id = 'ai21labs/AI21-Jamba-1.5-Large'
-    model = bentoml.models.HuggingFaceModel(model_id, exclude=['*.pth', '*.pt', 'original/**/*'])
+    model = bentoml.models.HuggingFaceModel(bento_args.bentovllm_model_id, exclude=['*.pth', '*.pt', 'original/**/*'])
 
     def __init__(self):
         self.exit_stack = contextlib.AsyncExitStack()
@@ -64,16 +74,9 @@ class VLLM:
 
         args = make_arg_parser(FlexibleArgumentParser()).parse_args([])
         args.model = self.model
-        args.disable_log_requests = True
-        args.max_log_len = 1000
-        args.served_model_name = [self.model_id]
-        args.request_logger = None
-        args.disable_log_stats = True
-        args.use_tqdm_on_load = False
-        for key, value in ENGINE_CONFIG.items():
+        args.served_model_name = [bento_args.bentovllm_model_id]
+        for key, value in bento_args.model_dump().items():
             setattr(args, key, value)
-        args.enable_auto_tool_choice = True
-        args.tool_call_parser = 'jamba'
 
         router = fastapi.APIRouter(lifespan=vllm_api_server.lifespan)
         OPENAI_ENDPOINTS = [

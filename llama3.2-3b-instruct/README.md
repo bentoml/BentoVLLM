@@ -2,11 +2,12 @@
     <h1 align="center">Self-host Llama 3.1 3B Instruct with vLLM and BentoML</h1>
 </div>
 
-This is a BentoML example project, showing you how to serve and deploy Llama 3.1 3B Instruct using [vLLM](https://vllm.ai), a high-throughput and memory-efficient inference engine.
+Follow this guide to self-host the Llama 3.1 3B Instruct model with BentoCloud in your own cloud account. If your team doesn’t already have access to BentoCloud, please use the link below to contact us and set it up in your cloud environment.
+
+[![Deploy on BentoCloud](https://img.shields.io/badge/Deploy_on_BentoCloud-d0bfff?style=for-the-badge)](https://cloud.bentoml.com/)
+[![Talk to sales](https://img.shields.io/badge/Talk_to_sales-eefbe4?style=for-the-badge)](https://bentoml.com/contact)
 
 See [here](https://docs.bentoml.com/en/latest/examples/overview.html) for a full list of BentoML example projects.
-
-💡 This example is served as a basis for advanced code customization, such as custom model, inference logic or vLLM options. For simple LLM hosting with OpenAI compatible endpoint without writing any code, see [OpenLLM](https://github.com/bentoml/OpenLLM).
 
 ## Prerequisites
 - You have gained access to `meta-llama/Llama-3.2-3B-Instruct` on [Hugging Face](https://huggingface.co/meta-llama/Llama-3.2-3B-Instruct).
@@ -38,7 +39,11 @@ $ bentoml serve service.py:VLLM
 The server is now active at [http://localhost:3000](http://localhost:3000/). You can interact with it using the Swagger UI or in other different ways.
 
 > [!NOTE]
-> This ships with a default `max_model_len=8192`. If you wish to change this value, set `MAX_MODEL_LEN=<target_context_len>`. Make sure that you have enough VRAM to use this context length. BentoVLLM will only set a conservative value based on this model configuration.
+> This ships with a default `max_model_len=8192`. If you wish to change this value, uses `--arg` at serve [time](https://docs.bentoml.com/en/latest/reference/bentoml/bento-build-options.html#args). Make sure that you have enough VRAM to use this context length. BentoVLLM will only set a conservative value based on this model configuration.
+>
+> ```bash
+> bentoml serve --arg max_model_len=8192 service.py:VLLM
+> ```
 
 <details open>
 
