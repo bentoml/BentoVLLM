@@ -225,7 +225,7 @@
     envs:
       - name: HF_TOKEN
       - name: UV_NO_BUILD_ISOLATION
-        value: 1
+        value: "1"
   engine_config:
     model: ai21labs/AI21-Jamba-1.5-Mini
     max_model_len: 204800
@@ -261,7 +261,7 @@
     envs:
       - name: HF_TOKEN
       - name: UV_NO_BUILD_ISOLATION
-        value: 1
+        value: "1"
   engine_config:
     model: ai21labs/AI21-Jamba-1.5-Large
     max_model_len: 225280
@@ -670,7 +670,7 @@
     envs:
       - name: HF_TOKEN
       - name: UV_NO_BUILD_ISOLATION
-        value: 1
+        value: "1"
   engine_config:
     model: Qwen/QwQ-32B
     max_model_len: 4096
