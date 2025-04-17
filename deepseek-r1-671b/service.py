@@ -5,8 +5,17 @@ import bentoml, pydantic, fastapi, typing_extensions, annotated_types
 
 logger = logging.getLogger(__name__)
 
+if typing.TYPE_CHECKING:
+    from vllm.engine.arg_utils import EngineArgs
 
-class BentoArgs(pydantic.BaseModel):
+    class Args(EngineArgs, pydantic.BaseModel):
+        pass
+
+else:
+    Args = pydantic.BaseModel
+
+
+class BentoArgs(Args):
     bentovllm_model_id: str = 'deepseek-ai/DeepSeek-R1'
     bentovllm_max_tokens: int = 4096
 
@@ -15,12 +24,16 @@ class BentoArgs(pydantic.BaseModel):
     request_logger: typing.Any = None
     disable_log_stats: bool = True
     use_tqdm_on_load: bool = False
-    tensor_parallel_size: int = 8
     trust_remote_code: bool = True
     max_model_len: int = 8192
     enable_reasoning: bool = True
     reasoning_parser: str = 'deepseek_r1'
     max_num_seqs: int = 256
+    tensor_parallel_size: int = 8
+
+    @pydantic.model_serializer
+    def serialize_model(self) -> dict[str, typing.Any]:
+        return {k: getattr(self, k) for k in self.__class__.model_fields if not k.startswith('bentovllm_')}
 
 
 bento_args = bentoml.use_arguments(BentoArgs)
@@ -31,7 +44,7 @@ openai_api_app = fastapi.FastAPI()
 @bentoml.service(
     name='bentovllm-deepseek-r1-671b-service',
     traffic={'timeout': 300},
-    resources={'gpu': 8, 'gpu_type': 'nvidia-h200-141gb'},
+    resources={'gpu': bento_args.tensor_parallel_size, 'gpu_type': 'nvidia-h200-141gb'},
     envs=[
         {'name': 'HF_TOKEN'},
         {'name': 'UV_NO_PROGRESS', 'value': '1'},

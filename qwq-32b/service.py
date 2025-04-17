@@ -5,8 +5,17 @@ import bentoml, pydantic, fastapi, typing_extensions, annotated_types
 
 logger = logging.getLogger(__name__)
 
+if typing.TYPE_CHECKING:
+    from vllm.engine.arg_utils import EngineArgs
 
-class BentoArgs(pydantic.BaseModel):
+    class Args(EngineArgs, pydantic.BaseModel):
+        pass
+
+else:
+    Args = pydantic.BaseModel
+
+
+class BentoArgs(Args):
     bentovllm_model_id: str = 'Qwen/QwQ-32B'
     bentovllm_max_tokens: int = 2048
 
@@ -16,12 +25,16 @@ class BentoArgs(pydantic.BaseModel):
     disable_log_stats: bool = True
     use_tqdm_on_load: bool = False
     max_model_len: int = 4096
-    tensor_parallel_size: int = 1
     enable_reasoning: bool = True
     reasoning_parser: str = 'deepseek_r1'
     max_num_seqs: int = 256
     enable_auto_tool_choice: bool = True
     tool_call_parser: str = 'llama3_json'
+    tensor_parallel_size: int = 1
+
+    @pydantic.model_serializer
+    def serialize_model(self) -> dict[str, typing.Any]:
+        return {k: getattr(self, k) for k in self.__class__.model_fields if not k.startswith('bentovllm_')}
 
 
 bento_args = bentoml.use_arguments(BentoArgs)
@@ -32,7 +45,7 @@ openai_api_app = fastapi.FastAPI()
 @bentoml.service(
     name='bentovllm-qwq-32b-service',
     traffic={'timeout': 300},
-    resources={'gpu': 1, 'gpu_type': 'nvidia-tesla-h100'},
+    resources={'gpu': bento_args.tensor_parallel_size, 'gpu_type': 'nvidia-tesla-h100'},
     envs=[
         {'name': 'HF_TOKEN'},
         {'name': 'UV_NO_PROGRESS', 'value': '1'},

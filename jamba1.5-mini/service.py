@@ -5,8 +5,17 @@ import bentoml, pydantic, fastapi, typing_extensions, annotated_types
 
 logger = logging.getLogger(__name__)
 
+if typing.TYPE_CHECKING:
+    from vllm.engine.arg_utils import EngineArgs
 
-class BentoArgs(pydantic.BaseModel):
+    class Args(EngineArgs, pydantic.BaseModel):
+        pass
+
+else:
+    Args = pydantic.BaseModel
+
+
+class BentoArgs(Args):
     bentovllm_model_id: str = 'ai21labs/AI21-Jamba-1.5-Mini'
     bentovllm_max_tokens: int = 4096
 
@@ -16,11 +25,15 @@ class BentoArgs(pydantic.BaseModel):
     disable_log_stats: bool = True
     use_tqdm_on_load: bool = False
     max_model_len: int = 204800
-    tensor_parallel_size: int = 2
     enable_prefix_caching: bool = False
     max_num_seqs: int = 1024
     enable_auto_tool_choice: bool = True
     tool_call_parser: str = 'jamba'
+    tensor_parallel_size: int = 2
+
+    @pydantic.model_serializer
+    def serialize_model(self) -> dict[str, typing.Any]:
+        return {k: getattr(self, k) for k in self.__class__.model_fields if not k.startswith('bentovllm_')}
 
 
 bento_args = bentoml.use_arguments(BentoArgs)
@@ -31,7 +44,7 @@ openai_api_app = fastapi.FastAPI()
 @bentoml.service(
     name='bentovllm-jamba1.5-mini-service',
     traffic={'timeout': 300},
-    resources={'gpu': 2, 'gpu_type': 'nvidia-a100-80gb'},
+    resources={'gpu': bento_args.tensor_parallel_size, 'gpu_type': 'nvidia-a100-80gb'},
     envs=[
         {'name': 'HF_TOKEN'},
         {'name': 'UV_NO_BUILD_ISOLATION', 'value': '1'},

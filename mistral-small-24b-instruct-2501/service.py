@@ -5,8 +5,17 @@ import bentoml, pydantic, fastapi, typing_extensions, annotated_types
 
 logger = logging.getLogger(__name__)
 
+if typing.TYPE_CHECKING:
+    from vllm.engine.arg_utils import EngineArgs
 
-class BentoArgs(pydantic.BaseModel):
+    class Args(EngineArgs, pydantic.BaseModel):
+        pass
+
+else:
+    Args = pydantic.BaseModel
+
+
+class BentoArgs(Args):
     bentovllm_model_id: str = 'mistralai/Mistral-Small-24B-Instruct-2501'
     bentovllm_max_tokens: int = 2048
 
@@ -23,6 +32,11 @@ class BentoArgs(pydantic.BaseModel):
     max_num_seqs: int = 256
     tool_call_parser: str = 'mistral'
     enable_auto_tool_choice: bool = True
+    tensor_parallel_size: int = 1
+
+    @pydantic.model_serializer
+    def serialize_model(self) -> dict[str, typing.Any]:
+        return {k: getattr(self, k) for k in self.__class__.model_fields if not k.startswith('bentovllm_')}
 
 
 bento_args = bentoml.use_arguments(BentoArgs)
@@ -33,7 +47,7 @@ openai_api_app = fastapi.FastAPI()
 @bentoml.service(
     name='bentovllm-mistral-small-24b-instruct-2501-service',
     traffic={'timeout': 300},
-    resources={'gpu': 1, 'gpu_type': 'nvidia-a100-80gb'},
+    resources={'gpu': bento_args.tensor_parallel_size, 'gpu_type': 'nvidia-a100-80gb'},
     envs=[
         {'name': 'HF_TOKEN'},
         {'name': 'UV_NO_PROGRESS', 'value': '1'},

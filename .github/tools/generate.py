@@ -98,6 +98,9 @@ def generate_jinja_context(model_name, config):
   if "max_num_seqs" not in engine_config_struct:
     engine_config_struct["max_num_seqs"] = 256  # Aligned with v0
 
+  if "tensor_parallel_size" not in engine_config_struct:
+    engine_config_struct["tensor_parallel_size"] = service_config.get("resources", {}).get("gpu", 1)
+
   build_config = model_config.get("build", {})
   if "exclude" not in build_config:
     build_config["exclude"] = []

@@ -10,7 +10,13 @@ SYSTEM_PROMPT="""{{system_prompt -}}"""
 {%- endif %}
 {%- set ignore_patterns = exclude | map('tojson') | join(", ")%}
 
-class BentoArgs(pydantic.BaseModel):
+if typing.TYPE_CHECKING:
+  from vllm.engine.arg_utils import EngineArgs
+  class Args(EngineArgs, pydantic.BaseModel): pass
+else:
+  Args = pydantic.BaseModel
+
+class BentoArgs(Args):
   bentovllm_model_id: str = "{{model_id}}"
   bentovllm_max_tokens: int = {{generate_config['max_tokens']|default(engine_config['max_model_len'])}}
 
@@ -35,6 +41,9 @@ class BentoArgs(pydantic.BaseModel):
   {%- endif %}
   {%- endfor %}
 
+  @pydantic.model_serializer
+  def serialize_model(self) -> dict[str, typing.Any]: return {k: getattr(self, k) for k in self.__class__.model_fields if not k.startswith("bentovllm_")}
+
 bento_args = bentoml.use_arguments(BentoArgs)
 openai_api_app = fastapi.FastAPI()
 
@@ -49,6 +58,8 @@ openai_api_app = fastapi.FastAPI()
       {{value}},
     {%- endfor %}
   ],
+  {%- elif key == "resources" %}
+  {{key}}={'gpu': bento_args.tensor_parallel_size, 'gpu_type': "{{value['gpu_type']}}"},
   {%- else -%}
   {{key}}={{value}},
   {%- endif -%}

@@ -25,8 +25,17 @@ You have the ability to read images, but you cannot generate images. You also ca
 You cannot read nor transcribe audio files or videos.
 """
 
+if typing.TYPE_CHECKING:
+    from vllm.engine.arg_utils import EngineArgs
 
-class BentoArgs(pydantic.BaseModel):
+    class Args(EngineArgs, pydantic.BaseModel):
+        pass
+
+else:
+    Args = pydantic.BaseModel
+
+
+class BentoArgs(Args):
     bentovllm_model_id: str = 'mistralai/Mistral-Small-3.1-24B-Instruct-2503'
     bentovllm_max_tokens: int = 4096
 
@@ -39,12 +48,16 @@ class BentoArgs(pydantic.BaseModel):
     config_format: str = 'mistral'
     load_format: str = 'mistral'
     max_model_len: int = 8192
-    tensor_parallel_size: int = 2
     max_num_seqs: int = 256
     limit_mm_per_prompt: typing.Any = {'image': 10}
     enable_prefix_caching: bool = False
     enable_auto_tool_choice: bool = True
     tool_call_parser: str = 'mistral'
+    tensor_parallel_size: int = 2
+
+    @pydantic.model_serializer
+    def serialize_model(self) -> dict[str, typing.Any]:
+        return {k: getattr(self, k) for k in self.__class__.model_fields if not k.startswith('bentovllm_')}
 
 
 bento_args = bentoml.use_arguments(BentoArgs)
@@ -55,7 +68,7 @@ openai_api_app = fastapi.FastAPI()
 @bentoml.service(
     name='bentovllm-mistral-small-3.1-24b-instruct-2503-service',
     traffic={'timeout': 300},
-    resources={'gpu': 2, 'gpu_type': 'nvidia-a100-80gb'},
+    resources={'gpu': bento_args.tensor_parallel_size, 'gpu_type': 'nvidia-a100-80gb'},
     envs=[
         {'name': 'HF_TOKEN'},
         {'name': 'UV_NO_PROGRESS', 'value': '1'},
