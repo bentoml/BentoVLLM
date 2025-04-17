@@ -17,7 +17,7 @@ class BentoArgs(pydantic.BaseModel):
     use_tqdm_on_load: bool = False
     max_model_len: int = 8192
     tensor_parallel_size: int = 8
-    max_num_seqs: int = 1024
+    max_num_seqs: int = 256
 
 
 bento_args = bentoml.use_arguments(BentoArgs)

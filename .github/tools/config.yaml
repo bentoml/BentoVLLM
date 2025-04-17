@@ -17,7 +17,7 @@
     model: deepseek-ai/DeepSeek-V3
     max_model_len: 8192
     tensor_parallel_size: 8
-    max_num_seqs: 1024
+    max_num_seqs: 256
   generate_config:
     max_tokens: 4096
 "deepseek-r1-671b":
@@ -43,7 +43,7 @@
     max_model_len: 8192
     enable_reasoning: true
     reasoning_parser: "deepseek_r1"
-    max_num_seqs: 1024
+    max_num_seqs: 256
   generate_config:
     max_tokens: 4096
 "deepseek-r1-distill-llama3.3-70b":
@@ -67,7 +67,7 @@
     max_model_len: 8192
     enable_reasoning: true
     reasoning_parser: "deepseek_r1"
-    max_num_seqs: 1024
+    max_num_seqs: 256
     enable_auto_tool_choice: true
     tool_call_parser: "llama3_json"
   generate_config:
@@ -92,7 +92,7 @@
     max_model_len: 8192
     enable_reasoning: true
     reasoning_parser: "deepseek_r1"
-    max_num_seqs: 1024
+    max_num_seqs: 256
     enable_auto_tool_choice: true
     tool_call_parser: "hermes"
   generate_config:
@@ -139,6 +139,7 @@
   engine_config:
     model: deepseek-ai/DeepSeek-R1-Distill-Llama-8B
     max_model_len: 4096
+    max_num_seqs: 256
     enable_reasoning: true
     reasoning_parser: "deepseek_r1"
     enable_auto_tool_choice: true
@@ -300,6 +301,7 @@
   engine_config:
     model: meta-llama/Meta-Llama-3.1-8B-Instruct
     max_model_len: 4096
+    max_num_seqs: 256
     enable_auto_tool_choice: true
     tool_call_parser: "llama3_json"
   generate_config:
@@ -434,7 +436,7 @@
     model: meta-llama/Llama-3.3-70B-Instruct
     max_model_len: 2048
     tensor_parallel_size: 2
-    max_num_seqs: 1024
+    max_num_seqs: 256
     tool_call_parser: "pythonic"
     enable_auto_tool_choice: true
   build:
@@ -467,7 +469,7 @@
       image: 5
     max_model_len: 32768
     enable_prefix_caching: false
-    max_num_seqs: 1024
+    max_num_seqs: 256
     tool_call_parser: "mistral"
     enable_auto_tool_choice: true
   requirements:
@@ -529,7 +531,7 @@
     load_format: mistral
     max_model_len: 8192
     tensor_parallel_size: 2
-    max_num_seqs: 1024
+    max_num_seqs: 256
     limit_mm_per_prompt:
       image: 10
     enable_prefix_caching: false
@@ -585,7 +587,7 @@
     load_format: mistral
     max_model_len: 4096
     enable_prefix_caching: false
-    max_num_seqs: 1024
+    max_num_seqs: 256
     tool_call_parser: "mistral"
     enable_auto_tool_choice: true
   build:
@@ -610,7 +612,7 @@
   engine_config:
     model: microsoft/phi-4
     max_model_len: 8192
-    max_num_seqs: 1024
+    max_num_seqs: 256
     chat_template: "{% if messages[0]['role'] == 'system' %}\n    {% set offset = 1 %}\n{% else %}\n    {% set offset = 0 %}\n{% endif %}\n\n{% for message in messages %}\n    {% if (message['role'] == 'user') != (loop.index0 % 2 == offset) %}\n        {{ raise_exception('Conversation roles must alternate user/assistant/user/assistant/...') }}\n    {% endif %}\n\n    {{ '<|' + message['role'] + '|>\\n' + message['content'].strip() + '<|end|>' + '\\n' }}\n\n    {% if loop.last and message['role'] == 'user' and add_generation_prompt %}\n        {{ '<|assistant|>\\n' }}\n    {% endif %}\n{% endfor %}\n"
   generate_config:
     max_tokens: 4096
@@ -649,7 +651,7 @@
     model: Qwen/Qwen2.5-72B-Instruct
     max_model_len: 2048
     tensor_parallel_size: 2
-    max_num_seqs: 1024
+    max_num_seqs: 256
     enable_auto_tool_choice: true
     tool_call_parser: "llama3_json"
   generate_config:
@@ -675,7 +677,7 @@
     tensor_parallel_size: 1
     enable_reasoning: true
     reasoning_parser: "deepseek_r1"
-    max_num_seqs: 1024
+    max_num_seqs: 256
     enable_auto_tool_choice: true
     tool_call_parser: "llama3_json"
   generate_config:

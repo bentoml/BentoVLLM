@@ -20,7 +20,7 @@ class BentoArgs(pydantic.BaseModel):
     load_format: str = 'mistral'
     max_model_len: int = 4096
     enable_prefix_caching: bool = False
-    max_num_seqs: int = 1024
+    max_num_seqs: int = 256
     tool_call_parser: str = 'mistral'
     enable_auto_tool_choice: bool = True
 

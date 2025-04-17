@@ -17,7 +17,7 @@ class BentoArgs(pydantic.BaseModel):
     use_tqdm_on_load: bool = False
     max_model_len: int = 2048
     tensor_parallel_size: int = 2
-    max_num_seqs: int = 1024
+    max_num_seqs: int = 256
     enable_auto_tool_choice: bool = True
     tool_call_parser: str = 'llama3_json'
 

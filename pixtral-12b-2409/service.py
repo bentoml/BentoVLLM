@@ -21,7 +21,7 @@ class BentoArgs(pydantic.BaseModel):
     limit_mm_per_prompt: typing.Any = {'image': 5}
     max_model_len: int = 32768
     enable_prefix_caching: bool = False
-    max_num_seqs: int = 1024
+    max_num_seqs: int = 256
     tool_call_parser: str = 'mistral'
     enable_auto_tool_choice: bool = True
 

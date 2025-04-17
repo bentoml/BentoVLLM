@@ -16,7 +16,7 @@ class BentoArgs(pydantic.BaseModel):
     disable_log_stats: bool = True
     use_tqdm_on_load: bool = False
     max_model_len: int = 8192
-    max_num_seqs: int = 1024
+    max_num_seqs: int = 256
     chat_template: str = """{% if messages[0]['role'] == 'system' %}
     {% set offset = 1 %}
 {% else %}
