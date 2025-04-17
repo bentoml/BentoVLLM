@@ -22,7 +22,7 @@ git clone https://github.com/bentoml/BentoVLLM.git
 cd BentoVLLM/llama3.1-8b-instruct
 
 # Recommend UV and Python 3.11
-uv venv && pip install .
+uv venv && pip install -r requirements.txt
 
 export HF_TOKEN=<your-api-key>
 ```
