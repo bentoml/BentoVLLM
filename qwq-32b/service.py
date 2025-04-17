@@ -106,14 +106,21 @@ class VLLM:
         max_tokens: typing_extensions.Annotated[
             int, annotated_types.Ge(128), annotated_types.Le(bento_args.bentovllm_max_tokens)
         ] = bento_args.bentovllm_max_tokens,
+        show_reasoning: bool = True,
     ) -> typing.AsyncGenerator[str, None]:
+        from vllm.entrypoints.openai.protocol import DeltaMessage
+
         messages = [{'role': 'user', 'content': [{'type': 'text', 'text': prompt}]}]
         try:
             completion = await self.openai.chat.completions.create(
                 model=bento_args.bentovllm_model_id, messages=messages, stream=True, max_tokens=max_tokens
             )
             async for chunk in completion:
-                yield chunk.choices[0].delta.content or ''
+                delta_choice = t.cast(DeltaMessage, chunk.choices[0].delta)
+                if hasattr(delta_choice, 'reasoning_content') and show_reasoning:
+                    yield delta_choice.reasoning_content or ''
+                else:
+                    yield delta_choice.content or ''
         except Exception:
             logger.error(traceback.format_exc())
             yield 'Internal error found. Check server logs for more information'

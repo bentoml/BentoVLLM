@@ -172,6 +172,16 @@ bentoml secret create huggingface HF_TOKEN=$HF_TOKEN
 bentoml deploy service:VLLM --secret huggingface
 ```
 
+> [!NOTE]
+> There is also the following deployment config that you can also use for `meta-llama/Meta-Llama-3.1-8B-Instruct` if you have enough resources on BentoCloud. Please contact us to set it up in your cloud environment:
+>
+> ```bash
+>
+> # tp-4.yaml
+> bentoml deploy service:VLLM -f tp-4.yaml
+>
+> ```
+
 Once the application is up and running on BentoCloud, you can access it via the exposed URL.
 
 **Note**: For custom deployment in your own infrastructure, use [BentoML to generate an OCI-compliant image](https://docs.bentoml.com/en/latest/get-started/packaging-for-deployment.html).

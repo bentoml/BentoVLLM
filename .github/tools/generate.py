@@ -8,7 +8,7 @@
 #     "pathspec",
 # ]
 # ///
-import yaml, shutil, copy, subprocess, json, argparse, multiprocessing
+import yaml, shutil, copy, subprocess, json, argparse, multiprocessing, typing as t
 from pathlib import Path
 from jinja2 import Template
 from rich.console import Console
@@ -74,7 +74,7 @@ def update_model_descriptions(config, git_dir):
     f.write(json.dumps(dict(certified_bentos=certified_bentos), indent=2, ensure_ascii=False))
 
 
-def generate_jinja_context(model_name, config):
+def generate_jinja_context(model_name: str, config: dict[str, dict[str, t.Any]]) -> dict[str, t.Any]:
   model_config = config[model_name]
   use_mla = model_config.get("use_mla", False)
   use_nightly = model_config.get("use_nightly", False)
@@ -122,6 +122,7 @@ def generate_jinja_context(model_name, config):
     "model_id": model,
     "vision": use_vision,
     "c2a": model_config.get("c2a", True),
+    "deployment_config": model_config.get("deployment_config", {}),
     "generate_config": model_config.get("generate_config", {}),
     "service_config": service_config,
     "engine_config": engine_config_struct,
@@ -180,7 +181,7 @@ def generate_model(model_name: str, config: dict, git_dir: Path, progress: Progr
         template_source,
         temp_output_dir,
         dirs_exist_ok=True,
-        ignore=lambda src, names: [i for i in names if i.endswith(".j2")],
+        ignore=lambda _, names: [i for i in names if i.endswith(".j2")],
       )
 
       if "requirements" in context:
@@ -202,6 +203,12 @@ def generate_model(model_name: str, config: dict, git_dir: Path, progress: Progr
         # Write rendered content
         with open(target_path, "w") as f:
           f.write(rendered)
+
+      deployment_config = context["deployment_config"]
+      if deployment_config:
+        for k, v in deployment_config.items():
+          with (temp_output_dir / f"{k}.yaml").open("w") as f:
+            yaml.safe_dump(dict(args=v), f)
 
       if output_dir.exists():
         shutil.rmtree(output_dir)
