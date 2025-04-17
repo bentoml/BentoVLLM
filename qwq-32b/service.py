@@ -32,10 +32,9 @@ openai_api_app = fastapi.FastAPI()
 @bentoml.service(
     name='bentovllm-qwq-32b-service',
     traffic={'timeout': 300},
-    resources={'gpu': 1, 'gpu_type': 'nvidia-a100-80gb'},
+    resources={'gpu': 1, 'gpu_type': 'nvidia-tesla-h100'},
     envs=[
         {'name': 'HF_TOKEN'},
-        {'name': 'UV_NO_BUILD_ISOLATION', 'value': '1'},
         {'name': 'UV_NO_PROGRESS', 'value': '1'},
         {'name': 'HF_HUB_DISABLE_PROGRESS_BARS', 'value': '1'},
         {'name': 'VLLM_ATTENTION_BACKEND', 'value': 'FLASH_ATTN'},

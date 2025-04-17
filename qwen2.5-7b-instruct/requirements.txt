@@ -1,5 +1,5 @@
 bentoml==1.4.8
 vllm==0.8.4
-kantoku>=0.18.1
-pyyaml
-fastapi
+kantoku==0.18.3
+pyyaml==6.0.2
+fastapi==0.115.12
