@@ -173,12 +173,12 @@ bentoml deploy service:VLLM --secret huggingface
 ```
 
 > [!NOTE]
-> There is also the following deployment config that you can also use for `meta-llama/Meta-Llama-3.1-8B-Instruct` if you have enough resources on BentoCloud. Please contact us to set it up in your cloud environment:
+> You can also use the following deployment config for `meta-llama/Meta-Llama-3.1-8B-Instruct`. Please contact us to set it up in your cloud environment:
 >
 > ```bash
 >
 > # tp-4.yaml
-> bentoml deploy service:VLLM -f tp-4.yaml
+> bentoml build -f tp-4.yaml -o tag | sed 's/__tag__://' | xargs bentoml deploy
 >
 > ```
 

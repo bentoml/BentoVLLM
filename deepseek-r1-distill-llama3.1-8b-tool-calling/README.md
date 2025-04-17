@@ -102,9 +102,6 @@ chat_completion = client.chat.completions.create(
 print(chat_completion.choices[0].message.content)  # will return something like: {"city": "Paris"}
 ```
 
-> [!NOTE]
-> This is also a reasoning model. Structured Outputs might not work if you enable reasoning! Please check upstream vLLM for support on this use-case.
-
 All supported extra parameters are listed in [vLLM documentation](https://docs.vllm.ai/en/latest/serving/openai_compatible_server.html#extra-parameters).
 
 **Note**: If your Service is deployed with [protected endpoints on BentoCloud](https://docs.bentoml.com/en/latest/bentocloud/how-tos/manage-access-token.html#access-protected-deployments), you need to set the environment variable `OPENAI_API_KEY` to your BentoCloud API key first.
@@ -176,12 +173,12 @@ bentoml deploy service:VLLM --secret huggingface
 ```
 
 > [!NOTE]
-> There is also the following deployment config that you can also use for `deepseek-ai/DeepSeek-R1-Distill-Llama-8B` if you have enough resources on BentoCloud. Please contact us to set it up in your cloud environment:
+> You can also use the following deployment config for `deepseek-ai/DeepSeek-R1-Distill-Llama-8B`. Please contact us to set it up in your cloud environment:
 >
 > ```bash
 >
 > # tp-4.yaml
-> bentoml deploy service:VLLM -f tp-4.yaml
+> bentoml build -f tp-4.yaml -o tag | sed 's/__tag__://' | xargs bentoml deploy
 >
 > ```
 

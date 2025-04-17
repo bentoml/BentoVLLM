@@ -27,10 +27,10 @@ class BentoArgs(Args):
     max_model_len: int = 4096
     enable_reasoning: bool = True
     reasoning_parser: str = 'deepseek_r1'
-    max_num_seqs: int = 256
+    max_num_seqs: int = 512
     enable_auto_tool_choice: bool = True
     tool_call_parser: str = 'llama3_json'
-    tensor_parallel_size: int = 1
+    tensor_parallel_size: int = 2
 
     @pydantic.model_serializer
     def serialize_model(self) -> dict[str, typing.Any]:
@@ -116,7 +116,7 @@ class VLLM:
                 model=bento_args.bentovllm_model_id, messages=messages, stream=True, max_tokens=max_tokens
             )
             async for chunk in completion:
-                delta_choice = t.cast(DeltaMessage, chunk.choices[0].delta)
+                delta_choice = typing.cast(DeltaMessage, chunk.choices[0].delta)
                 if hasattr(delta_choice, 'reasoning_content') and show_reasoning:
                     yield delta_choice.reasoning_content or ''
                 else:

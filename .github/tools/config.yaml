@@ -665,7 +665,7 @@
     traffic:
       timeout: 300
     resources:
-      gpu: 1
+      gpu: 2
       gpu_type: nvidia-tesla-h100
     envs:
       - name: HF_TOKEN
@@ -674,7 +674,7 @@
     max_model_len: 4096
     enable_reasoning: true
     reasoning_parser: "deepseek_r1"
-    max_num_seqs: 256
+    max_num_seqs: 512
     enable_auto_tool_choice: true
     tool_call_parser: "llama3_json"
   generate_config:

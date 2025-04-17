@@ -115,7 +115,7 @@ class VLLM:
                 model=bento_args.bentovllm_model_id, messages=messages, stream=True, max_tokens=max_tokens
             )
             async for chunk in completion:
-                delta_choice = t.cast(DeltaMessage, chunk.choices[0].delta)
+                delta_choice = typing.cast(DeltaMessage, chunk.choices[0].delta)
                 if hasattr(delta_choice, 'reasoning_content') and show_reasoning:
                     yield delta_choice.reasoning_content or ''
                 else:
