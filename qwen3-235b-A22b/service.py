@@ -16,15 +16,15 @@ else:
 
 
 class BentoArgs(Args):
-    bentovllm_model_id: str = 'Qwen/Qwen3-235B-A22B'
-    bentovllm_max_tokens: int = 2048
+    bentovllm_model_id: str = 'Qwen/Qwen3-235B-A22B-FP8'
+    bentovllm_max_tokens: int = 4096
 
     disable_log_requests: bool = True
     max_log_len: int = 1000
     request_logger: typing.Any = None
     disable_log_stats: bool = True
     use_tqdm_on_load: bool = False
-    max_model_len: int = 4096
+    max_model_len: int = 8192
     enable_reasoning: bool = True
     reasoning_parser: str = 'deepseek_r1'
     max_num_seqs: int = 256
