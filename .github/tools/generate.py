@@ -89,8 +89,6 @@ def generate_jinja_context(model_name: str, config: dict[str, dict[str, t.Any]])
     service_config["envs"] = []
 
   service_config["envs"].extend([
-    {"name": "UV_NO_PROGRESS", "value": "1"},
-    {"name": "HF_HUB_DISABLE_PROGRESS_BARS", "value": "1"},
     {"name": "VLLM_ATTENTION_BACKEND", "value": "FLASHMLA" if use_mla else "FLASH_ATTN"},
     {"name": "VLLM_USE_V1", "value": "1"},
   ])

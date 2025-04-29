@@ -48,8 +48,6 @@ openai_api_app = fastapi.FastAPI()
     envs=[
         {'name': 'HF_TOKEN'},
         {'name': 'UV_NO_BUILD_ISOLATION', 'value': '1'},
-        {'name': 'UV_NO_PROGRESS', 'value': '1'},
-        {'name': 'HF_HUB_DISABLE_PROGRESS_BARS', 'value': '1'},
         {'name': 'VLLM_ATTENTION_BACKEND', 'value': 'FLASH_ATTN'},
         {'name': 'VLLM_USE_V1', 'value': '1'},
     ],

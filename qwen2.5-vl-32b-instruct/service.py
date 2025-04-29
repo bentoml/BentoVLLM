@@ -46,18 +46,14 @@ openai_api_app = fastapi.FastAPI()
     name='bentovllm-qwen2.5-vl-32b-instruct-service',
     traffic={'timeout': 300},
     resources={'gpu': bento_args.tensor_parallel_size, 'gpu_type': 'nvidia-a100-80gb'},
-    envs=[
-        {'name': 'UV_NO_BUILD_ISOLATION', 'value': '1'},
-        {'name': 'UV_NO_PROGRESS', 'value': '1'},
-        {'name': 'HF_HUB_DISABLE_PROGRESS_BARS', 'value': '1'},
-        {'name': 'VLLM_ATTENTION_BACKEND', 'value': 'FLASH_ATTN'},
-        {'name': 'VLLM_USE_V1', 'value': '1'},
-    ],
+    envs=[{'name': 'VLLM_ATTENTION_BACKEND', 'value': 'FLASH_ATTN'}, {'name': 'VLLM_USE_V1', 'value': '1'}],
     labels={'owner': 'bentoml-team', 'type': 'prebuilt'},
     image=bentoml.images.Image(python_version='3.11')
     .system_packages('curl')
     .system_packages('git')
     .requirements_file('requirements.txt')
+    .run('uv pip install --compile-bytecode torch setuptools')
+    .run('uv pip install --compile-bytecode flash-attn')
     .run('uv pip install --compile-bytecode flashinfer-python --find-links https://flashinfer.ai/whl/cu124/torch2.6'),
 )
 class VLLM:
