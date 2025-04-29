@@ -27,7 +27,7 @@ class BentoArgs(Args):
     max_model_len: int = 2048
     max_num_seqs: int = 256
     enable_auto_tool_choice: bool = True
-    tool_call_parser: str = 'llama3_json'
+    tool_call_parser: str = 'hermeas'
     tensor_parallel_size: int = 2
 
     @pydantic.model_serializer

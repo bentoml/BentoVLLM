@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import logging, contextlib, typing, uuid
+import logging, contextlib, traceback, typing
 import bentoml, pydantic, fastapi, typing_extensions, annotated_types
 
 logger = logging.getLogger(__name__)
@@ -16,7 +16,7 @@ else:
 
 
 class BentoArgs(Args):
-    bentovllm_model_id: str = 'Qwen/Qwen2.5-7B-Instruct'
+    bentovllm_model_id: str = 'Qwen/Qwen3-8B'
     bentovllm_max_tokens: int = 1024
 
     disable_log_requests: bool = True
@@ -27,6 +27,8 @@ class BentoArgs(Args):
     max_model_len: int = 2048
     enable_auto_tool_choice: bool = True
     tool_call_parser: str = 'hermes'
+    enable_reasoning: bool = True
+    reasoning_parser: str = 'deepseek_r1'
     max_num_seqs: int = 256
     tensor_parallel_size: int = 1
 
@@ -41,7 +43,7 @@ openai_api_app = fastapi.FastAPI()
 
 @bentoml.asgi_app(openai_api_app, path='/v1')
 @bentoml.service(
-    name='bentovllm-qwen2.5-7b-instruct-service',
+    name='bentovllm-qwen3-8b-instruct-service',
     traffic={'timeout': 300},
     resources={'gpu': bento_args.tensor_parallel_size, 'gpu_type': 'nvidia-l4'},
     envs=[
@@ -59,6 +61,9 @@ class VLLM:
     model = bentoml.models.HuggingFaceModel(bento_args.bentovllm_model_id, exclude=['*.pth', '*.pt', 'original/**/*'])
 
     def __init__(self):
+        from openai import AsyncOpenAI
+
+        self.openai = AsyncOpenAI(base_url='http://127.0.0.1:3000/v1', api_key='dummy')
         self.exit_stack = contextlib.AsyncExitStack()
 
     @bentoml.on_startup
@@ -100,30 +105,22 @@ class VLLM:
         max_tokens: typing_extensions.Annotated[
             int, annotated_types.Ge(128), annotated_types.Le(bento_args.bentovllm_max_tokens)
         ] = bento_args.bentovllm_max_tokens,
+        show_reasoning: bool = True,
     ) -> typing.AsyncGenerator[str, None]:
-        from vllm import SamplingParams, TokensPrompt
-        from vllm.entrypoints.chat_utils import parse_chat_messages, apply_hf_chat_template
+        from vllm.entrypoints.openai.protocol import DeltaMessage
 
         messages = [{'role': 'user', 'content': [{'type': 'text', 'text': prompt}]}]
-
-        params = SamplingParams(max_tokens=max_tokens)
-        conversation, _ = parse_chat_messages(messages, self.model_config, self.tokenizer, content_format='string')
-        prompt = TokensPrompt(
-            prompt_token_ids=apply_hf_chat_template(
-                self.tokenizer,
-                conversation=conversation,
-                tools=None,
-                add_generation_prompt=True,
-                continue_final_message=False,
-                chat_template=None,
-                tokenize=True,
+        try:
+            completion = await self.openai.chat.completions.create(
+                model=bento_args.bentovllm_model_id, messages=messages, stream=True, max_tokens=max_tokens
             )
-        )
-
-        stream = self.engine.generate(request_id=uuid.uuid4().hex, prompt=prompt, sampling_params=params)
-
-        cursor = 0
-        async for request_output in stream:
-            text = request_output.outputs[0].text
-            yield text[cursor:]
-            cursor = len(text)
+            async for chunk in completion:
+                delta_choice = typing.cast(DeltaMessage, chunk.choices[0].delta)
+                if hasattr(delta_choice, 'reasoning_content') and show_reasoning:
+                    yield delta_choice.reasoning_content or ''
+                else:
+                    yield delta_choice.content or ''
+        except Exception:
+            logger.error(traceback.format_exc())
+            yield 'Internal error found. Check server logs for more information'
+            return

@@ -29,7 +29,7 @@ class BentoArgs(Args):
     reasoning_parser: str = 'deepseek_r1'
     max_num_seqs: int = 512
     enable_auto_tool_choice: bool = True
-    tool_call_parser: str = 'llama3_json'
+    tool_call_parser: str = 'hermes'
     tensor_parallel_size: int = 2
 
     @pydantic.model_serializer

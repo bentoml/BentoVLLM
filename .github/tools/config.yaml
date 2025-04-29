@@ -631,7 +631,7 @@
     model: Qwen/Qwen2.5-7B-Instruct
     max_model_len: 2048
     enable_auto_tool_choice: true
-    tool_call_parser: "llama3_json"
+    tool_call_parser: "hermes"
   generate_config:
     max_tokens: 1024
 "qwen2.5-72b-instruct":
@@ -651,7 +651,7 @@
     max_model_len: 2048
     max_num_seqs: 256
     enable_auto_tool_choice: true
-    tool_call_parser: "llama3_json"
+    tool_call_parser: "hermeas"
   generate_config:
     max_tokens: 1024
 "qwq-32b":
@@ -676,6 +676,54 @@
     reasoning_parser: "deepseek_r1"
     max_num_seqs: 512
     enable_auto_tool_choice: true
-    tool_call_parser: "llama3_json"
+    tool_call_parser: "hermes"
+  generate_config:
+    max_tokens: 2048
+"qwen3-8b-instruct":
+  reasoning: true
+  metadata:
+    description: Qwen 3 8B Instruct
+    provider: Alibaba
+    gpu_recommendation: an Nvidia GPU with at least 24GB VRAM (e.g about 1 L4 GPU).
+  service_config:
+    name: bentovllm-qwen3-8b-instruct-service
+    traffic:
+      timeout: 300
+    resources:
+      gpu: 1
+      gpu_type: nvidia-l4
+  engine_config:
+    model: Qwen/Qwen3-8B
+    max_model_len: 2048
+    enable_auto_tool_choice: true
+    tool_call_parser: "hermes"
+    enable_reasoning: true
+    reasoning_parser: deepseek_r1
+    max_num_seqs: 256
+  generate_config:
+    max_tokens: 1024
+"qwen3-235b-A22b":
+  reasoning: true
+  metadata:
+    description: Qwen 3 235B A22B MoE
+    provider: Alibaba
+    gpu_recommendation: an Nvidia GPU with at least 4x80GB VRAM (e.g about 4 H100 GPU).
+  service_config:
+    name: bentovllm-qwen3-235b-a22b-service
+    traffic:
+      timeout: 300
+    resources:
+      gpu: 4
+      gpu_type: nvidia-tesla-h100
+    envs:
+      - name: HF_TOKEN
+  engine_config:
+    model: Qwen/Qwen3-235B-A22B
+    max_model_len: 4096
+    enable_reasoning: true
+    reasoning_parser: "deepseek_r1"
+    max_num_seqs: 256
+    enable_auto_tool_choice: true
+    tool_call_parser: "hermes"
   generate_config:
     max_tokens: 2048
