@@ -86,6 +86,7 @@ class VLLM:
         self.engine = await self.exit_stack.enter_async_context(vllm_api_server.build_async_engine_client(args))
         self.tokenizer = await self.engine.get_tokenizer()
         vllm_config = await self.engine.get_vllm_config()
+        self.model_config = await self.engine.get_model_config()
         await vllm_api_server.init_app_state(self.engine, vllm_config, openai_api_app.state, args)
 
     @bentoml.on_shutdown
