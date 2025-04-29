@@ -16,7 +16,7 @@ else:
 
 
 class BentoArgs(Args):
-    bentovllm_model_id: str = 'mistralai/Mistral-Small-24B-Instruct-2501'
+    bentovllm_model_id: str = 'google/gemma-3-1b-it'
     bentovllm_max_tokens: int = 2048
 
     disable_log_requests: bool = True
@@ -24,14 +24,10 @@ class BentoArgs(Args):
     request_logger: typing.Any = None
     disable_log_stats: bool = True
     use_tqdm_on_load: bool = False
-    tokenizer_mode: str = 'mistral'
-    config_format: str = 'mistral'
-    load_format: str = 'mistral'
     max_model_len: int = 4096
+    dtype: str = 'half'
+    max_num_seqs: int = 128
     enable_prefix_caching: bool = False
-    max_num_seqs: int = 256
-    tool_call_parser: str = 'mistral'
-    enable_auto_tool_choice: bool = True
     tensor_parallel_size: int = 1
 
     @pydantic.model_serializer
@@ -45,9 +41,9 @@ openai_api_app = fastapi.FastAPI()
 
 @bentoml.asgi_app(openai_api_app, path='/v1')
 @bentoml.service(
-    name='bentovllm-mistral-small-24b-instruct-2501-service',
+    name='bentovllm-gemma3-1b-instruct-service',
     traffic={'timeout': 300},
-    resources={'gpu': bento_args.tensor_parallel_size, 'gpu_type': 'nvidia-a100-80gb'},
+    resources={'gpu': bento_args.tensor_parallel_size, 'gpu_type': 'nvidia-l4'},
     envs=[
         {'name': 'HF_TOKEN'},
         {'name': 'UV_NO_PROGRESS', 'value': '1'},
@@ -61,9 +57,7 @@ openai_api_app = fastapi.FastAPI()
     .run('uv pip install --compile-bytecode flashinfer-python --find-links https://flashinfer.ai/whl/cu124/torch2.6'),
 )
 class VLLM:
-    model = bentoml.models.HuggingFaceModel(
-        bento_args.bentovllm_model_id, exclude=['model*', '*.pth', '*.pt', 'original/**/*']
-    )
+    model = bentoml.models.HuggingFaceModel(bento_args.bentovllm_model_id, exclude=['*.pth', '*.pt', 'original/**/*'])
 
     def __init__(self):
         self.exit_stack = contextlib.AsyncExitStack()
@@ -110,12 +104,23 @@ class VLLM:
         ] = bento_args.bentovllm_max_tokens,
     ) -> typing.AsyncGenerator[str, None]:
         from vllm import SamplingParams, TokensPrompt
-        from vllm.entrypoints.chat_utils import apply_mistral_chat_template
+        from vllm.entrypoints.chat_utils import parse_chat_messages, apply_hf_chat_template
 
         messages = [{'role': 'user', 'content': [{'type': 'text', 'text': prompt}]}]
 
         params = SamplingParams(max_tokens=max_tokens)
-        prompt = TokensPrompt(prompt_token_ids=apply_mistral_chat_template(self.tokenizer, messages=messages))
+        conversation, _ = parse_chat_messages(messages, self.model_config, self.tokenizer, content_format='string')
+        prompt = TokensPrompt(
+            prompt_token_ids=apply_hf_chat_template(
+                self.tokenizer,
+                conversation=conversation,
+                tools=None,
+                add_generation_prompt=True,
+                continue_final_message=False,
+                chat_template=None,
+                tokenize=True,
+            )
+        )
 
         stream = self.engine.generate(request_id=uuid.uuid4().hex, prompt=prompt, sampling_params=params)
 
