@@ -54,11 +54,11 @@ openai_api_app = fastapi.FastAPI()
         {'name': 'VLLM_USE_V1', 'value': '1'},
     ],
     labels={'owner': 'bentoml-team', 'type': 'prebuilt'},
-    image=bentoml.images.Image(python_version='3.11', lock_python_packages=False)
+    image=bentoml.images.Image(python_version='3.11')
     .system_packages('curl')
     .system_packages('git')
-    .run('uv pip install --compile-bytecode flash-attn --no-build-isolation')
     .requirements_file('requirements.txt')
+    .run('uv pip install --compile-bytecode --no-build-isolation flash-attn')
     .run('uv pip install --compile-bytecode flashinfer-python --find-links https://flashinfer.ai/whl/cu124/torch2.6'),
 )
 class VLLM:

@@ -674,8 +674,8 @@
     system_packages:
       - curl
       - git
-    pre:
-      - uv pip install --compile-bytecode flash-attn --no-build-isolation
+    post:
+      - uv pip install --compile-bytecode --no-build-isolation flash-attn
   engine_config:
     model: Qwen/Qwen2.5-VL-32B-Instruct
     dtype: bfloat16
