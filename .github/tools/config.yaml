@@ -679,14 +679,14 @@
     tool_call_parser: "hermes"
   generate_config:
     max_tokens: 2048
-"qwen3-8b-instruct":
+"qwen3-8b":
   reasoning: true
   metadata:
-    description: Qwen 3 8B Instruct
+    description: Qwen 3 8B
     provider: Alibaba
     gpu_recommendation: an Nvidia GPU with at least 24GB VRAM (e.g about 1 L4 GPU).
   service_config:
-    name: bentovllm-qwen3-8b-instruct-service
+    name: bentovllm-qwen3-8b-service
     traffic:
       timeout: 300
     resources:
@@ -699,7 +699,7 @@
     tool_call_parser: "hermes"
     enable_reasoning: true
     reasoning_parser: deepseek_r1
-    max_num_seqs: 256
+    max_num_seqs: 64
   generate_config:
     max_tokens: 1024
 "qwen3-30b-A3b":

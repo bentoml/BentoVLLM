@@ -29,7 +29,7 @@ class BentoArgs(Args):
     tool_call_parser: str = 'hermes'
     enable_reasoning: bool = True
     reasoning_parser: str = 'deepseek_r1'
-    max_num_seqs: int = 256
+    max_num_seqs: int = 64
     tensor_parallel_size: int = 1
 
     @pydantic.model_serializer
@@ -43,7 +43,7 @@ openai_api_app = fastapi.FastAPI()
 
 @bentoml.asgi_app(openai_api_app, path='/v1')
 @bentoml.service(
-    name='bentovllm-qwen3-8b-instruct-service',
+    name='bentovllm-qwen3-8b-service',
     traffic={'timeout': 300},
     resources={'gpu': bento_args.tensor_parallel_size, 'gpu_type': 'nvidia-l4'},
     envs=[
