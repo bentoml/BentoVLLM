@@ -58,7 +58,6 @@ openai_api_app = fastapi.FastAPI()
     .system_packages('curl')
     .system_packages('git')
     .requirements_file('requirements.txt')
-    .run('uv pip install --compile-bytecode --no-build-isolation flash-attn')
     .run('uv pip install --compile-bytecode flashinfer-python --find-links https://flashinfer.ai/whl/cu124/torch2.6'),
 )
 class VLLM:
