@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import logging, contextlib, typing, uuid
-import bentoml, pydantic, fastapi, typing_extensions, annotated_types
+import base64, io, logging, contextlib, traceback, typing, uuid
+import bentoml, pydantic, fastapi, PIL.Image, typing_extensions, annotated_types
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +16,7 @@ else:
 
 
 class BentoArgs(Args):
-    bentovllm_model_id: str = 'Qwen/Qwen2.5-72B-Instruct'
+    bentovllm_model_id: str = 'Qwen/Qwen2.5-VL-32B-Instruct'
     bentovllm_max_tokens: int = 1024
 
     disable_log_requests: bool = True
@@ -24,11 +24,13 @@ class BentoArgs(Args):
     request_logger: typing.Any = None
     disable_log_stats: bool = True
     use_tqdm_on_load: bool = False
+    dtype: str = 'bfloat16'
     max_model_len: int = 2048
-    max_num_seqs: int = 256
+    max_num_seqs: int = 64
     enable_auto_tool_choice: bool = True
+    limit_mm_per_prompt: dict[str, typing.Any] = {'image': 1}
     tool_call_parser: str = 'hermes'
-    tensor_parallel_size: int = 2
+    tensor_parallel_size: int = 1
 
     @pydantic.model_serializer
     def serialize_model(self) -> dict[str, typing.Any]:
@@ -41,10 +43,11 @@ openai_api_app = fastapi.FastAPI()
 
 @bentoml.asgi_app(openai_api_app, path='/v1')
 @bentoml.service(
-    name='bentovllm-qwen2.5-72b-instruct-service',
+    name='bentovllm-qwen2.5-vl-32b-instruct-service',
     traffic={'timeout': 300},
     resources={'gpu': bento_args.tensor_parallel_size, 'gpu_type': 'nvidia-a100-80gb'},
     envs=[
+        {'name': 'UV_NO_BUILD_ISOLATION', 'value': '1'},
         {'name': 'UV_NO_PROGRESS', 'value': '1'},
         {'name': 'HF_HUB_DISABLE_PROGRESS_BARS', 'value': '1'},
         {'name': 'VLLM_ATTENTION_BACKEND', 'value': 'FLASH_ATTN'},
@@ -52,6 +55,9 @@ openai_api_app = fastapi.FastAPI()
     ],
     labels={'owner': 'bentoml-team', 'type': 'prebuilt'},
     image=bentoml.images.Image(python_version='3.11', lock_python_packages=False)
+    .system_packages('curl')
+    .system_packages('git')
+    .run('uv pip install --compile-bytecode flash-attn --no-build-isolation')
     .requirements_file('requirements.txt')
     .run('uv pip install --compile-bytecode flashinfer-python --find-links https://flashinfer.ai/whl/cu124/torch2.6'),
 )
@@ -59,6 +65,9 @@ class VLLM:
     model = bentoml.models.HuggingFaceModel(bento_args.bentovllm_model_id, exclude=['*.pth', '*.pt', 'original/**/*'])
 
     def __init__(self):
+        from openai import AsyncOpenAI
+
+        self.openai = AsyncOpenAI(base_url='http://127.0.0.1:3000/v1', api_key='dummy')
         self.exit_stack = contextlib.AsyncExitStack()
 
     @bentoml.on_startup
@@ -127,3 +136,34 @@ class VLLM:
             text = request_output.outputs[0].text
             yield text[cursor:]
             cursor = len(text)
+
+    @bentoml.api
+    async def sights(
+        self,
+        prompt: str = 'Describe the content of the picture',
+        image: typing.Optional['PIL.Image.Image'] = None,
+        max_tokens: typing_extensions.Annotated[
+            int, annotated_types.Ge(128), annotated_types.Le(bento_args.bentovllm_max_tokens)
+        ] = bento_args.bentovllm_max_tokens,
+    ) -> typing.AsyncGenerator[str, None]:
+        if image:
+            buffered = io.BytesIO()
+            image.save(buffered, format='PNG')
+            img_str = base64.b64encode(buffered.getvalue()).decode()
+            buffered.close()
+            image_url = f'data:image/png;base64,{img_str}'
+            content = [dict(type='image_url', image_url=dict(url=image_url)), dict(type='text', text=prompt)]
+        else:
+            content = [dict(type='text', text=prompt)]
+        messages = [{'role': 'user', 'content': content}]
+
+        try:
+            completion = await self.openai.chat.completions.create(
+                model=bento_args.bentovllm_model_id, messages=messages, stream=True, max_tokens=max_tokens
+            )
+            async for chunk in completion:
+                yield chunk.choices[0].delta.content or ''
+        except Exception:
+            logger.error(traceback.format_exc())
+            yield 'Internal error found. Check server logs for more information'
+            return

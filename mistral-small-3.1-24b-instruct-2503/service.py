@@ -49,7 +49,7 @@ class BentoArgs(Args):
     load_format: str = 'mistral'
     max_model_len: int = 8192
     max_num_seqs: int = 256
-    limit_mm_per_prompt: typing.Any = {'image': 10}
+    limit_mm_per_prompt: dict[str, typing.Any] = {'image': 10}
     enable_prefix_caching: bool = False
     enable_auto_tool_choice: bool = True
     tool_call_parser: str = 'mistral'

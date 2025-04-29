@@ -27,7 +27,7 @@ class BentoArgs(Args):
     tokenizer_mode: str = 'mistral'
     config_format: str = 'mistral'
     load_format: str = 'mistral'
-    limit_mm_per_prompt: typing.Any = {'image': 5}
+    limit_mm_per_prompt: dict[str, typing.Any] = {'image': 5}
     max_model_len: int = 32768
     enable_prefix_caching: bool = False
     max_num_seqs: int = 256

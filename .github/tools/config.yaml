@@ -651,9 +651,45 @@
     max_model_len: 2048
     max_num_seqs: 256
     enable_auto_tool_choice: true
-    tool_call_parser: "hermeas"
+    tool_call_parser: "hermes"
   generate_config:
     max_tokens: 1024
+"qwen2.5-vl-32b-instruct":
+  vision: true
+  metadata:
+    description: Qwen 2.5 VL 32B Instruct
+    provider: Alibaba
+    gpu_recommendation: Nvidia GPUs with at least 80GB VRAM (e.g about 1 H100 GPUs).
+  service_config:
+    name: bentovllm-qwen2.5-vl-32b-instruct-service
+    traffic:
+      timeout: 300
+    resources:
+      gpu: 1
+      gpu_type: nvidia-a100-80gb
+    envs:
+      - name: UV_NO_BUILD_ISOLATION
+        value: "1"
+  build:
+    system_packages:
+      - curl
+      - git
+    pre:
+      - uv pip install --compile-bytecode flash-attn --no-build-isolation
+  engine_config:
+    model: Qwen/Qwen2.5-VL-32B-Instruct
+    dtype: bfloat16
+    max_model_len: 2048
+    max_num_seqs: 64
+    enable_auto_tool_choice: true
+    limit_mm_per_prompt:
+      image: 1
+    tool_call_parser: "hermes"
+  generate_config:
+    max_tokens: 1024
+  requirements:
+    - qwen-vl-utils[decord]==0.0.8
+    - flash-attn
 "qwq-32b":
   reasoning: true
   metadata:

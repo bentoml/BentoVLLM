@@ -36,6 +36,8 @@ class BentoArgs(Args):
   {{key}}: int = {{value}}
   {%- elif value is boolean %}
   {{key}}: bool = {{value}}
+  {%- elif value is mapping %}
+  {{key}}: dict[str, typing.Any] = {{value}}
   {%- else %}
   {{key}}: typing.Any = {{value}}
   {%- endif %}
