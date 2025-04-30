@@ -30,7 +30,7 @@ class BentoArgs(Args):
     enable_auto_tool_choice: bool = True
     limit_mm_per_prompt: dict[str, typing.Any] = {'image': 1}
     tool_call_parser: str = 'hermes'
-    tensor_parallel_size: int = 1
+    tensor_parallel_size: int = 2
 
     @pydantic.model_serializer
     def serialize_model(self) -> dict[str, typing.Any]:
@@ -54,7 +54,7 @@ openai_api_app = fastapi.FastAPI()
     .requirements_file('requirements.txt')
     .run('uv pip install --compile-bytecode torch setuptools')
     .run(
-        'curl -L -o ./flash_attn-2.7.4.post1+cu12torch2.6cxx11abiFALSE-cp311-cp311-linux_x86_64.whl https://github.com/Dao-AILab/flash-attention/releases/download/v2.7.4.post1/flash_attn-2.7.4.post1+cu12torch2.6cxx11abiTRUE-cp311-cp311-linux_x86_64.whl'
+        'curl -L -o ./flash_attn-2.7.4.post1+cu12torch2.6cxx11abiFALSE-cp311-cp311-linux_x86_64.whl https://github.com/Dao-AILab/flash-attention/releases/download/v2.7.4.post1/flash_attn-2.7.4.post1+cu12torch2.6cxx11abiFALSE-cp311-cp311-linux_x86_64.whl'
     )
     .run(
         'uv pip install --compile-bytecode ./flash_attn-2.7.4.post1+cu12torch2.6cxx11abiFALSE-cp311-cp311-linux_x86_64.whl'

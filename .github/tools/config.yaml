@@ -556,13 +556,13 @@
   metadata:
     description: Qwen 2.5 VL 32B Instruct
     provider: Alibaba
-    gpu_recommendation: Nvidia GPUs with at least 80GB VRAM (e.g about 1 H100 GPUs).
+    gpu_recommendation: Nvidia GPUs with at least 80GBx2 VRAM (e.g about 2 H100 GPUs).
   service_config:
     name: bentovllm-qwen2.5-vl-32b-instruct-service
     traffic:
       timeout: 300
     resources:
-      gpu: 1
+      gpu: 2
       gpu_type: nvidia-a100-80gb
   build:
     system_packages:
@@ -570,7 +570,7 @@
       - git
     post:
       - uv pip install --compile-bytecode torch setuptools
-      - curl -L -o ./flash_attn-2.7.4.post1+cu12torch2.6cxx11abiFALSE-cp311-cp311-linux_x86_64.whl https://github.com/Dao-AILab/flash-attention/releases/download/v2.7.4.post1/flash_attn-2.7.4.post1+cu12torch2.6cxx11abiTRUE-cp311-cp311-linux_x86_64.whl
+      - curl -L -o ./flash_attn-2.7.4.post1+cu12torch2.6cxx11abiFALSE-cp311-cp311-linux_x86_64.whl https://github.com/Dao-AILab/flash-attention/releases/download/v2.7.4.post1/flash_attn-2.7.4.post1+cu12torch2.6cxx11abiFALSE-cp311-cp311-linux_x86_64.whl
       - uv pip install --compile-bytecode ./flash_attn-2.7.4.post1+cu12torch2.6cxx11abiFALSE-cp311-cp311-linux_x86_64.whl
   engine_config:
     model: Qwen/Qwen2.5-VL-32B-Instruct

@@ -10,7 +10,7 @@ Follow this guide to self-host the Qwen 2.5 VL 32B Instruct model with BentoClou
 See [here](https://docs.bentoml.com/en/latest/examples/overview.html) for a full list of BentoML example projects.
 
 ## Prerequisites
-- If you want to test the Service locally, we recommend you use Nvidia GPUs with at least 80GB VRAM (e.g about 1 H100 GPUs).
+- If you want to test the Service locally, we recommend you use Nvidia GPUs with at least 80GBx2 VRAM (e.g about 2 H100 GPUs).
 
 ## Install dependencies
 
