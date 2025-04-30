@@ -53,7 +53,12 @@ openai_api_app = fastapi.FastAPI()
     .system_packages('git')
     .requirements_file('requirements.txt')
     .run('uv pip install --compile-bytecode torch setuptools')
-    .run('uv pip install --compile-bytecode flash-attn')
+    .run(
+        'curl -L -o ./flash_attn-2.7.4.post1+cu12torch2.6cxx11abiFALSE-cp311-cp311-linux_x86_64.whl https://github.com/Dao-AILab/flash-attention/releases/download/v2.7.4.post1/flash_attn-2.7.4.post1+cu12torch2.6cxx11abiTRUE-cp311-cp311-linux_x86_64.whl'
+    )
+    .run(
+        'uv pip install --compile-bytecode ./flash_attn-2.7.4.post1+cu12torch2.6cxx11abiFALSE-cp311-cp311-linux_x86_64.whl'
+    )
     .run('uv pip install --compile-bytecode flashinfer-python --find-links https://flashinfer.ai/whl/cu124/torch2.6'),
 )
 class VLLM:

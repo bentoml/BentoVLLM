@@ -10,7 +10,6 @@ Follow this guide to self-host the Qwen 3 235B A22B MoE model with BentoCloud in
 See [here](https://docs.bentoml.com/en/latest/examples/overview.html) for a full list of BentoML example projects.
 
 ## Prerequisites
-- You have gained access to `Qwen/Qwen3-235B-A22B-FP8` on [Hugging Face](https://huggingface.co/Qwen/Qwen3-235B-A22B-FP8).
 - If you want to test the Service locally, we recommend you use an Nvidia GPU with at least 4x80GB VRAM (e.g about 4 H100 GPU).
 
 ## Install dependencies
@@ -24,8 +23,6 @@ pip install -r requirements.txt
 
 # if you are running locally, we recommend install additional flashinfer library for better performance.
 pip install flashinfer-python --extra-index-url https://flashinfer.ai/whl/cu124/torch2.6
-
-export HF_TOKEN=<your-api-key>
 ```
 
 ## Run the BentoML Service
@@ -164,12 +161,10 @@ Make sure you have [logged in to BentoCloud](https://docs.bentoml.com/en/latest/
 bentoml cloud login
 ```
 
-Create a BentoCloud secret to store the required environment variable and reference it for deployment.
+Create a BentoCloud deployment from this service:
 
 ```bash
-bentoml secret create huggingface HF_TOKEN=$HF_TOKEN
-
-bentoml deploy service:VLLM --secret huggingface
+bentoml deploy service:VLLM
 ```
 
 Once the application is up and running on BentoCloud, you can access it via the exposed URL.
