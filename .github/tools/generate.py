@@ -118,6 +118,7 @@ def generate_jinja_context(model_name: str, config: dict[str, dict[str, t.Any]])
     "c2a": model_config.get("c2a", True),
     "deployment_config": model_config.get("deployment_config", {}),
     "generate_config": model_config.get("generate_config", {}),
+    "nightly": use_nightly,
     "service_config": service_config,
     "engine_config": engine_config_struct,
     "labels": dict(owner="bentoml-team", type="prebuilt", project="bentovllm"),
@@ -127,8 +128,8 @@ def generate_jinja_context(model_name: str, config: dict[str, dict[str, t.Any]])
     "exclude": build_config["exclude"],
     "reasoning": model_config.get("reasoning", False),
     "embeddings": model_config.get("embeddings", False),
-    "nightly": use_nightly,
     "system_prompt": model_config.get("system_prompt", None),
+    "prompt": model_config.get("prompt", None),
   }
 
   requirements = model_config.get("requirements", [])

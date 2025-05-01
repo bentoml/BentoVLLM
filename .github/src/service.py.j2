@@ -131,7 +131,11 @@ class VLLM:
   @bentoml.api
   async def generate(
     self,
+    {%- if prompt is not none %}
+    prompt: str = """{{prompt -}}""",
+    {%- else %}
     prompt: str = "Who are you? Please respond in pirate speak!",
+    {%- endif %}
     {%- if system_prompt is not none %}
     system_prompt: typing.Optional[str]=SYSTEM_PROMPT,
     {%- endif %}

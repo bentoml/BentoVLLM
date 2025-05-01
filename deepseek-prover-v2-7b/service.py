@@ -97,7 +97,26 @@ class VLLM:
     @bentoml.api
     async def generate(
         self,
-        prompt: str = 'Who are you? Please respond in pirate speak!',
+        prompt: str = """Complete the following Lean 4 code:
+
+```lean4
+import Mathlib
+import Aesop
+
+set_option maxHeartbeats 0
+
+open BigOperators Real Nat Topology Rat
+
+/-- What is the positive difference between $120\%$ of 30 and $130\%$ of 20? Show that it is 10.-/
+theorem mathd_algebra_10 : abs ((120 : ℝ) / 100 * 30 - 130 / 100 * 20) = 10 := by
+  sorry
+```
+
+Before producing the Lean 4 code to formally prove the given theorem, provide a detailed proof plan outlining the m
+ain proof steps and strategies.
+The plan should highlight key ideas, intermediate lemmas, and proof structures that will guide the construction of
+the final formal proof.
+""",
         max_tokens: typing_extensions.Annotated[
             int, annotated_types.Ge(128), annotated_types.Le(bento_args.bentovllm_max_tokens)
         ] = bento_args.bentovllm_max_tokens,
