@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import logging, contextlib, traceback, typing
+import logging, contextlib, typing, uuid
 import bentoml, pydantic, fastapi, typing_extensions, annotated_types
 
 logger = logging.getLogger(__name__)
@@ -47,7 +47,7 @@ openai_api_app = fastapi.FastAPI()
     resources={'gpu': bento_args.tensor_parallel_size, 'gpu_type': 'nvidia-h200-141gb'},
     envs=[
         {'name': 'HF_TOKEN'},
-        {'name': 'VLLM_ATTENTION_BACKEND', 'value': 'FLASHMLA'},
+        {'name': 'VLLM_ATTENTION_BACKEND', 'value': 'FLASH_ATTN'},
         {'name': 'VLLM_USE_V1', 'value': '1'},
     ],
     labels={'owner': 'bentoml-team', 'type': 'prebuilt', 'project': 'bentovllm'},
@@ -59,9 +59,6 @@ class VLLM:
     model = bentoml.models.HuggingFaceModel(bento_args.bentovllm_model_id, exclude=['*.pth', '*.pt', 'original/**/*'])
 
     def __init__(self):
-        from openai import AsyncOpenAI
-
-        self.openai = AsyncOpenAI(base_url='http://127.0.0.1:3000/v1', api_key='dummy')
         self.exit_stack = contextlib.AsyncExitStack()
 
     @bentoml.on_startup
@@ -123,22 +120,30 @@ the final formal proof.
         max_tokens: typing_extensions.Annotated[
             int, annotated_types.Ge(128), annotated_types.Le(bento_args.bentovllm_max_tokens)
         ] = bento_args.bentovllm_max_tokens,
-        show_reasoning: bool = True,
     ) -> typing.AsyncGenerator[str, None]:
-        from vllm.entrypoints.openai.protocol import DeltaMessage
+        from vllm import SamplingParams, TokensPrompt
+        from vllm.entrypoints.chat_utils import parse_chat_messages, apply_hf_chat_template
 
         messages = [{'role': 'user', 'content': [{'type': 'text', 'text': prompt}]}]
-        try:
-            completion = await self.openai.chat.completions.create(
-                model=bento_args.bentovllm_model_id, messages=messages, stream=True, max_tokens=max_tokens
+
+        params = SamplingParams(max_tokens=max_tokens)
+        conversation, _ = parse_chat_messages(messages, self.model_config, self.tokenizer, content_format='string')
+        prompt = TokensPrompt(
+            prompt_token_ids=apply_hf_chat_template(
+                self.tokenizer,
+                conversation=conversation,
+                tools=None,
+                add_generation_prompt=True,
+                continue_final_message=False,
+                chat_template=None,
+                tokenize=True,
             )
-            async for chunk in completion:
-                delta_choice = typing.cast(DeltaMessage, chunk.choices[0].delta)
-                if hasattr(delta_choice, 'reasoning_content') and show_reasoning:
-                    yield delta_choice.reasoning_content or ''
-                else:
-                    yield delta_choice.content or ''
-        except Exception:
-            logger.error(traceback.format_exc())
-            yield 'Internal error found. Check server logs for more information'
-            return
+        )
+
+        stream = self.engine.generate(request_id=uuid.uuid4().hex, prompt=prompt, sampling_params=params)
+
+        cursor = 0
+        async for request_output in stream:
+            text = request_output.outputs[0].text
+            yield text[cursor:]
+            cursor = len(text)

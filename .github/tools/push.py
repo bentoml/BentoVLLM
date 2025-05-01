@@ -44,30 +44,53 @@ def push_all_bentos(bento_tags: List[str], context: str, workers: int) -> List[P
   """Push all bentos in parallel using a thread pool."""
   console = Console()
   results = []
+  num_bentos = len(bento_tags)
+
+  console.print()
+  console.print(f"[bold]Pushing {num_bentos} bentos to {context} with {workers} workers[/]")
 
   with Progress(
     SpinnerColumn(spinner_name="bouncingBar"),
     TextColumn("[progress.description]{task.description}"),
     console=console,
   ) as progress:
-    overall_task = progress.add_task("[yellow]Pushing bentos...[/]", total=len(bento_tags))
-    push_tasks = {tag: progress.add_task(f"[cyan]Waiting to push {tag}...[/]", total=1) for tag in bento_tags}
+    overall_task = progress.add_task(f"[yellow]Pushing {num_bentos} bentos...[/]", total=num_bentos)
 
     with ThreadPoolExecutor(max_workers=workers) as executor:
-      future_to_bento = {
-        executor.submit(push_bento, tag, context, progress, push_tasks[tag]): tag for tag in bento_tags
-      }
+      future_to_bento = {executor.submit(push_bento, tag, context, progress, overall_task): tag for tag in bento_tags}
 
+      pushed_count = 0
       for future in as_completed(future_to_bento):
         result = future.result()
         results.append(result)
-        progress.advance(overall_task)
-        tag_task = push_tasks[result.bento_tag]
+        pushed_count += 1
+        bento_tag = result.bento_tag
+
+        progress.update(
+          overall_task, description=f"[blue]({pushed_count}/{num_bentos}) Processing pushes...[/]", advance=1
+        )
 
         if result.success:
-          progress.update(tag_task, description=f"[green]✓ {result.bento_tag}[/]", completed=1)
+          console.print(f"  [green]✓ Pushed {bento_tag}[/]")
         else:
-          progress.update(tag_task, description=f"[red]✗ {result.bento_tag}: {result.error}[/]", completed=1)
+          console.print(f"  [red]✗ Failed {bento_tag}: {result.error}[/]")
+
+    progress.update(overall_task, description=f"[bold green]Finished processing {num_bentos} pushes.[/]")
+
+  console.print()
+
+  successful_pushes = [r for r in results if r.success]
+  failed_pushes = [r for r in results if not r.success]
+
+  console.print("[bold]Push Summary:[/]")
+  console.print(f"Total bentos: {num_bentos}")
+  console.print(f"Successful pushes: {len(successful_pushes)}")
+  console.print(f"Failed pushes: {len(failed_pushes)}")
+
+  if failed_pushes:
+    console.print("\n[bold red]Failed Push Details:[/]")
+    for r in failed_pushes:
+      console.print(f"  - {r.bento_tag}: {r.error}")
 
   return results
 

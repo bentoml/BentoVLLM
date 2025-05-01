@@ -225,39 +225,73 @@ def generate_all_models(config: dict, git_dir: Path, force: bool = False, worker
   console = Console()
   models = list(config.keys())
   results = []
+  num_models = len(models)
+
+  console.print()
+  console.print(f"[bold]Generating {num_models} models with {workers} workers[/]")
 
   with Progress(
     SpinnerColumn(spinner_name="bouncingBar"),
     TextColumn("[progress.description]{task.description}"),
     console=console,
   ) as progress:
-    overall_task = progress.add_task("[yellow]Generating models...[/]", total=len(models))
-    gen_tasks = {model: progress.add_task(f"[cyan]Waiting to generate {model}...[/]", total=1) for model in models}
+    overall_task = progress.add_task(f"[yellow]Generating {num_models} models...[/]", total=num_models)
+    # Removed individual task creation
 
     with ThreadPoolExecutor(max_workers=workers) as executor:
       future_to_model = {
-        executor.submit(generate_model, model_name, config, git_dir, progress, gen_tasks[model_name]): model_name
+        # Pass overall_task ID instead of individual task ID
+        executor.submit(generate_model, model_name, config, git_dir, progress, overall_task): model_name
         for model_name in models
       }
 
+      generated_count = 0
       for future in as_completed(future_to_model):
         result = future.result()
         results.append(result)
-        progress.advance(overall_task)
+        generated_count += 1
+        model_name = result.model_name
 
-    successful = [r for r in results if r.success]
-    no_changes = [r for r in successful if r.no_changes]
-    updated = [r for r in successful if not r.no_changes]
+        # Update progress bar description to show general progress
+        progress.update(
+          overall_task,
+          description=f"[blue]({generated_count}/{num_models}) Processing models...[/]",
+          advance=1,
+        )
 
-    # Print summary
-    console.print("\n[bold]Generation Summary:[/]")
-    console.print(f"Total models: {len(models)}")
-    console.print(f"Successful generations: {len(successful)}")
-    console.print(f"  - Updated: {len(updated)}")
-    console.print(f"  - No changes needed: {len(no_changes)}")
-    console.print(f"Failed generations: {len(results) - len(successful)}")
+        # Print status on a new line
+        if result.success:
+          if result.no_changes:
+            console.print(f"  [cyan]✓ No changes for {model_name}[/]")
+          else:
+            console.print(f"  [green]✓ Generated {model_name}[/]")
+        else:
+          console.print(f"  [red]✗ Failed {model_name}: {result.error}[/]")
 
-    return len(successful) == len(models)
+    # Final update after loop completes - just show completion message
+    progress.update(overall_task, description=f"[bold green]Finished processing {num_models} models.[/]")
+
+  console.print()  # Add newline after progress bar
+
+  successful = [r for r in results if r.success]
+  no_changes = [r for r in successful if r.no_changes]
+  updated = [r for r in successful if not r.no_changes]
+  failed = [r for r in results if not r.success]
+
+  # Print summary
+  console.print("[bold]Generation Summary:[/]")
+  console.print(f"Total models: {num_models}")
+  console.print(f"Successful generations: {len(successful)}")
+  console.print(f"  - Updated: {len(updated)}")
+  console.print(f"  - No changes needed: {len(no_changes)}")
+  console.print(f"Failed generations: {len(failed)}")
+
+  if failed:
+    console.print("\n[bold red]Failed Generation Details:[/]")
+    for r in failed:
+      console.print(f"  - {r.model_name}: {r.error}")
+
+  return len(successful) == len(models)
 
 
 def main() -> int:
@@ -287,6 +321,38 @@ def main() -> int:
   readme_config = copy.deepcopy(config)
 
   console = Console()
+
+  # --- Check for and remove unexpected directories ---
+  expected_dirs = set(config.keys())
+  known_dirs = {
+    ".git",
+    ".github",
+    "venv",
+    ".venv",
+    "bentocloud-homepage-news",
+  }  # Add other known non-model dirs if needed
+  found_dirs = {d.name for d in git_dir.iterdir() if d.is_dir()}
+  unexpected_dirs = found_dirs - expected_dirs - known_dirs
+
+  if unexpected_dirs:
+    console.print(
+      "[bold yellow]Warning:[/bold yellow] Found directories in the repository root not listed in config.yaml:"
+    )
+    for dir_name in unexpected_dirs:
+      console.print(f"  - {dir_name}")
+    # Remove the unexpected directories
+    console.print("[bold red]Removing unexpected directories...[/]")
+    for dir_name in unexpected_dirs:
+      try:
+        target_dir = git_dir / dir_name
+        if target_dir.is_dir():  # Double check it's a directory before removing
+          shutil.rmtree(target_dir)
+          console.print(f"[green]Removed {dir_name}[/]")
+        else:
+          console.print(f"[yellow]Skipped {dir_name} as it is not a directory.[/]")
+      except OSError as e:  # noqa: PERF203
+        console.print(f"[red]Error removing {dir_name}: {e}[/]")
+
   if args.model_names:
     invalid_models = [model for model in args.model_names if model not in config]
     if invalid_models:

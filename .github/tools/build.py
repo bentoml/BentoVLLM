@@ -70,8 +70,6 @@ def build_model(
   version_path = ensure_venv(req_txt_file, venv_dir, cfg)
 
   try:
-    progress.update(task_id, description=f"[blue]Building {model_name}...[/]")
-
     # Run bentoml build with output capture
     result = subprocess.run(
       [version_path / "bin" / "python", "-m", "bentoml", "build", "service:VLLM", "--output", "tag"],
@@ -100,32 +98,41 @@ def build_bentos(config: Dict[str, Any], git_dir: pathlib.Path, workers: int) ->
   """Build all models in parallel using a thread pool."""
   console = Console()
   results = []
+  num_models = len(config)
 
   with Progress(
     SpinnerColumn(spinner_name="bouncingBar"),
     TextColumn("[progress.description]{task.description}"),
     console=console,
   ) as progress:
-    overall_task = progress.add_task("[yellow]Building bentos...[/]", total=len(config))
-    build_tasks = {model: progress.add_task(f"[cyan]Waiting to build {model}...[/]", total=1) for model in config}
+    overall_task = progress.add_task(f"[yellow]Building {num_models} bentos...[/]", total=num_models)
 
     with ThreadPoolExecutor(max_workers=workers) as executor:
       future_to_model = {
-        executor.submit(build_model, model, cfg, git_dir, progress, build_tasks[model]): model
+        executor.submit(build_model, model, cfg, git_dir, progress, overall_task): model
         for model, cfg in config.items()
       }
 
+      built_count = 0
       for future in as_completed(future_to_model):
         result = future.result()
         results.append(result)
-        progress.advance(overall_task)
-        model_task = build_tasks[result.model_name]
+        built_count += 1
+        model_name = result.model_name
+
+        # Update progress bar description to show general progress
+        progress.update(
+          overall_task, description=f"[blue]({built_count}/{num_models}) Processing models...[/]", advance=1
+        )
 
         if result.success:
-          progress.update(model_task, description=f"[green]✓: {result.bento_tag}[/]", completed=1)
+          console.print(f"  [green]✓ Built {result.bento_tag}[/]")
         else:
-          progress.update(model_task, description=f"[red]✗: {result.error}[/]", completed=1)
+          console.print(f"  [red]✗ Failed {model_name}: {result.error}[/]")
 
+    progress.update(overall_task, description=f"[bold green]Finished processing {num_models} models.[/]")
+
+  console.print()
   return results
 
 
@@ -148,6 +155,7 @@ def main() -> int:
     config = yaml.safe_load(f)
 
   console = Console()
+
   if args.model_names:
     invalid_models = [model for model in args.model_names if model not in config]
     if invalid_models:
@@ -157,6 +165,7 @@ def main() -> int:
   else:
     filtered_config = config
 
+  console.print()
   console.print(f"[bold]Building {len(filtered_config)} bentos with {args.workers} workers[/]")
 
   results = build_bentos(filtered_config, git_dir, args.workers)
@@ -166,7 +175,15 @@ def main() -> int:
   console.print("\n[bold]Build Summary:[/]")
   console.print(f"Total bentos: {len(filtered_config)}")
   console.print(f"Successful builds: {len(successful_builds)}")
-  console.print(f"Failed builds: {len(results) - len(successful_builds)}")
+  failed_builds = len(results) - len(successful_builds)
+  console.print(f"Failed builds: {failed_builds}")
+
+  # Print details for failed builds
+  if failed_builds > 0:
+    console.print("\n[bold red]Failed Build Details:[/]")
+    for r in results:
+      if not r.success:
+        console.print(f"  - {r.model_name}: {r.error}")
 
   # Save successful bento tags to file for later use
   if successful_builds:

@@ -45,8 +45,6 @@
   generate_config:
     max_tokens: 2048
 "deepseek-prover-v2-671b":
-  reasoning: true
-  use_mla: true
   metadata:
     description: DeepSeek Prover V2 671B
     provider: DeepSeek
@@ -90,8 +88,6 @@
     The plan should highlight key ideas, intermediate lemmas, and proof structures that will guide the construction of
     the final formal proof.
 "deepseek-prover-v2-7b":
-  reasoning: true
-  use_mla: true
   metadata:
     description: DeepSeek Prover V2 7B
     provider: DeepSeek
