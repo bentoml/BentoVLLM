@@ -24,10 +24,7 @@ class BentoArgs(Args):
     request_logger: typing.Any = None
     disable_log_stats: bool = True
     use_tqdm_on_load: bool = False
-    trust_remote_code: bool = True
     max_model_len: int = 4096
-    enable_reasoning: bool = True
-    reasoning_parser: str = 'deepseek_r1'
     max_num_seqs: int = 256
     tensor_parallel_size: int = 1
 

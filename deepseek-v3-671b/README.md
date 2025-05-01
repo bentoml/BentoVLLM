@@ -10,7 +10,7 @@ Follow this guide to self-host the DeepSeek V3 671B model with BentoCloud in you
 See [here](https://docs.bentoml.com/en/latest/examples/overview.html) for a full list of BentoML example projects.
 
 ## Prerequisites
-- You have gained access to `deepseek-ai/DeepSeek-V3` on [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-V3).
+- You have gained access to `deepseek-ai/DeepSeek-V3-0324` on [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-V3-0324).
 - If you want to test the Service locally, we recommend you use Nvidia GPUs with at least 80GBx16 VRAM (e.g. about 8 H200 GPUs).
 
 ## Install dependencies
@@ -39,7 +39,7 @@ $ bentoml serve service.py:VLLM
 The server is now active at [http://localhost:3000](http://localhost:3000/). You can interact with it using the Swagger UI or in other different ways.
 
 > [!NOTE]
-> This ships with a default `max_model_len=8192`. If you wish to change this value, uses `--arg` at serve [time](https://docs.bentoml.com/en/latest/reference/bentoml/bento-build-options.html#args). Make sure that you have enough VRAM to use this context length. BentoVLLM will only set a conservative value based on this model configuration.
+> This ships with a default `max_model_len=4096`. If you wish to change this value, uses `--arg` at serve [time](https://docs.bentoml.com/en/latest/reference/bentoml/bento-build-options.html#args). Make sure that you have enough VRAM to use this context length. BentoVLLM will only set a conservative value based on this model configuration.
 >
 > ```bash
 > bentoml serve --arg max_model_len=8192 service.py:VLLM
@@ -58,7 +58,7 @@ client = OpenAI(base_url='http://localhost:3000/v1', api_key='na')
 client.models.list()
 
 chat_completion = client.chat.completions.create(
-    model="deepseek-ai/DeepSeek-V3",
+    model="deepseek-ai/DeepSeek-V3-0324",
     messages=[
         {
             "role": "user",
@@ -90,7 +90,7 @@ json_schema = {
 }
 
 chat_completion = client.chat.completions.create(
-    model="deepseek-ai/DeepSeek-V3",
+    model="deepseek-ai/DeepSeek-V3-0324",
     messages=[
         {
             "role": "user",

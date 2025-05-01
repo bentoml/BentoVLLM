@@ -177,7 +177,7 @@ In addition to Llama 3.1 8B Instruct, we also have examples for other models in 
 
 | Model | Links |
 |-------|-------|
-| deepseek-v3-671b | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/deepseek-v3-671b/) • [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-V3) |
+| deepseek-v3-671b | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/deepseek-v3-671b/) • [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-V3-0324) |
 | deepseek-r1-671b | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/deepseek-r1-671b/) • [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-R1) |
 | deepseek-prover-v2-671b | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/deepseek-prover-v2-671b/) • [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-Prover-V2-671B) |
 | deepseek-prover-v2-7b | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/deepseek-prover-v2-7b/) • [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-Prover-V2-7B) |

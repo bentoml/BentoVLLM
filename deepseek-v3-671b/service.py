@@ -16,16 +16,16 @@ else:
 
 
 class BentoArgs(Args):
-    bentovllm_model_id: str = 'deepseek-ai/DeepSeek-V3'
-    bentovllm_max_tokens: int = 4096
+    bentovllm_model_id: str = 'deepseek-ai/DeepSeek-V3-0324'
+    bentovllm_max_tokens: int = 2048
 
     disable_log_requests: bool = True
     max_log_len: int = 1000
     request_logger: typing.Any = None
     disable_log_stats: bool = True
     use_tqdm_on_load: bool = False
-    max_model_len: int = 8192
-    max_num_seqs: int = 256
+    max_model_len: int = 4096
+    max_num_seqs: int = 128
     tensor_parallel_size: int = 8
 
     @pydantic.model_serializer
