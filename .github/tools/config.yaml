@@ -596,6 +596,7 @@
   generate_config:
     max_tokens: 4096
 "phi4-14b-reasoning":
+  reasoning: true
   metadata:
     description: Phi 4 14B Reasoning
     provider: Microsoft
