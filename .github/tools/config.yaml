@@ -25,7 +25,7 @@
   metadata:
     description: DeepSeek R1 671B
     provider: DeepSeek
-    gpu_recommendation: Nvidia GPUs with at least 80GBx16 VRAM (e.g. about 8 H200 GPUs).
+    gpu_recommendation: Nvidia GPUs with at least 80GBx8 VRAM (e.g. about 8 H200 GPUs).
   service_config:
     name: bentovllm-deepseek-r1-671b-service
     traffic:
@@ -38,12 +38,62 @@
   engine_config:
     model: deepseek-ai/DeepSeek-R1
     trust_remote_code: true
-    max_model_len: 8192
+    max_model_len: 4096
+    enable_reasoning: true
+    reasoning_parser: "deepseek_r1"
+    max_num_seqs: 128
+  generate_config:
+    max_tokens: 2048
+"deepseek-prover-v2-671b":
+  reasoning: true
+  use_mla: true
+  metadata:
+    description: DeepSeek Prover V2 671B
+    provider: DeepSeek
+    gpu_recommendation: Nvidia GPUs with at least 80GBx8 VRAM (e.g. about 8 H200 GPUs).
+  service_config:
+    name: bentovllm-deepseek-prover-v2-671b-service
+    traffic:
+      timeout: 300
+    resources:
+      gpu: 8
+      gpu_type: nvidia-h200-141gb
+    envs:
+      - name: HF_TOKEN
+  engine_config:
+    model: deepseek-ai/DeepSeek-Prover-V2-671B
+    trust_remote_code: true
+    max_model_len: 4096
+    enable_reasoning: true
+    reasoning_parser: "deepseek_r1"
+    max_num_seqs: 128
+  generate_config:
+    max_tokens: 2048
+"deepseek-prover-v2-7b":
+  reasoning: true
+  use_mla: true
+  metadata:
+    description: DeepSeek Prover V2 7B
+    provider: DeepSeek
+    gpu_recommendation: Nvidia GPUs with at least 80GB VRAM (e.g. about 1 H100 GPU).
+  service_config:
+    name: bentovllm-deepseek-prover-v2-7b-service
+    traffic:
+      timeout: 300
+    resources:
+      gpu: 1
+      gpu_type: nvidia-tesla-h100
+    envs:
+      - name: HF_TOKEN
+  engine_config:
+    model: deepseek-ai/DeepSeek-Prover-V2-7B
+    trust_remote_code: true
+    max_model_len: 4096
     enable_reasoning: true
     reasoning_parser: "deepseek_r1"
     max_num_seqs: 256
   generate_config:
-    max_tokens: 4096
+    max_tokens: 2048
 "deepseek-r1-distill-llama3.3-70b":
   reasoning: true
   metadata:

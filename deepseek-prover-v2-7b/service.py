@@ -16,7 +16,7 @@ else:
 
 
 class BentoArgs(Args):
-    bentovllm_model_id: str = 'deepseek-ai/DeepSeek-R1'
+    bentovllm_model_id: str = 'deepseek-ai/DeepSeek-Prover-V2-7B'
     bentovllm_max_tokens: int = 2048
 
     disable_log_requests: bool = True
@@ -28,8 +28,8 @@ class BentoArgs(Args):
     max_model_len: int = 4096
     enable_reasoning: bool = True
     reasoning_parser: str = 'deepseek_r1'
-    max_num_seqs: int = 128
-    tensor_parallel_size: int = 8
+    max_num_seqs: int = 256
+    tensor_parallel_size: int = 1
 
     @pydantic.model_serializer
     def serialize_model(self) -> dict[str, typing.Any]:
@@ -42,9 +42,9 @@ openai_api_app = fastapi.FastAPI()
 
 @bentoml.asgi_app(openai_api_app, path='/v1')
 @bentoml.service(
-    name='bentovllm-deepseek-r1-671b-service',
+    name='bentovllm-deepseek-prover-v2-7b-service',
     traffic={'timeout': 300},
-    resources={'gpu': bento_args.tensor_parallel_size, 'gpu_type': 'nvidia-h200-141gb'},
+    resources={'gpu': bento_args.tensor_parallel_size, 'gpu_type': 'nvidia-tesla-h100'},
     envs=[
         {'name': 'HF_TOKEN'},
         {'name': 'VLLM_ATTENTION_BACKEND', 'value': 'FLASHMLA'},
