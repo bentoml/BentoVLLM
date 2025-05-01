@@ -74,7 +74,7 @@ openai_api_app = fastapi.FastAPI()
         {'name': 'VLLM_ATTENTION_BACKEND', 'value': 'FLASH_ATTN'},
         {'name': 'VLLM_USE_V1', 'value': '1'},
     ],
-    labels={'owner': 'bentoml-team', 'type': 'prebuilt'},
+    labels={'owner': 'bentoml-team', 'type': 'prebuilt', 'project': 'bentovllm'},
     image=bentoml.images.Image(python_version='3.11')
     .requirements_file('requirements.txt')
     .run('uv pip install --compile-bytecode vllm --pre --extra-index-url https://wheels.vllm.ai/nightly')

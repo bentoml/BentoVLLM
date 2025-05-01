@@ -120,7 +120,7 @@ def generate_jinja_context(model_name: str, config: dict[str, dict[str, t.Any]])
     "generate_config": model_config.get("generate_config", {}),
     "service_config": service_config,
     "engine_config": engine_config_struct,
-    "labels": dict(owner="bentoml-team", type="prebuilt"),
+    "labels": dict(owner="bentoml-team", type="prebuilt", project="bentovllm"),
     "metadata": model_config["metadata"],
     "requires_hf_tokens": requires_hf_tokens,
     "build": build_config,
