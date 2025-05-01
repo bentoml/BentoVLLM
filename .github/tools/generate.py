@@ -41,11 +41,7 @@ def update_model_descriptions(config, git_dir):
 
   # Update descriptions for each model
   for model_name, model_config in config.items():
-    repo_name = f"bentovllm-{model_name}-service"
-
-    # handle aliases
-    if model_name.startswith("deepseek-r1-distill"):
-      repo_name = f"bentovllm-r1{model_name.removeprefix('deepseek-r1-distill')}-service"
+    repo_name = model_name.lower()
 
     if repo_name in certified_list:
       continue
@@ -219,7 +215,7 @@ def generate_model(model_name: str, config: dict, git_dir: Path, progress: Progr
     return GenerateResult(model_name, True)
 
   except Exception as e:
-    progress.update(task_id, description=f"[red]✗ {model_name}: {str(e)}[/]", completed=1)
+    progress.update(task_id, description=f"[red]✗ {model_name}: {e!s}[/]", completed=1)
     return GenerateResult(model_name, False, str(e))
 
 

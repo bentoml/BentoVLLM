@@ -182,7 +182,7 @@ In addition to Llama 3.1 8B Instruct, we also have examples for other models in 
 | deepseek-prover-v2-671b | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/deepseek-prover-v2-671b/) • [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-Prover-V2-671B) |
 | deepseek-prover-v2-7b | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/deepseek-prover-v2-7b/) • [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-Prover-V2-7B) |
 | deepseek-r1-distill-llama3.3-70b | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/deepseek-r1-distill-llama3.3-70b/) • [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Llama-70B) |
-| deepseek-r1-distill-llama3.1-8b-tool-calling | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/deepseek-r1-distill-llama3.1-8b-tool-calling/) • [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Llama-8B) |
+| deepseek-r1-distill-llama3.1-8b | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/deepseek-r1-distill-llama3.1-8b/) • [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Llama-8B) |
 | gemma3-4b-instruct | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/gemma3-4b-instruct/) • [Hugging Face](https://huggingface.co/google/gemma-3-4b-it) |
 | gemma3-1b-instruct | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/gemma3-1b-instruct/) • [Hugging Face](https://huggingface.co/google/gemma-3-1b-it) |
 | jamba1.5-mini | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/jamba1.5-mini/) • [Hugging Face](https://huggingface.co/ai21labs/AI21-Jamba-1.5-Mini) |
@@ -200,5 +200,5 @@ In addition to Llama 3.1 8B Instruct, we also have examples for other models in 
 | qwen2.5-vl-32b-instruct | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/qwen2.5-vl-32b-instruct/) • [Hugging Face](https://huggingface.co/Qwen/Qwen2.5-VL-32B-Instruct) |
 | qwq-32b | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/qwq-32b/) • [Hugging Face](https://huggingface.co/Qwen/QwQ-32B) |
 | qwen3-8b | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/qwen3-8b/) • [Hugging Face](https://huggingface.co/Qwen/Qwen3-8B) |
-| qwen3-30b-A3b | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/qwen3-30b-A3b/) • [Hugging Face](https://huggingface.co/Qwen/Qwen3-30B-A3B) |
-| qwen3-235b-A22b | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/qwen3-235b-A22b/) • [Hugging Face](https://huggingface.co/Qwen/Qwen3-235B-A22B-FP8) |
+| qwen3-30b-a3b | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/qwen3-30b-a3b/) • [Hugging Face](https://huggingface.co/Qwen/Qwen3-30B-A3B) |
+| qwen3-235b-a22b | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/qwen3-235b-a22b/) • [Hugging Face](https://huggingface.co/Qwen/Qwen3-235B-A22B-FP8) |

@@ -43,7 +43,7 @@ openai_api_app = fastapi.FastAPI()
 
 @bentoml.asgi_app(openai_api_app, path='/v1')
 @bentoml.service(
-    name='bentovllm-r1-llama3.1-8b-tool-calling-service',
+    name='r1-distill-llama3.1-8b',
     traffic={'timeout': 300},
     resources={'gpu': bento_args.tensor_parallel_size, 'gpu_type': 'nvidia-l4'},
     envs=[

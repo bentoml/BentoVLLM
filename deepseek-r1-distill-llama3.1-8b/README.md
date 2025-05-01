@@ -1,8 +1,8 @@
 <div align="center">
-    <h1 align="center">Self-host Qwen 3 30B A3B MoE with vLLM and BentoML</h1>
+    <h1 align="center">Self-host DeepSeek R1 Distill Llama 3.1 8B with vLLM and BentoML</h1>
 </div>
 
-Follow this guide to self-host the Qwen 3 30B A3B MoE model with BentoCloud in your own cloud account. If your team doesn’t already have access to BentoCloud, please use the link below to contact us and set it up in your cloud environment.
+Follow this guide to self-host the DeepSeek R1 Distill Llama 3.1 8B model with BentoCloud in your own cloud account. If your team doesn’t already have access to BentoCloud, please use the link below to contact us and set it up in your cloud environment.
 
 [![Deploy on BentoCloud](https://img.shields.io/badge/Deploy_on_BentoCloud-d0bfff?style=for-the-badge)](https://cloud.bentoml.com/)
 [![Talk to sales](https://img.shields.io/badge/Talk_to_sales-eefbe4?style=for-the-badge)](https://bentoml.com/contact)
@@ -10,19 +10,22 @@ Follow this guide to self-host the Qwen 3 30B A3B MoE model with BentoCloud in y
 See [here](https://docs.bentoml.com/en/latest/examples/overview.html) for a full list of BentoML example projects.
 
 ## Prerequisites
-- If you want to test the Service locally, we recommend you use an Nvidia GPU with at least 2x80GB VRAM (e.g about 2 H100 GPU).
+- You have gained access to `deepseek-ai/DeepSeek-R1-Distill-Llama-8B` on [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Llama-8B).
+- If you want to test the Service locally, we recommend you use an Nvidia GPU with at least 24GB VRAM (e.g about 1 L4 GPU).
 
 ## Install dependencies
 
 ```bash
 git clone https://github.com/bentoml/BentoVLLM.git
-cd BentoVLLM/qwen3-30b-A3b
+cd BentoVLLM/deepseek-r1-distill-llama3.1-8b
 
 # Recommend Python 3.11
 pip install -r requirements.txt
 
 # if you are running locally, we recommend install additional flashinfer library for better performance.
 pip install flashinfer-python --extra-index-url https://flashinfer.ai/whl/cu124/torch2.6
+
+export HF_TOKEN=<your-api-key>
 ```
 
 ## Run the BentoML Service
@@ -36,7 +39,7 @@ $ bentoml serve service.py:VLLM
 The server is now active at [http://localhost:3000](http://localhost:3000/). You can interact with it using the Swagger UI or in other different ways.
 
 > [!NOTE]
-> This ships with a default `max_model_len=8192`. If you wish to change this value, uses `--arg` at serve [time](https://docs.bentoml.com/en/latest/reference/bentoml/bento-build-options.html#args). Make sure that you have enough VRAM to use this context length. BentoVLLM will only set a conservative value based on this model configuration.
+> This ships with a default `max_model_len=4096`. If you wish to change this value, uses `--arg` at serve [time](https://docs.bentoml.com/en/latest/reference/bentoml/bento-build-options.html#args). Make sure that you have enough VRAM to use this context length. BentoVLLM will only set a conservative value based on this model configuration.
 >
 > ```bash
 > bentoml serve --arg max_model_len=8192 service.py:VLLM
@@ -55,7 +58,7 @@ client = OpenAI(base_url='http://localhost:3000/v1', api_key='na')
 client.models.list()
 
 chat_completion = client.chat.completions.create(
-    model="Qwen/Qwen3-30B-A3B",
+    model="deepseek-ai/DeepSeek-R1-Distill-Llama-8B",
     messages=[
         {
             "role": "user",
@@ -87,7 +90,7 @@ json_schema = {
 }
 
 chat_completion = client.chat.completions.create(
-    model="Qwen/Qwen3-30B-A3B",
+    model="deepseek-ai/DeepSeek-R1-Distill-Llama-8B",
     messages=[
         {
             "role": "user",
@@ -161,11 +164,23 @@ Make sure you have [logged in to BentoCloud](https://docs.bentoml.com/en/latest/
 bentoml cloud login
 ```
 
-Create a BentoCloud deployment from this service:
+Create a BentoCloud secret to store the required environment variable and reference it for deployment.
 
 ```bash
-bentoml deploy service:VLLM
+bentoml secret create huggingface HF_TOKEN=$HF_TOKEN
+
+bentoml deploy service:VLLM --secret huggingface
 ```
+
+> [!NOTE]
+> You can also use the following deployment config for `deepseek-ai/DeepSeek-R1-Distill-Llama-8B`. Please contact us to set it up in your cloud environment:
+>
+> ```bash
+>
+> # tp-4.yaml
+> bentoml build -f tp-4.yaml -o tag | sed 's/__tag__://' | xargs bentoml deploy
+>
+> ```
 
 Once the application is up and running on BentoCloud, you can access it via the exposed URL.
 

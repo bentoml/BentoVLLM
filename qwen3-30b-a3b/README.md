@@ -1,8 +1,8 @@
 <div align="center">
-    <h1 align="center">Self-host Qwen 3 235B A22B MoE with vLLM and BentoML</h1>
+    <h1 align="center">Self-host Qwen 3 30B A3B MoE with vLLM and BentoML</h1>
 </div>
 
-Follow this guide to self-host the Qwen 3 235B A22B MoE model with BentoCloud in your own cloud account. If your team doesn’t already have access to BentoCloud, please use the link below to contact us and set it up in your cloud environment.
+Follow this guide to self-host the Qwen 3 30B A3B MoE model with BentoCloud in your own cloud account. If your team doesn’t already have access to BentoCloud, please use the link below to contact us and set it up in your cloud environment.
 
 [![Deploy on BentoCloud](https://img.shields.io/badge/Deploy_on_BentoCloud-d0bfff?style=for-the-badge)](https://cloud.bentoml.com/)
 [![Talk to sales](https://img.shields.io/badge/Talk_to_sales-eefbe4?style=for-the-badge)](https://bentoml.com/contact)
@@ -10,13 +10,13 @@ Follow this guide to self-host the Qwen 3 235B A22B MoE model with BentoCloud in
 See [here](https://docs.bentoml.com/en/latest/examples/overview.html) for a full list of BentoML example projects.
 
 ## Prerequisites
-- If you want to test the Service locally, we recommend you use an Nvidia GPU with at least 4x80GB VRAM (e.g about 4 H100 GPU).
+- If you want to test the Service locally, we recommend you use an Nvidia GPU with at least 2x80GB VRAM (e.g about 2 H100 GPU).
 
 ## Install dependencies
 
 ```bash
 git clone https://github.com/bentoml/BentoVLLM.git
-cd BentoVLLM/qwen3-235b-A22b
+cd BentoVLLM/qwen3-30b-a3b
 
 # Recommend Python 3.11
 pip install -r requirements.txt
@@ -55,7 +55,7 @@ client = OpenAI(base_url='http://localhost:3000/v1', api_key='na')
 client.models.list()
 
 chat_completion = client.chat.completions.create(
-    model="Qwen/Qwen3-235B-A22B-FP8",
+    model="Qwen/Qwen3-30B-A3B",
     messages=[
         {
             "role": "user",
@@ -87,7 +87,7 @@ json_schema = {
 }
 
 chat_completion = client.chat.completions.create(
-    model="Qwen/Qwen3-235B-A22B-FP8",
+    model="Qwen/Qwen3-30B-A3B",
     messages=[
         {
             "role": "user",

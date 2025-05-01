@@ -16,7 +16,7 @@ else:
 
 
 class BentoArgs(Args):
-    bentovllm_model_id: str = 'Qwen/Qwen3-30B-A3B'
+    bentovllm_model_id: str = 'Qwen/Qwen3-235B-A22B-FP8'
     bentovllm_max_tokens: int = 4096
 
     disable_log_requests: bool = True
@@ -30,7 +30,7 @@ class BentoArgs(Args):
     max_num_seqs: int = 256
     enable_auto_tool_choice: bool = True
     tool_call_parser: str = 'hermes'
-    tensor_parallel_size: int = 2
+    tensor_parallel_size: int = 4
 
     @pydantic.model_serializer
     def serialize_model(self) -> dict[str, typing.Any]:
@@ -43,7 +43,7 @@ openai_api_app = fastapi.FastAPI()
 
 @bentoml.asgi_app(openai_api_app, path='/v1')
 @bentoml.service(
-    name='bentovllm-qwen3-30b-a3b-service',
+    name='qwen3-235b-a22b',
     traffic={'timeout': 300},
     resources={'gpu': bento_args.tensor_parallel_size, 'gpu_type': 'nvidia-tesla-h100'},
     envs=[{'name': 'VLLM_ATTENTION_BACKEND', 'value': 'FLASH_ATTN'}, {'name': 'VLLM_USE_V1', 'value': '1'}],
