@@ -562,45 +562,6 @@
     chat_template: "{% if messages[0]['role'] == 'system' %}\n    {% set offset = 1 %}\n{% else %}\n    {% set offset = 0 %}\n{% endif %}\n\n{% for message in messages %}\n    {% if (message['role'] == 'user') != (loop.index0 % 2 == offset) %}\n        {{ raise_exception('Conversation roles must alternate user/assistant/user/assistant/...') }}\n    {% endif %}\n\n    {{ '<|' + message['role'] + '|>\\n' + message['content'].strip() + '<|end|>' + '\\n' }}\n\n    {% if loop.last and message['role'] == 'user' and add_generation_prompt %}\n        {{ '<|assistant|>\\n' }}\n    {% endif %}\n{% endfor %}\n"
   generate_config:
     max_tokens: 4096
-"qwen2.5-7b-instruct":
-  metadata:
-    description: Qwen 2.5 7B Instruct
-    provider: Alibaba
-    gpu_recommendation: an Nvidia GPU with at least 24GB VRAM (e.g about 1 L4 GPU).
-  service_config:
-    name: bentovllm-qwen2.5-7b-instruct-service
-    traffic:
-      timeout: 300
-    resources:
-      gpu: 1
-      gpu_type: nvidia-l4
-  engine_config:
-    model: Qwen/Qwen2.5-7B-Instruct
-    max_model_len: 2048
-    enable_auto_tool_choice: true
-    tool_call_parser: "hermes"
-  generate_config:
-    max_tokens: 1024
-"qwen2.5-72b-instruct":
-  metadata:
-    description: Qwen 2.5 72B Instruct
-    provider: Alibaba
-    gpu_recommendation: Nvidia GPUs with at least 80GBx2 VRAM (e.g about 2 H100 GPUs).
-  service_config:
-    name: bentovllm-qwen2.5-72b-instruct-service
-    traffic:
-      timeout: 300
-    resources:
-      gpu: 2
-      gpu_type: nvidia-a100-80gb
-  engine_config:
-    model: Qwen/Qwen2.5-72B-Instruct
-    max_model_len: 2048
-    max_num_seqs: 256
-    enable_auto_tool_choice: true
-    tool_call_parser: "hermes"
-  generate_config:
-    max_tokens: 1024
 "qwen2.5-vl-32b-instruct":
   vision: true
   metadata:
