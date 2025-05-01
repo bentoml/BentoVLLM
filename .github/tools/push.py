@@ -118,7 +118,6 @@ def main() -> int:
     return 1
 
   console = Console()
-  console.print(f"[bold]Pushing {len(bento_tags)} bentos to {args.context} with {args.workers} workers[/]")
 
   results = push_all_bentos(bento_tags, args.context, args.workers)
   successful_pushes = [r for r in results if r.success]

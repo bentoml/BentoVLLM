@@ -322,15 +322,8 @@ def main() -> int:
 
   console = Console()
 
-  # --- Check for and remove unexpected directories ---
   expected_dirs = set(config.keys())
-  known_dirs = {
-    ".git",
-    ".github",
-    "venv",
-    ".venv",
-    "bentocloud-homepage-news",
-  }  # Add other known non-model dirs if needed
+  known_dirs = {".git", ".github", "venv", ".venv", "bentocloud-homepage-news", ".mypy_cache", ".ruff_cache"}
   found_dirs = {d.name for d in git_dir.iterdir() if d.is_dir()}
   unexpected_dirs = found_dirs - expected_dirs - known_dirs
 

@@ -95,7 +95,7 @@ main() {
     return 1
   fi
 
-  log_info "run" "Running push.py with bentoml context..."
+  log_info "run" "Running push.py..."
   uv run .github/tools/push.py --context bentoml
   if [ $? -ne 0 ]; then
     log_error "run" "Failed to run push.py"
