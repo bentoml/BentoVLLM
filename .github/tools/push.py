@@ -117,16 +117,8 @@ def main() -> int:
     print("Error: No bento tags found in successful_builds.txt")
     return 1
 
-  console = Console()
-
   results = push_all_bentos(bento_tags, args.context, args.workers)
   successful_pushes = [r for r in results if r.success]
-
-  # Print summary
-  console.print("\n[bold]Push Summary:[/]")
-  console.print(f"Total bentos: {len(bento_tags)}")
-  console.print(f"Successful pushes: {len(successful_pushes)}")
-  console.print(f"Failed pushes: {len(results) - len(successful_pushes)}")
 
   return 0 if len(successful_pushes) == len(bento_tags) else 1
 
