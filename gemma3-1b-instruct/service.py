@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import logging, contextlib, typing, uuid
+import logging, contextlib, typing
 import bentoml, pydantic, fastapi, typing_extensions, annotated_types
 
 logger = logging.getLogger(__name__)
@@ -24,6 +24,7 @@ class BentoArgs(Args):
     request_logger: typing.Any = None
     disable_log_stats: bool = True
     use_tqdm_on_load: bool = False
+    task: str = 'generate'
     max_model_len: int = 4096
     dtype: str = 'half'
     max_num_seqs: int = 128
@@ -83,47 +84,10 @@ class VLLM:
             router.add_api_route(path=route, endpoint=endpoint, methods=methods, include_in_schema=True)
         openai_api_app.include_router(router)
 
-        self.engine = await self.exit_stack.enter_async_context(vllm_api_server.build_async_engine_client(args))
-        self.tokenizer = await self.engine.get_tokenizer()
-        vllm_config = await self.engine.get_vllm_config()
-        self.model_config = await self.engine.get_model_config()
-        await vllm_api_server.init_app_state(self.engine, vllm_config, openai_api_app.state, args)
+        engine = await self.exit_stack.enter_async_context(vllm_api_server.build_async_engine_client(args))
+        vllm_config = await engine.get_vllm_config()
+        await vllm_api_server.init_app_state(engine, vllm_config, openai_api_app.state, args)
 
     @bentoml.on_shutdown
     async def teardown_engine(self):
         await self.exit_stack.aclose()
-
-    @bentoml.api
-    async def generate(
-        self,
-        prompt: str = 'Who are you? Please respond in pirate speak!',
-        max_tokens: typing_extensions.Annotated[
-            int, annotated_types.Ge(128), annotated_types.Le(bento_args.bentovllm_max_tokens)
-        ] = bento_args.bentovllm_max_tokens,
-    ) -> typing.AsyncGenerator[str, None]:
-        from vllm import SamplingParams, TokensPrompt
-        from vllm.entrypoints.chat_utils import parse_chat_messages, apply_hf_chat_template
-
-        messages = [{'role': 'user', 'content': [{'type': 'text', 'text': prompt}]}]
-
-        params = SamplingParams(max_tokens=max_tokens)
-        conversation, _ = parse_chat_messages(messages, self.model_config, self.tokenizer, content_format='string')
-        prompt = TokensPrompt(
-            prompt_token_ids=apply_hf_chat_template(
-                self.tokenizer,
-                conversation=conversation,
-                tools=None,
-                add_generation_prompt=True,
-                continue_final_message=False,
-                chat_template=None,
-                tokenize=True,
-            )
-        )
-
-        stream = self.engine.generate(request_id=uuid.uuid4().hex, prompt=prompt, sampling_params=params)
-
-        cursor = 0
-        async for request_output in stream:
-            text = request_output.outputs[0].text
-            yield text[cursor:]
-            cursor = len(text)
