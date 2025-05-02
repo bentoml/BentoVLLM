@@ -116,6 +116,7 @@ def generate_jinja_context(model_name: str, config: dict[str, dict[str, t.Any]])
     "model_id": model,
     "vision": use_vision,
     "c2a": model_config.get("c2a", True),
+    "task": model_config.get("task", "generate"),
     "deployment_config": model_config.get("deployment_config", {}),
     "generate_config": model_config.get("generate_config", {}),
     "nightly": use_nightly,

@@ -24,7 +24,8 @@ class BentoArgs(Args):
   max_log_len: int = 1000
   request_logger: typing.Any = None
   disable_log_stats: bool = True
-  use_tqdm_on_load : bool = False
+  use_tqdm_on_load: bool = False
+  task: str = "{{task}}"
 
   {%- set all_configs = engine_config.copy() %}
   {%- for key, value in all_configs.items() %}
