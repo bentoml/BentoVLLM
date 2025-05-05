@@ -1,5 +1,5 @@
 bentoml==1.4.12
-vllm==0.8.5
+huggingface-hub==0.30.2
 kantoku==0.18.3
 openai==1.75.0
 pyyaml==6.0.2

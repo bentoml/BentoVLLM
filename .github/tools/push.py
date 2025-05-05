@@ -30,9 +30,7 @@ def push_bento(bento_tag: str, context: str, progress: Progress, task_id: TaskID
     progress.update(task_id, description=f"[blue]Pushing {bento_tag} to {context}...[/]")
 
     # Run bentoml push with output capture
-    subprocess.run(
-      ["bentoml", "push", bento_tag, "--context", context], capture_output=True, text=True, check=True
-    )
+    subprocess.run(["bentoml", "push", bento_tag, "--context", context], capture_output=True, text=True, check=True)
     return PushResult(bento_tag, True)
 
   except subprocess.CalledProcessError as e:

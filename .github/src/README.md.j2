@@ -35,7 +35,11 @@ git clone https://github.com/bentoml/BentoVLLM.git
 cd BentoVLLM/{{model_name}}
 
 # Recommend Python 3.11
+{%- if nightly %}
+UV_EXTRA_INDEX_URL=https://wheels.vllm.ai/nightly pip install -r requirements.txt
+{%- else %}
 pip install -r requirements.txt
+{%- endif %}
 
 # if you are running locally, we recommend install additional flashinfer library for better performance.
 pip install flashinfer-python --extra-index-url https://flashinfer.ai/whl/cu124/torch2.6

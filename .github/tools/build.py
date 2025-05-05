@@ -4,17 +4,21 @@
 #     "pyyaml",
 #     "rich",
 #     "bentoml>=1.4.12",
+#     "huggingface-hub",
 # ]
 # ///
-import yaml, subprocess, os, argparse, multiprocessing, hashlib, pathlib
+from __future__ import annotations
+
+import yaml, subprocess, os, argparse, multiprocessing, hashlib, pathlib, dataclasses, typing
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import List, Dict, Any
-from dataclasses import dataclass
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
+if typing.TYPE_CHECKING:
+  from rich.progress import TaskID
 
-@dataclass
+
+@dataclasses.dataclass
 class BuildResult:
   model_name: str
   bento_tag: str
@@ -59,7 +63,7 @@ def ensure_venv(req_txt, venv_dir, cfg):
 
 
 def build_model(
-  model_name: str, cfg: Dict[str, Any], git_dir: pathlib.Path, progress: Progress, task_id: int
+  model_name: str, cfg: dict[str, typing.Any], git_dir: pathlib.Path, progress: Progress, task_id: TaskID
 ) -> BuildResult:
   """Build a single model's bento."""
   model_dir = git_dir / model_name
@@ -95,7 +99,7 @@ def build_model(
     return BuildResult(model_name, "", False, str(e))
 
 
-def build_bentos(config: Dict[str, Any], git_dir: pathlib.Path, workers: int) -> List[BuildResult]:
+def build_bentos(config: dict[str, typing.Any], git_dir: pathlib.Path, workers: int) -> list[BuildResult]:
   """Build all models in parallel using a thread pool."""
   console = Console()
   results = []

@@ -739,8 +739,8 @@
     model: Qwen/Qwen3-235B-A22B-FP8
     max_model_len: 8192
     enable_reasoning: true
-    reasoning_parser: "deepseek_r1"
-    max_num_seqs: 128
+    reasoning_parser: "qwen3"
+    max_num_seqs: 32
     enable_auto_tool_choice: true
     tool_call_parser: "hermes"
   generate_config:

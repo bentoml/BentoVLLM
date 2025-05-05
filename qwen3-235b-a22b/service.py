@@ -24,10 +24,11 @@ class BentoArgs(Args):
     request_logger: typing.Any = None
     disable_log_stats: bool = True
     use_tqdm_on_load: bool = False
+    task: str = 'generate'
     max_model_len: int = 8192
     enable_reasoning: bool = True
-    reasoning_parser: str = 'deepseek_r1'
-    max_num_seqs: int = 256
+    reasoning_parser: str = 'qwen3'
+    max_num_seqs: int = 32
     enable_auto_tool_choice: bool = True
     tool_call_parser: str = 'hermes'
     tensor_parallel_size: int = 4
@@ -46,11 +47,27 @@ openai_api_app = fastapi.FastAPI()
     name='qwen3-235b-a22b',
     traffic={'timeout': 300},
     resources={'gpu': bento_args.tensor_parallel_size, 'gpu_type': 'nvidia-tesla-h100'},
-    envs=[{'name': 'VLLM_ATTENTION_BACKEND', 'value': 'FLASH_ATTN'}, {'name': 'VLLM_USE_V1', 'value': '1'}],
+    envs=[
+        {'name': 'VLLM_ATTENTION_BACKEND', 'value': 'FLASH_ATTN'},
+        {'name': 'VLLM_USE_V1', 'value': '1'},
+        {'name': 'UV_NO_PROGRESS', 'value': '1'},
+    ],
     labels={'owner': 'bentoml-team', 'type': 'prebuilt', 'project': 'bentovllm'},
-    image=bentoml.images.Image(python_version='3.11')
+    image=bentoml.images.Image(python_version='3.11', lock_python_packages=False)
+    .system_packages('git')
+    .system_packages('pkg-config')
+    .system_packages('libssl-dev')
+    .system_packages('curl')
+    .run(
+        "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -v -y --profile complete --default-toolchain nightly"
+    )
     .requirements_file('requirements.txt')
-    .run('uv pip install --compile-bytecode flashinfer-python --find-links https://flashinfer.ai/whl/cu124/torch2.6'),
+    .run('uv pip install --compile-bytecode --no-progress torch --index-url https://download.pytorch.org/whl/cu126')
+    .run('uv pip install --compile-bytecode --no-progress xformers --index-url https://download.pytorch.org/whl/cu126')
+    .run('uv pip install --compile-bytecode --pre --no-progress vllm --extra-index-url https://wheels.vllm.ai/nightly')
+    .run(
+        'uv pip install --compile-bytecode --no-progress flashinfer-python --find-links https://flashinfer.ai/whl/cu124/torch2.6'
+    ),
 )
 class VLLM:
     model = bentoml.models.HuggingFaceModel(bento_args.bentovllm_model_id, exclude=['*.pth', '*.pt', 'original/**/*'])

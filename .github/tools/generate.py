@@ -77,7 +77,7 @@ def update_model_descriptions(config, git_dir):
 def generate_jinja_context(model_name: str, config: dict[str, dict[str, typing.Any]]) -> dict[str, typing.Any]:
   model_config = config[model_name]
   use_mla = model_config.get("use_mla", False)
-  use_nightly = model_config.get("use_nightly", False)
+  use_nightly = model_config.get("nightly", False)
   use_vision = model_config.get("vision", False)
   engine_config_struct = model_config.get("engine_config", {"model": "deepseek-ai/DeepSeek-R1-Distill-Llama-8B"})
   model = engine_config_struct.pop("model")
@@ -91,6 +91,7 @@ def generate_jinja_context(model_name: str, config: dict[str, dict[str, typing.A
   service_config["envs"].extend([
     {"name": "VLLM_ATTENTION_BACKEND", "value": "FLASHMLA" if use_mla else "FLASH_ATTN"},
     {"name": "VLLM_USE_V1", "value": "1"},
+    {"name": "UV_NO_PROGRESS", "value": "1"},
   ])
 
   if "max_num_seqs" not in engine_config_struct:
@@ -106,14 +107,25 @@ def generate_jinja_context(model_name: str, config: dict[str, dict[str, typing.A
 
   if "post" not in build_config:
     build_config["post"] = []
+  if "pre" not in build_config:
+    build_config["pre"] = []
+  if "system_packages" not in build_config:
+    build_config["system_packages"] = []
 
   if use_nightly:
-    build_config["post"].append(
-      "uv pip install --compile-bytecode vllm --pre --extra-index-url https://wheels.vllm.ai/nightly"
-    )
+    build_config["system_packages"].extend(["pkg-config", "libssl-dev", "curl", "git"])
+    build_config["pre"].extend([
+      "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -v -y --profile complete --default-toolchain nightly"
+    ])
+    build_config["post"].extend([
+      "uv pip install --compile-bytecode --no-progress torch --index-url https://download.pytorch.org/whl/cu126",
+      "uv pip install --compile-bytecode --no-progress xformers --index-url https://download.pytorch.org/whl/cu126",
+      "uv pip install --compile-bytecode --pre --no-progress vllm --extra-index-url https://wheels.vllm.ai/nightly",
+    ])
   build_config["post"].append(
-    "uv pip install --compile-bytecode flashinfer-python --find-links https://flashinfer.ai/whl/cu124/torch2.6"
+    "uv pip install --compile-bytecode --no-progress flashinfer-python --find-links https://flashinfer.ai/whl/cu124/torch2.6"
   )
+  build_config["system_packages"] = set(sorted(build_config["system_packages"]))
 
   context = {
     "model_name": model_name,
@@ -159,7 +171,9 @@ class GenerateResult:
   no_changes: bool = False
 
 
-def generate_model(model_name: str, config: dict, git_dir: pathlib.Path, progress: Progress, task_id: TaskID) -> GenerateResult:
+def generate_model(
+  model_name: str, config: dict, git_dir: pathlib.Path, progress: Progress, task_id: TaskID
+) -> GenerateResult:
   """Generate a single model's project."""
   output_dir = git_dir / model_name
   try:

@@ -24,6 +24,7 @@ class BentoArgs(Args):
     request_logger: typing.Any = None
     disable_log_stats: bool = True
     use_tqdm_on_load: bool = False
+    task: str = 'generate'
     max_model_len: int = 4096
     max_num_seqs: int = 256
     enable_reasoning: bool = True
@@ -50,11 +51,14 @@ openai_api_app = fastapi.FastAPI()
         {'name': 'HF_TOKEN'},
         {'name': 'VLLM_ATTENTION_BACKEND', 'value': 'FLASH_ATTN'},
         {'name': 'VLLM_USE_V1', 'value': '1'},
+        {'name': 'UV_NO_PROGRESS', 'value': '1'},
     ],
     labels={'owner': 'bentoml-team', 'type': 'prebuilt', 'project': 'bentovllm'},
-    image=bentoml.images.Image(python_version='3.11')
+    image=bentoml.images.Image(python_version='3.11', lock_python_packages=True)
     .requirements_file('requirements.txt')
-    .run('uv pip install --compile-bytecode flashinfer-python --find-links https://flashinfer.ai/whl/cu124/torch2.6'),
+    .run(
+        'uv pip install --compile-bytecode --no-progress flashinfer-python --find-links https://flashinfer.ai/whl/cu124/torch2.6'
+    ),
 )
 class VLLM:
     model = bentoml.models.HuggingFaceModel(bento_args.bentovllm_model_id, exclude=['*.pth', '*.pt', 'original/**/*'])

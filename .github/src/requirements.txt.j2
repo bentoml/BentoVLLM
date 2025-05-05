@@ -3,7 +3,7 @@ bentoml==1.4.12
 {%- if not nightly %}
 vllm==0.8.5
 {%- else %}
-vllm --pre --extra-index-url https://wheels.vllm.ai/nightly
+huggingface-hub==0.30.2
 {%-endif %}
 kantoku==0.18.3
 {%- if (reasoning | lower == "true") or (vision | lower == "true") or (embeddings | lower == "true") %}

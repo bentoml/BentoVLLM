@@ -24,6 +24,7 @@ class BentoArgs(Args):
     request_logger: typing.Any = None
     disable_log_stats: bool = True
     use_tqdm_on_load: bool = False
+    task: str = 'generate'
     dtype: str = 'bfloat16'
     max_model_len: int = 2048
     max_num_seqs: int = 64
@@ -46,11 +47,15 @@ openai_api_app = fastapi.FastAPI()
     name='qwen2.5-vl-32b-instruct',
     traffic={'timeout': 300},
     resources={'gpu': bento_args.tensor_parallel_size, 'gpu_type': 'nvidia-a100-80gb'},
-    envs=[{'name': 'VLLM_ATTENTION_BACKEND', 'value': 'FLASH_ATTN'}, {'name': 'VLLM_USE_V1', 'value': '1'}],
+    envs=[
+        {'name': 'VLLM_ATTENTION_BACKEND', 'value': 'FLASH_ATTN'},
+        {'name': 'VLLM_USE_V1', 'value': '1'},
+        {'name': 'UV_NO_PROGRESS', 'value': '1'},
+    ],
     labels={'owner': 'bentoml-team', 'type': 'prebuilt', 'project': 'bentovllm'},
-    image=bentoml.images.Image(python_version='3.11')
-    .system_packages('curl')
+    image=bentoml.images.Image(python_version='3.11', lock_python_packages=True)
     .system_packages('git')
+    .system_packages('curl')
     .requirements_file('requirements.txt')
     .run('uv pip install --compile-bytecode torch setuptools')
     .run(
@@ -59,7 +64,9 @@ openai_api_app = fastapi.FastAPI()
     .run(
         'uv pip install --compile-bytecode ./flash_attn-2.7.4.post1+cu12torch2.6cxx11abiFALSE-cp311-cp311-linux_x86_64.whl'
     )
-    .run('uv pip install --compile-bytecode flashinfer-python --find-links https://flashinfer.ai/whl/cu124/torch2.6'),
+    .run(
+        'uv pip install --compile-bytecode --no-progress flashinfer-python --find-links https://flashinfer.ai/whl/cu124/torch2.6'
+    ),
 )
 class VLLM:
     model = bentoml.models.HuggingFaceModel(bento_args.bentovllm_model_id, exclude=['*.pth', '*.pt', 'original/**/*'])

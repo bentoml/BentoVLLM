@@ -24,6 +24,7 @@ class BentoArgs(Args):
     request_logger: typing.Any = None
     disable_log_stats: bool = True
     use_tqdm_on_load: bool = False
+    task: str = 'generate'
     max_model_len: int = 204800
     enable_prefix_caching: bool = False
     max_num_seqs: int = 1024
@@ -50,11 +51,12 @@ openai_api_app = fastapi.FastAPI()
         {'name': 'UV_NO_BUILD_ISOLATION', 'value': '1'},
         {'name': 'VLLM_ATTENTION_BACKEND', 'value': 'FLASH_ATTN'},
         {'name': 'VLLM_USE_V1', 'value': '1'},
+        {'name': 'UV_NO_PROGRESS', 'value': '1'},
     ],
     labels={'owner': 'bentoml-team', 'type': 'prebuilt', 'project': 'bentovllm'},
-    image=bentoml.images.Image(python_version='3.11')
-    .system_packages('curl')
+    image=bentoml.images.Image(python_version='3.11', lock_python_packages=True)
     .system_packages('git')
+    .system_packages('curl')
     .requirements_file('requirements.txt')
     .run('uv pip install --compile-bytecode torch')
     .run(
@@ -67,7 +69,9 @@ openai_api_app = fastapi.FastAPI()
         'curl -L -o ./mamba_ssm-2.2.4+cu12torch2.6cxx11abiFALSE-cp311-cp311-linux_x86_64.whl https://github.com/state-spaces/mamba/releases/download/v2.2.4/mamba_ssm-2.2.4+cu12torch2.6cxx11abiFALSE-cp311-cp311-linux_x86_64.whl'
     )
     .run('uv pip install --compile-bytecode ./mamba_ssm-2.2.4+cu12torch2.6cxx11abiFALSE-cp311-cp311-linux_x86_64.whl')
-    .run('uv pip install --compile-bytecode flashinfer-python --find-links https://flashinfer.ai/whl/cu124/torch2.6'),
+    .run(
+        'uv pip install --compile-bytecode --no-progress flashinfer-python --find-links https://flashinfer.ai/whl/cu124/torch2.6'
+    ),
 )
 class VLLM:
     model = bentoml.models.HuggingFaceModel(bento_args.bentovllm_model_id, exclude=['*.pth', '*.pt', 'original/**/*'])
