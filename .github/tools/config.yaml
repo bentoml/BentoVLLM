@@ -722,6 +722,7 @@
   generate_config:
     max_tokens: 4096
 "qwen3-235b-a22b":
+  nightly: true
   reasoning: true
   metadata:
     description: Qwen 3 235B A22B MoE
@@ -739,7 +740,7 @@
     max_model_len: 8192
     enable_reasoning: true
     reasoning_parser: "deepseek_r1"
-    max_num_seqs: 256
+    max_num_seqs: 128
     enable_auto_tool_choice: true
     tool_call_parser: "hermes"
   generate_config:
