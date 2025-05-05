@@ -6,14 +6,8 @@ vllm==0.8.5
 vllm --pre --extra-index-url https://wheels.vllm.ai/nightly
 {%-endif %}
 kantoku==0.18.3
-{%- if (reasoning | lower == "true") or (vision | lower == "true") or (embeddings | lower == "true") %}
-openai==1.75.0
-{%- endif %}
 pyyaml==6.0.2
 fastapi==0.115.12
-{%- if vision | lower == "true" %}
-Pillow
-{%- endif %}
 {%- if reqs | length > 0 %}
 {%- for r in reqs %}
 {{r}}

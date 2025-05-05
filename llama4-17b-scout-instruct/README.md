@@ -19,7 +19,8 @@ See [here](https://docs.bentoml.com/en/latest/examples/overview.html) for a full
 git clone https://github.com/bentoml/BentoVLLM.git
 cd BentoVLLM/llama4-17b-scout-instruct
 
-# Recommend Python 3.11
+# Recommend Python 3.11, assuming that this is running
+# in a virtualenv
 pip install -r requirements.txt
 
 # if you are running locally, we recommend install additional flashinfer library for better performance.
@@ -45,9 +46,7 @@ The server is now active at [http://localhost:3000](http://localhost:3000/). You
 > bentoml serve --arg max_model_len=8192 service.py:VLLM
 > ```
 
-<details open>
-
-<summary>OpenAI-compatible endpoints</summary>
+### OpenAI-compatible endpoints
 
 ```python
 from openai import OpenAI
@@ -115,65 +114,6 @@ You can then use the following line to replace the client in the above code snip
 ```python
 client = OpenAI(base_url='your_bentocloud_deployment_endpoint_url/v1')
 ```
-
-</details>
-
-
-<details>
-
-<summary>cURL</summary>
-
-```bash
-curl -X 'POST' \
-  'http://localhost:3000/generate' \
-  -H 'accept: text/event-stream' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "prompt": "Who are you? Please respond in pirate speak!",
-}'
-```
-This is also a vision LM. there is also a `/sights` endpoint:
-
-```bash
-curl -X 'POST' \
-  'http://localhost:3000/sights' \
-  -H 'accept: text/event-stream' \
-  -H 'Content-Type: multipart/form-data' \
-  -F 'prompt=Describe this image' \
-  -F 'image=@file.jpeg;type=image/jpeg'
-```
-
-</details>
-
-<details>
-
-<summary>Python SDK</summary>
-
-```python
-import bentoml
-
-with bentoml.SyncHTTPClient("http://localhost:3000") as client:
-    response_generator = client.generate(
-        prompt="Who are you? Please respond in pirate speak!",
-    )
-    for response in response_generator:
-        print(response, end='')
-```
-This is also a vision LM. there is also a `/sights` endpoint:
-
-```python
-import bentoml
-
-with bentoml.SyncHTTPClient("http://localhost:3000") as client:
-    response_generator = client.sights(
-        prompt="Describe this image",
-        image="./file.jpeg",
-    )
-    for response in response_generator:
-        print(response, end='')
-```
-
-</details>
 
 For detailed explanations of the Service code, see [vLLM inference](https://docs.bentoml.org/en/latest/examples/vllm.html).
 

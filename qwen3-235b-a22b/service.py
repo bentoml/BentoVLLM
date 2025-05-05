@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import logging, contextlib, traceback, typing
+import logging, contextlib, typing
 import bentoml, pydantic, fastapi, typing_extensions, annotated_types
 
 logger = logging.getLogger(__name__)
@@ -24,6 +24,7 @@ class BentoArgs(Args):
     request_logger: typing.Any = None
     disable_log_stats: bool = True
     use_tqdm_on_load: bool = False
+    task: str = 'generate'
     max_model_len: int = 8192
     enable_reasoning: bool = True
     reasoning_parser: str = 'deepseek_r1'
@@ -56,9 +57,6 @@ class VLLM:
     model = bentoml.models.HuggingFaceModel(bento_args.bentovllm_model_id, exclude=['*.pth', '*.pt', 'original/**/*'])
 
     def __init__(self):
-        from openai import AsyncOpenAI
-
-        self.openai = AsyncOpenAI(base_url='http://127.0.0.1:3000/v1', api_key='dummy')
         self.exit_stack = contextlib.AsyncExitStack()
 
     @bentoml.on_startup
@@ -84,39 +82,10 @@ class VLLM:
             router.add_api_route(path=route, endpoint=endpoint, methods=methods, include_in_schema=True)
         openai_api_app.include_router(router)
 
-        self.engine = await self.exit_stack.enter_async_context(vllm_api_server.build_async_engine_client(args))
-        self.tokenizer = await self.engine.get_tokenizer()
-        vllm_config = await self.engine.get_vllm_config()
-        self.model_config = await self.engine.get_model_config()
-        await vllm_api_server.init_app_state(self.engine, vllm_config, openai_api_app.state, args)
+        engine = await self.exit_stack.enter_async_context(vllm_api_server.build_async_engine_client(args))
+        vllm_config = await engine.get_vllm_config()
+        await vllm_api_server.init_app_state(engine, vllm_config, openai_api_app.state, args)
 
     @bentoml.on_shutdown
     async def teardown_engine(self):
         await self.exit_stack.aclose()
-
-    @bentoml.api
-    async def generate(
-        self,
-        prompt: str = 'Who are you? Please respond in pirate speak!',
-        max_tokens: typing_extensions.Annotated[
-            int, annotated_types.Ge(128), annotated_types.Le(bento_args.bentovllm_max_tokens)
-        ] = bento_args.bentovllm_max_tokens,
-        show_reasoning: bool = True,
-    ) -> typing.AsyncGenerator[str, None]:
-        from vllm.entrypoints.openai.protocol import DeltaMessage
-
-        messages = [{'role': 'user', 'content': [{'type': 'text', 'text': prompt}]}]
-        try:
-            completion = await self.openai.chat.completions.create(
-                model=bento_args.bentovllm_model_id, messages=messages, stream=True, max_tokens=max_tokens
-            )
-            async for chunk in completion:
-                delta_choice = typing.cast(DeltaMessage, chunk.choices[0].delta)
-                if hasattr(delta_choice, 'reasoning_content') and show_reasoning:
-                    yield delta_choice.reasoning_content or ''
-                else:
-                    yield delta_choice.content or ''
-        except Exception:
-            logger.error(traceback.format_exc())
-            yield 'Internal error found. Check server logs for more information'
-            return
