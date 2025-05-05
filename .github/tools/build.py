@@ -3,6 +3,7 @@
 # dependencies = [
 #     "pyyaml",
 #     "rich",
+#     "bentoml>=1.4.12",
 # ]
 # ///
 import yaml, subprocess, os, argparse, multiprocessing, hashlib, pathlib

@@ -8,13 +8,17 @@
 #     "pathspec",
 # ]
 # ///
-import yaml, shutil, copy, subprocess, json, argparse, multiprocessing, typing as t
-from pathlib import Path
+from __future__ import annotations
+
+import yaml, shutil, copy, subprocess, json, argparse, multiprocessing, pathlib, typing, dataclasses
+
 from jinja2 import Template
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from dataclasses import dataclass
+
+if typing.TYPE_CHECKING:
+  from rich.progress import TaskID
 
 
 def is_nightly_branch():
@@ -70,7 +74,7 @@ def update_model_descriptions(config, git_dir):
     f.write(json.dumps(dict(certified_bentos=certified_bentos), indent=2, ensure_ascii=False))
 
 
-def generate_jinja_context(model_name: str, config: dict[str, dict[str, t.Any]]) -> dict[str, t.Any]:
+def generate_jinja_context(model_name: str, config: dict[str, dict[str, typing.Any]]) -> dict[str, typing.Any]:
   model_config = config[model_name]
   use_mla = model_config.get("use_mla", False)
   use_nightly = model_config.get("use_nightly", False)
@@ -140,14 +144,14 @@ def generate_jinja_context(model_name: str, config: dict[str, dict[str, t.Any]])
   return context
 
 
-def generate_readme(config, git_dir: Path, skip_nightly):
+def generate_readme(config, git_dir: pathlib.Path, skip_nightly):
   models = [{"name": name, "engine_config": cfg.get("engine_config", {})} for name, cfg in config.items()]
   is_nightly = not skip_nightly and is_nightly_branch()
   with open((git_dir / ".github" / "README.md"), "w") as f:
     f.write(Template((git_dir / ".github" / "README.md.j2").read_text()).render(models=models, nightly=is_nightly))
 
 
-@dataclass
+@dataclasses.dataclass
 class GenerateResult:
   model_name: str
   success: bool
@@ -155,7 +159,7 @@ class GenerateResult:
   no_changes: bool = False
 
 
-def generate_model(model_name: str, config: dict, git_dir: Path, progress: Progress, task_id: int) -> GenerateResult:
+def generate_model(model_name: str, config: dict, git_dir: pathlib.Path, progress: Progress, task_id: TaskID) -> GenerateResult:
   """Generate a single model's project."""
   output_dir = git_dir / model_name
   try:
@@ -167,7 +171,7 @@ def generate_model(model_name: str, config: dict, git_dir: Path, progress: Progr
     import tempfile
 
     with tempfile.TemporaryDirectory() as temp_dir:
-      temp_output_dir = Path(temp_dir) / model_name
+      temp_output_dir = pathlib.Path(temp_dir) / model_name
       temp_output_dir.mkdir(parents=True)
 
       # Walk through template directory and render each file
@@ -221,7 +225,7 @@ def generate_model(model_name: str, config: dict, git_dir: Path, progress: Progr
     return GenerateResult(model_name, False, str(e))
 
 
-def generate_all_models(config: dict, git_dir: Path, force: bool = False, workers: int = 1) -> bool:
+def generate_all_models(config: dict, git_dir: pathlib.Path, force: bool = False, workers: int = 1) -> bool:
   """Generate all model projects in parallel."""
   console = Console()
   models = list(config.keys())
@@ -315,7 +319,7 @@ def main() -> int:
   )
   args = parser.parse_args()
 
-  git_dir = Path(__file__).parent.parent.parent
+  git_dir = pathlib.Path(__file__).parent.parent.parent
   tools_dir = git_dir / ".github" / "tools"
   with (tools_dir / "config.yaml").open("r") as f:
     config = yaml.safe_load(f)

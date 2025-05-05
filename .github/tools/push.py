@@ -1,35 +1,36 @@
 # /// script
 # requires-python = ">=3.12"
 # dependencies = [
-#     "bentoml>=1.4.7",
+#     "bentoml>=1.4.12",
 #     "huggingface-hub",
 #     "rich",
 # ]
 # ///
-import multiprocessing
-import subprocess, argparse
-from pathlib import Path
+from __future__ import annotations
+import multiprocessing, subprocess, argparse, typing, pathlib, dataclasses
+
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import List
-from dataclasses import dataclass
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
+if typing.TYPE_CHECKING:
+  from rich.progress import TaskID
 
-@dataclass
+
+@dataclasses.dataclass
 class PushResult:
   bento_tag: str
   success: bool
   error: str = ""
 
 
-def push_bento(bento_tag: str, context: str, progress: Progress, task_id: int) -> PushResult:
+def push_bento(bento_tag: str, context: str, progress: Progress, task_id: TaskID) -> PushResult:
   """Push a single bento to the registry."""
   try:
     progress.update(task_id, description=f"[blue]Pushing {bento_tag} to {context}...[/]")
 
     # Run bentoml push with output capture
-    result = subprocess.run(
+    subprocess.run(
       ["bentoml", "push", bento_tag, "--context", context], capture_output=True, text=True, check=True
     )
     return PushResult(bento_tag, True)
@@ -40,7 +41,7 @@ def push_bento(bento_tag: str, context: str, progress: Progress, task_id: int) -
     return PushResult(bento_tag, False, str(e))
 
 
-def push_all_bentos(bento_tags: List[str], context: str, workers: int) -> List[PushResult]:
+def push_all_bentos(bento_tags: list[str], context: str, workers: int) -> list[PushResult]:
   """Push all bentos in parallel using a thread pool."""
   console = Console()
   results = []
@@ -103,7 +104,7 @@ def main() -> int:
   )
   args = parser.parse_args()
 
-  git_dir = Path(__file__).parent.parent.parent
+  git_dir = pathlib.Path(__file__).parent.parent.parent
   builds_file = git_dir / "successful_builds.txt"
 
   if not builds_file.exists():
