@@ -41,16 +41,7 @@ def ensure_venv(req_txt, venv_dir, cfg):
   if not venv_dir.exists():
     subprocess.run(["uv", "venv", venv_dir, "-p", "3.11"], check=True)
     subprocess.run(
-      [
-        "uv",
-        "pip",
-        "install",
-        "--compile-bytecode",
-        "--prerelease=allow",
-        "bentoml>=1.4.7",
-        "-p",
-        venv_dir / "bin" / "python",
-      ],
+      ["uv", "pip", "install", "bentoml>=1.4.12", "-p", venv_dir / "bin" / "python"],
       check=True,
       capture_output=True,
     )

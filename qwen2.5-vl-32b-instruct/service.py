@@ -54,8 +54,8 @@ openai_api_app = fastapi.FastAPI()
     ],
     labels={'owner': 'bentoml-team', 'type': 'prebuilt', 'project': 'bentovllm'},
     image=bentoml.images.Image(python_version='3.11', lock_python_packages=True)
-    .system_packages('curl')
     .system_packages('git')
+    .system_packages('curl')
     .requirements_file('requirements.txt')
     .run('uv pip install --compile-bytecode torch setuptools')
     .run(

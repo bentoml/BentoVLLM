@@ -738,7 +738,6 @@
   engine_config:
     model: Qwen/Qwen3-235B-A22B-FP8
     max_model_len: 4096
-    enable_reasoning: true
     reasoning_parser: "deepseek_r1"
     max_num_seqs: 16
     enable_auto_tool_choice: true

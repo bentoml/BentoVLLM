@@ -125,7 +125,7 @@ def generate_jinja_context(model_name: str, config: dict[str, dict[str, typing.A
   build_config["post"].append(
     "uv pip install --compile-bytecode --no-progress flashinfer-python --find-links https://flashinfer.ai/whl/cu124/torch2.6"
   )
-  build_config["system_packages"] = set(sorted(build_config["system_packages"]))
+  build_config["system_packages"] = set(build_config["system_packages"])
 
   context = {
     "model_name": model_name,
