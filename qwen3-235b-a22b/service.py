@@ -17,7 +17,7 @@ else:
 
 class BentoArgs(Args):
     bentovllm_model_id: str = 'Qwen/Qwen3-235B-A22B-FP8'
-    bentovllm_max_tokens: int = 4096
+    bentovllm_max_tokens: int = 3072
 
     disable_log_requests: bool = True
     max_log_len: int = 1000
@@ -25,10 +25,10 @@ class BentoArgs(Args):
     disable_log_stats: bool = True
     use_tqdm_on_load: bool = False
     task: str = 'generate'
-    max_model_len: int = 8192
+    max_model_len: int = 4096
     enable_reasoning: bool = True
-    reasoning_parser: str = 'qwen3'
-    max_num_seqs: int = 32
+    reasoning_parser: str = 'deepseek_r1'
+    max_num_seqs: int = 16
     enable_auto_tool_choice: bool = True
     tool_call_parser: str = 'hermes'
     tensor_parallel_size: int = 4
@@ -54,10 +54,10 @@ openai_api_app = fastapi.FastAPI()
     ],
     labels={'owner': 'bentoml-team', 'type': 'prebuilt', 'project': 'bentovllm'},
     image=bentoml.images.Image(python_version='3.11', lock_python_packages=False)
+    .system_packages('curl')
     .system_packages('git')
     .system_packages('pkg-config')
     .system_packages('libssl-dev')
-    .system_packages('curl')
     .run(
         "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -v -y --profile complete --default-toolchain nightly"
     )
