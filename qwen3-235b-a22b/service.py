@@ -22,6 +22,7 @@ class BentoArgs(Args):
     disable_log_requests: bool = True
     max_log_len: int = 1000
     request_logger: typing.Any = None
+    disable_log_stats: bool = True
     use_tqdm_on_load: bool = False
     task: str = 'generate'
     max_model_len: int = 4096
@@ -52,17 +53,19 @@ openai_api_app = fastapi.FastAPI()
     ],
     labels={'owner': 'bentoml-team', 'type': 'prebuilt', 'project': 'bentovllm'},
     image=bentoml.images.Image(python_version='3.11', lock_python_packages=False)
-    .system_packages('libssl-dev')
     .system_packages('git')
-    .system_packages('curl')
+    .system_packages('libssl-dev')
     .system_packages('pkg-config')
+    .system_packages('curl')
     .run(
         "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -v -y --profile complete --default-toolchain nightly"
     )
     .requirements_file('requirements.txt')
     .run('uv pip install --compile-bytecode --no-progress torch --index-url https://download.pytorch.org/whl/cu126')
     .run('uv pip install --compile-bytecode --no-progress xformers --index-url https://download.pytorch.org/whl/cu126')
-    .run('uv pip install --compile-bytecode --pre --no-progress vllm --extra-index-url https://wheels.vllm.ai/nightly')
+    .run(
+        'uv pip install --compile-bytecode --no-progress https://wheels.vllm.ai/3d13ca0e242a99ef1ca53de1828689130924b3f5/vllm-1.0.0.dev-cp38-abi3-manylinux1_x86_64.whl'
+    )
     .run(
         'uv pip install --compile-bytecode --no-progress flashinfer-python --find-links https://flashinfer.ai/whl/cu124/torch2.6'
     ),
