@@ -53,8 +53,8 @@ openai_api_app = fastapi.FastAPI()
     ],
     labels={'owner': 'bentoml-team', 'type': 'prebuilt', 'project': 'bentovllm'},
     image=bentoml.images.Image(python_version='3.11', lock_python_packages=False)
-    .system_packages('git')
     .system_packages('libssl-dev')
+    .system_packages('git')
     .system_packages('pkg-config')
     .system_packages('curl')
     .run(
@@ -64,7 +64,7 @@ openai_api_app = fastapi.FastAPI()
     .run('uv pip install --compile-bytecode --no-progress torch --index-url https://download.pytorch.org/whl/cu126')
     .run('uv pip install --compile-bytecode --no-progress xformers --index-url https://download.pytorch.org/whl/cu126')
     .run(
-        'uv pip install --compile-bytecode --no-progress https://wheels.vllm.ai/3d13ca0e242a99ef1ca53de1828689130924b3f5/vllm-1.0.0.dev-cp38-abi3-manylinux1_x86_64.whl'
+        'uv pip install --compile-bytecode --no-progress vllm --extra-index-url https://wheels.vllm.ai/3d13ca0e242a99ef1ca53de1828689130924b3f5'
     )
     .run(
         'uv pip install --compile-bytecode --no-progress flashinfer-python --find-links https://flashinfer.ai/whl/cu124/torch2.6'
