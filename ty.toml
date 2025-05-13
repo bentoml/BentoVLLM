@@ -1,0 +1,5 @@
+respect-ignore-files = true
+
+[environment]
+python = "./.venv"
+python-version = "3.11"
