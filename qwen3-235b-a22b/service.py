@@ -13,6 +13,7 @@ if typing.TYPE_CHECKING:
         pass
 
 else:
+    TaskOption = str
     Args = pydantic.BaseModel
 
 
@@ -54,10 +55,10 @@ openai_api_app = fastapi.FastAPI()
     ],
     labels={'owner': 'bentoml-team', 'type': 'prebuilt', 'project': 'bentovllm'},
     image=bentoml.images.Image(python_version='3.11', lock_python_packages=False)
+    .system_packages('pkg-config')
     .system_packages('git')
     .system_packages('curl')
     .system_packages('libssl-dev')
-    .system_packages('pkg-config')
     .run(
         "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -v -y --profile complete --default-toolchain nightly"
     )

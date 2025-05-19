@@ -16,6 +16,7 @@ if typing.TYPE_CHECKING:
 
   class Args(EngineArgs, pydantic.BaseModel): pass
 else:
+  TaskOption = str
   Args = pydantic.BaseModel
 
 class BentoArgs(Args):

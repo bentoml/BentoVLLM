@@ -33,6 +33,7 @@ if typing.TYPE_CHECKING:
         pass
 
 else:
+    TaskOption = str
     Args = pydantic.BaseModel
 
 
