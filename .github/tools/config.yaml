@@ -98,7 +98,7 @@
       timeout: 300
     resources:
       gpu: 1
-      gpu_type: nvidia-tesla-h100
+      gpu_type: nvidia-h100-80gb
     envs:
       - name: HF_TOKEN
   engine_config:
@@ -383,7 +383,7 @@
       timeout: 300
     resources:
       gpu: 8
-      gpu_type: nvidia-tesla-h100
+      gpu_type: nvidia-h100-80gb
     envs:
       - name: HF_TOKEN
       - name: VLLM_DISABLE_COMPILE_CACHE
@@ -662,7 +662,7 @@
       timeout: 300
     resources:
       gpu: 2
-      gpu_type: nvidia-tesla-h100
+      gpu_type: nvidia-h100-80gb
     envs:
       - name: HF_TOKEN
   engine_config:
@@ -710,7 +710,7 @@
       timeout: 300
     resources:
       gpu: 2
-      gpu_type: nvidia-tesla-h100
+      gpu_type: nvidia-h100-80gb
   engine_config:
     model: Qwen/Qwen3-30B-A3B
     max_model_len: 8192
@@ -734,7 +734,7 @@
       timeout: 300
     resources:
       gpu: 4
-      gpu_type: nvidia-tesla-h100
+      gpu_type: nvidia-h100-80gb
   engine_config:
     model: Qwen/Qwen3-235B-A22B-FP8
     max_model_len: 4096
