@@ -7,6 +7,7 @@ logger = logging.getLogger(__name__)
 
 if typing.TYPE_CHECKING:
     from vllm.engine.arg_utils import EngineArgs
+    from vllm.config import TaskOption
 
     class Args(EngineArgs, pydantic.BaseModel):
         pass
@@ -24,7 +25,7 @@ class BentoArgs(Args):
     request_logger: typing.Any = None
     disable_log_stats: bool = True
     use_tqdm_on_load: bool = False
-    task: str = 'generate'
+    task: TaskOption = 'generate'
     max_model_len: int = 4096
     reasoning_parser: str = 'deepseek_r1'
     max_num_seqs: int = 16
@@ -53,10 +54,10 @@ openai_api_app = fastapi.FastAPI()
     ],
     labels={'owner': 'bentoml-team', 'type': 'prebuilt', 'project': 'bentovllm'},
     image=bentoml.images.Image(python_version='3.11', lock_python_packages=False)
-    .system_packages('libssl-dev')
     .system_packages('git')
-    .system_packages('pkg-config')
     .system_packages('curl')
+    .system_packages('libssl-dev')
+    .system_packages('pkg-config')
     .run(
         "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -v -y --profile complete --default-toolchain nightly"
     )

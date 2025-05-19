@@ -27,6 +27,7 @@ You cannot read nor transcribe audio files or videos.
 
 if typing.TYPE_CHECKING:
     from vllm.engine.arg_utils import EngineArgs
+    from vllm.config import TaskOption
 
     class Args(EngineArgs, pydantic.BaseModel):
         pass
@@ -44,7 +45,7 @@ class BentoArgs(Args):
     request_logger: typing.Any = None
     disable_log_stats: bool = True
     use_tqdm_on_load: bool = False
-    task: str = 'generate'
+    task: TaskOption = 'generate'
     tokenizer_mode: str = 'mistral'
     config_format: str = 'mistral'
     load_format: str = 'mistral'

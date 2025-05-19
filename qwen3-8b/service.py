@@ -7,6 +7,7 @@ logger = logging.getLogger(__name__)
 
 if typing.TYPE_CHECKING:
     from vllm.engine.arg_utils import EngineArgs
+    from vllm.config import TaskOption
 
     class Args(EngineArgs, pydantic.BaseModel):
         pass
@@ -24,7 +25,7 @@ class BentoArgs(Args):
     request_logger: typing.Any = None
     disable_log_stats: bool = True
     use_tqdm_on_load: bool = False
-    task: str = 'generate'
+    task: TaskOption = 'generate'
     max_model_len: int = 2048
     enable_auto_tool_choice: bool = True
     tool_call_parser: str = 'hermes'

@@ -27,14 +27,12 @@ class BentoArgs(Args):
   request_logger: typing.Any = None
   disable_log_stats: bool = True
   use_tqdm_on_load: bool = False
-  task: str = "{{task}}"
+  task: TaskOption = "{{task}}"
 
   {%- set all_configs = engine_config.copy() %}
   {%- for key, value in all_configs.items() %}
   {%- if key == "chat_template" %}
   {{key}}: str = """{{value}}"""
-  {%- elif key == "task" %}
-  {{key}}: TaskOption = "{{value}}"
   {%- elif value is string %}
   {{key}}: str = "{{value}}"
   {%- elif value is integer %}

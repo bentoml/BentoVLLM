@@ -7,6 +7,7 @@ logger = logging.getLogger(__name__)
 
 if typing.TYPE_CHECKING:
     from vllm.engine.arg_utils import EngineArgs
+    from vllm.config import TaskOption
 
     class Args(EngineArgs, pydantic.BaseModel):
         pass
@@ -24,7 +25,7 @@ class BentoArgs(Args):
     request_logger: typing.Any = None
     disable_log_stats: bool = True
     use_tqdm_on_load: bool = False
-    task: str = 'generate'
+    task: TaskOption = 'generate'
     max_model_len: int = 204800
     enable_prefix_caching: bool = False
     max_num_seqs: int = 1024
@@ -55,8 +56,8 @@ openai_api_app = fastapi.FastAPI()
     ],
     labels={'owner': 'bentoml-team', 'type': 'prebuilt', 'project': 'bentovllm'},
     image=bentoml.images.Image(python_version='3.11', lock_python_packages=True)
-    .system_packages('git')
     .system_packages('curl')
+    .system_packages('git')
     .requirements_file('requirements.txt')
     .run('uv pip install --compile-bytecode torch')
     .run(
