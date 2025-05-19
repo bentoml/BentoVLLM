@@ -12,6 +12,8 @@ SYSTEM_PROMPT="""{{system_prompt -}}"""
 
 if typing.TYPE_CHECKING:
   from vllm.engine.arg_utils import EngineArgs
+  from vllm.config import TaskOption
+
   class Args(EngineArgs, pydantic.BaseModel): pass
 else:
   Args = pydantic.BaseModel
@@ -31,6 +33,8 @@ class BentoArgs(Args):
   {%- for key, value in all_configs.items() %}
   {%- if key == "chat_template" %}
   {{key}}: str = """{{value}}"""
+  {%- elif key == "task" %}
+  {{key}}: TaskOption = "{{value}}"
   {%- elif value is string %}
   {{key}}: str = "{{value}}"
   {%- elif value is integer %}
