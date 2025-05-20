@@ -48,7 +48,7 @@ openai_api_app = fastapi.FastAPI()
 @bentoml.service(
     name='qwq-32b',
     traffic={'timeout': 300},
-    resources={'gpu': bento_args.tensor_parallel_size, 'gpu_type': 'nvidia-tesla-h100'},
+    resources={'gpu': bento_args.tensor_parallel_size, 'gpu_type': 'nvidia-h100-80gb'},
     envs=[
         {'name': 'HF_TOKEN'},
         {'name': 'VLLM_ATTENTION_BACKEND', 'value': 'FLASH_ATTN'},
