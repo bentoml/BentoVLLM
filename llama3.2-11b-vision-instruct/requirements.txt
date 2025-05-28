@@ -1,7 +1,8 @@
-bentoml==1.4.12
-vllm==0.8.5
-kantoku==0.18.3
-openai==1.75.0
-pyyaml==6.0.2
-fastapi==0.115.12
+bentoml==1.4.15
+vllm==0.9.0
+huggingface-hub
+kantoku
+openai
+pyyaml
+fastapi
 Pillow

@@ -1,16 +1,15 @@
 {%- set reqs = requirements|default([]) -%}
-bentoml==1.4.12
+bentoml==1.4.15
 {%- if not nightly %}
-vllm==0.8.5
-{%- else %}
-huggingface-hub==0.30.2
+vllm==0.9.0
 {%-endif %}
-kantoku==0.18.3
+huggingface-hub
+kantoku
 {%- if (reasoning | lower == "true") or (vision | lower == "true") or (embeddings | lower == "true") %}
-openai==1.75.0
+openai
 {%- endif %}
-pyyaml==6.0.2
-fastapi==0.115.12
+pyyaml
+fastapi
 {%- if vision | lower == "true" %}
 Pillow
 {%- endif %}
