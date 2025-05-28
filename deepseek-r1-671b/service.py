@@ -18,8 +18,8 @@ else:
 
 
 class BentoArgs(Args):
-    bentovllm_model_id: str = 'deepseek-ai/DeepSeek-R1'
-    bentovllm_max_tokens: int = 2048
+    bentovllm_model_id: str = 'deepseek-ai/DeepSeek-R1-0528'
+    bentovllm_max_tokens: int = 4096
 
     disable_log_requests: bool = True
     max_log_len: int = 1000
@@ -27,11 +27,9 @@ class BentoArgs(Args):
     disable_log_stats: bool = True
     use_tqdm_on_load: bool = False
     task: TaskOption = 'generate'
-    trust_remote_code: bool = True
-    max_model_len: int = 4096
-    enable_reasoning: bool = True
+    max_model_len: int = 8192
     reasoning_parser: str = 'deepseek_r1'
-    max_num_seqs: int = 128
+    max_num_seqs: int = 16
     tensor_parallel_size: int = 8
 
     @pydantic.model_serializer

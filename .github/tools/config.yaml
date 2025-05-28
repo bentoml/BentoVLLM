@@ -36,14 +36,12 @@
     envs:
       - name: HF_TOKEN
   engine_config:
-    model: deepseek-ai/DeepSeek-R1
-    trust_remote_code: true
-    max_model_len: 4096
-    enable_reasoning: true
+    model: deepseek-ai/DeepSeek-R1-0528
+    max_model_len: 8192
     reasoning_parser: "deepseek_r1"
-    max_num_seqs: 128
+    max_num_seqs: 16
   generate_config:
-    max_tokens: 2048
+    max_tokens: 4096
 "deepseek-prover-v2-671b":
   metadata:
     description: DeepSeek Prover V2 671B
@@ -62,7 +60,6 @@
     model: deepseek-ai/DeepSeek-Prover-V2-671B
     trust_remote_code: true
     max_model_len: 4096
-    enable_reasoning: true
     reasoning_parser: "deepseek_r1"
     max_num_seqs: 128
   generate_config:
@@ -145,7 +142,6 @@
   engine_config:
     model: deepseek-ai/DeepSeek-R1-Distill-Llama-70B
     max_model_len: 8192
-    enable_reasoning: true
     reasoning_parser: "deepseek_r1"
     max_num_seqs: 256
     enable_auto_tool_choice: true
@@ -175,7 +171,6 @@
     model: deepseek-ai/DeepSeek-R1-Distill-Llama-8B
     max_model_len: 4096
     max_num_seqs: 256
-    enable_reasoning: true
     reasoning_parser: "deepseek_r1"
     enable_auto_tool_choice: true
     tool_call_parser: "llama3_json"
@@ -612,7 +607,6 @@
     model: microsoft/Phi-4-reasoning
     max_model_len: 8192
     max_num_seqs: 256
-    enable_reasoning: true
     reasoning_parser: deepseek_r1
   generate_config:
     max_tokens: 4096
@@ -668,7 +662,6 @@
   engine_config:
     model: Qwen/QwQ-32B
     max_model_len: 4096
-    enable_reasoning: true
     reasoning_parser: "deepseek_r1"
     max_num_seqs: 512
     enable_auto_tool_choice: true
@@ -693,7 +686,6 @@
     max_model_len: 2048
     enable_auto_tool_choice: true
     tool_call_parser: "hermes"
-    enable_reasoning: true
     reasoning_parser: deepseek_r1
     max_num_seqs: 64
   generate_config:
@@ -714,7 +706,6 @@
   engine_config:
     model: Qwen/Qwen3-30B-A3B
     max_model_len: 8192
-    enable_reasoning: true
     reasoning_parser: "deepseek_r1"
     max_num_seqs: 256
     enable_auto_tool_choice: true

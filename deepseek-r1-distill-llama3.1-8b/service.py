@@ -29,7 +29,6 @@ class BentoArgs(Args):
     task: TaskOption = 'generate'
     max_model_len: int = 4096
     max_num_seqs: int = 256
-    enable_reasoning: bool = True
     reasoning_parser: str = 'deepseek_r1'
     enable_auto_tool_choice: bool = True
     tool_call_parser: str = 'llama3_json'

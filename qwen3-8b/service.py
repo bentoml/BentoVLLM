@@ -30,7 +30,6 @@ class BentoArgs(Args):
     max_model_len: int = 2048
     enable_auto_tool_choice: bool = True
     tool_call_parser: str = 'hermes'
-    enable_reasoning: bool = True
     reasoning_parser: str = 'deepseek_r1'
     max_num_seqs: int = 64
     tensor_parallel_size: int = 1
