@@ -57,8 +57,8 @@ openai_api_app = fastapi.FastAPI()
     ],
     labels={'owner': 'bentoml-team', 'type': 'prebuilt', 'project': 'bentovllm'},
     image=bentoml.images.Image(python_version='3.11', lock_python_packages=True)
-    .system_packages('git')
     .system_packages('curl')
+    .system_packages('git')
     .requirements_file('requirements.txt')
     .run('uv pip install --compile-bytecode torch')
     .run(
@@ -70,10 +70,7 @@ openai_api_app = fastapi.FastAPI()
     .run(
         'curl -L -o ./mamba_ssm-2.2.4+cu12torch2.6cxx11abiFALSE-cp311-cp311-linux_x86_64.whl https://github.com/state-spaces/mamba/releases/download/v2.2.4/mamba_ssm-2.2.4+cu12torch2.6cxx11abiFALSE-cp311-cp311-linux_x86_64.whl'
     )
-    .run('uv pip install --compile-bytecode ./mamba_ssm-2.2.4+cu12torch2.6cxx11abiFALSE-cp311-cp311-linux_x86_64.whl')
-    .run(
-        'uv pip install --compile-bytecode --no-progress flashinfer-python --find-links https://flashinfer.ai/whl/cu126/torch2.6'
-    ),
+    .run('uv pip install --compile-bytecode ./mamba_ssm-2.2.4+cu12torch2.6cxx11abiFALSE-cp311-cp311-linux_x86_64.whl'),
 )
 class VLLM:
     model = bentoml.models.HuggingFaceModel(bento_args.bentovllm_model_id, exclude=['*.pth', '*.pt', 'original/**/*'])
