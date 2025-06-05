@@ -119,6 +119,7 @@ class VLLM:
                 continue_final_message=False,
                 chat_template=None,
                 tokenize=True,
+                model_config=self.model_config,
             )
         )
 

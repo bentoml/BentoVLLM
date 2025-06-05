@@ -186,10 +186,10 @@ class VLLM:
     params = SamplingParams(max_tokens=max_tokens)
 
     {%- if all_configs['tool_call_parser'] == "mistral" %}
-    prompt = TokensPrompt(prompt_token_ids=apply_mistral_chat_template(self.tokenizer, messages=messages))
+    prompt = TokensPrompt(prompt_token_ids=apply_mistral_chat_template(self.tokenizer, messages=messages, chat_template=None, tools=None))
     {%- else %}
     conversation, _ = parse_chat_messages(messages, self.model_config, self.tokenizer, content_format="string")
-    prompt = TokensPrompt(prompt_token_ids=apply_hf_chat_template(self.tokenizer, conversation=conversation, tools=None, add_generation_prompt=True, continue_final_message=False, chat_template=None, tokenize=True))
+    prompt = TokensPrompt(prompt_token_ids=apply_hf_chat_template(self.tokenizer, conversation=conversation, tools=None, add_generation_prompt=True, continue_final_message=False, chat_template=None, tokenize=True, model_config=self.model_config))
     {%- endif %}
 
     stream = self.engine.generate(request_id=uuid.uuid4().hex, prompt=prompt, sampling_params=params)

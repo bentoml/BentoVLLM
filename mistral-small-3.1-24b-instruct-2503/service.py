@@ -148,7 +148,11 @@ class VLLM:
         ]
 
         params = SamplingParams(max_tokens=max_tokens)
-        prompt = TokensPrompt(prompt_token_ids=apply_mistral_chat_template(self.tokenizer, messages=messages))
+        prompt = TokensPrompt(
+            prompt_token_ids=apply_mistral_chat_template(
+                self.tokenizer, messages=messages, chat_template=None, tools=None
+            )
+        )
 
         stream = self.engine.generate(request_id=uuid.uuid4().hex, prompt=prompt, sampling_params=params)
 
