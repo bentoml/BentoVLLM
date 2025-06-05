@@ -181,6 +181,7 @@ In addition to Llama 3.1 8B Instruct, we also have examples for other models in 
 | deepseek-r1-671b | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/deepseek-r1-671b/) • [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-R1-0528) |
 | deepseek-prover-v2-671b | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/deepseek-prover-v2-671b/) • [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-Prover-V2-671B) |
 | deepseek-prover-v2-7b | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/deepseek-prover-v2-7b/) • [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-Prover-V2-7B) |
+| deepseek-r1-0528-qwen3-8b | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/deepseek-r1-0528-qwen3-8b/) • [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-R1-0528-Qwen3-8B) |
 | deepseek-r1-distill-llama3.3-70b | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/deepseek-r1-distill-llama3.3-70b/) • [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Llama-70B) |
 | deepseek-r1-distill-llama3.1-8b | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/deepseek-r1-distill-llama3.1-8b/) • [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Llama-8B) |
 | gemma3-4b-instruct | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/gemma3-4b-instruct/) • [Hugging Face](https://huggingface.co/google/gemma-3-4b-it) |

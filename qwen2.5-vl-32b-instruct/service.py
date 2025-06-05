@@ -67,7 +67,7 @@ openai_api_app = fastapi.FastAPI()
         'uv pip install --compile-bytecode ./flash_attn-2.7.4.post1+cu12torch2.6cxx11abiFALSE-cp311-cp311-linux_x86_64.whl'
     )
     .run(
-        'uv pip install --compile-bytecode --no-progress flashinfer-python --find-links https://flashinfer.ai/whl/cu124/torch2.6'
+        'uv pip install --compile-bytecode --no-progress flashinfer-python --find-links https://flashinfer.ai/whl/cu126/torch2.6'
     ),
 )
 class VLLM:

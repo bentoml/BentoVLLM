@@ -124,6 +124,29 @@
     ain proof steps and strategies.
     The plan should highlight key ideas, intermediate lemmas, and proof structures that will guide the construction of
     the final formal proof.
+"deepseek-r1-0528-qwen3-8b":
+  reasoning: true
+  metadata:
+    description: DeepSeek R1 0528 Qwen3 8B
+    provider: DeepSeek
+    gpu_recommendation: 1 Nvidia GPU with at least 80GB VRAM (e.g. about 1 H100 GPU).
+  service_config:
+    name: r1-0528-qwen3-8b
+    traffic:
+      timeout: 300
+    resources:
+      gpu: 1
+      gpu_type: nvidia-h100-80gb
+    envs:
+      - name: HF_TOKEN
+  engine_config:
+    model: deepseek-ai/DeepSeek-R1-0528-Qwen3-8B
+    max_model_len: 8192
+    reasoning_parser: "deepseek_r1"
+    enable_auto_tool_choice: true
+    tool_call_parser: "hermes"
+  generate_config:
+    max_tokens: 4096
 "deepseek-r1-distill-llama3.3-70b":
   reasoning: true
   metadata:

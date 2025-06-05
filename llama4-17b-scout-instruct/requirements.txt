@@ -1,5 +1,5 @@
 bentoml==1.4.15
-vllm==0.8.5
+vllm==0.9.0.1
 huggingface-hub
 kantoku
 openai

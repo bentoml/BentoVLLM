@@ -83,7 +83,7 @@ openai_api_app = fastapi.FastAPI()
     .requirements_file('requirements.txt')
     .run('uv pip install --compile-bytecode vllm --pre --extra-index-url https://wheels.vllm.ai/nightly')
     .run(
-        'uv pip install --compile-bytecode --no-progress flashinfer-python --find-links https://flashinfer.ai/whl/cu124/torch2.6'
+        'uv pip install --compile-bytecode --no-progress flashinfer-python --find-links https://flashinfer.ai/whl/cu126/torch2.6'
     ),
 )
 class VLLM:
