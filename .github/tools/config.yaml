@@ -595,7 +595,6 @@
   requirements:
     - mistral_common[opencv]
 "magistral-small-2506":
-  vision: true
   metadata:
     description: Magistral 3.1 24B 2506 Reasoning Model
     provider: Mistral AI

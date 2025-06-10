@@ -132,16 +132,6 @@ curl -X 'POST' \
   "prompt": "Who are you? Please respond in pirate speak!",
 }'
 ```
-This is also a vision LM. there is also a `/sights` endpoint:
-
-```bash
-curl -X 'POST' \
-  'http://localhost:3000/sights' \
-  -H 'accept: text/event-stream' \
-  -H 'Content-Type: multipart/form-data' \
-  -F 'prompt=Describe this image' \
-  -F 'image=@file.jpeg;type=image/jpeg'
-```
 
 </details>
 
@@ -155,19 +145,6 @@ import bentoml
 with bentoml.SyncHTTPClient("http://localhost:3000") as client:
     response_generator = client.generate(
         prompt="Who are you? Please respond in pirate speak!",
-    )
-    for response in response_generator:
-        print(response, end='')
-```
-This is also a vision LM. there is also a `/sights` endpoint:
-
-```python
-import bentoml
-
-with bentoml.SyncHTTPClient("http://localhost:3000") as client:
-    response_generator = client.sights(
-        prompt="Describe this image",
-        image="./file.jpeg",
     )
     for response in response_generator:
         print(response, end='')

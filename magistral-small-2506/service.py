@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import base64, io, logging, contextlib, traceback, typing, uuid
-import bentoml, pydantic, fastapi, PIL.Image, typing_extensions, annotated_types
+import logging, contextlib, typing, uuid
+import bentoml, pydantic, fastapi, typing_extensions, annotated_types
 
 logger = logging.getLogger(__name__)
 SYSTEM_PROMPT = """A user will ask you to solve a task. You should first draft your thinking process (inner monologue) until you have derived the final answer. Afterwards, write a self-contained summary of your thoughts (i.e. your summary should be succinct but contain all the critical steps you needed to reach the conclusion). You should use Markdown and Latex to format your response. Write both your thoughts and summary in the same language as the task posed by the user.
@@ -79,9 +79,6 @@ class VLLM:
     )
 
     def __init__(self):
-        from openai import AsyncOpenAI
-
-        self.openai = AsyncOpenAI(base_url='http://127.0.0.1:3000/v1', api_key='dummy')
         self.exit_stack = contextlib.AsyncExitStack()
 
     @bentoml.on_startup
@@ -151,37 +148,3 @@ class VLLM:
             text = request_output.outputs[0].text
             yield text[cursor:]
             cursor = len(text)
-
-    @bentoml.api
-    async def sights(
-        self,
-        prompt: str = 'Describe the content of the picture',
-        system_prompt: typing.Optional[str] = SYSTEM_PROMPT,
-        image: typing.Optional['PIL.Image.Image'] = None,
-        max_tokens: typing_extensions.Annotated[
-            int, annotated_types.Ge(128), annotated_types.Le(bento_args.bentovllm_max_tokens)
-        ] = bento_args.bentovllm_max_tokens,
-    ) -> typing.AsyncGenerator[str, None]:
-        if image:
-            buffered = io.BytesIO()
-            image.save(buffered, format='PNG')
-            img_str = base64.b64encode(buffered.getvalue()).decode()
-            buffered.close()
-            image_url = f'data:image/png;base64,{img_str}'
-            content = [dict(type='image_url', image_url=dict(url=image_url)), dict(type='text', text=prompt)]
-        else:
-            content = [dict(type='text', text=prompt)]
-        if system_prompt is None:
-            system_prompt = SYSTEM_PROMPT
-        messages = [{'role': 'system', 'content': system_prompt}, {'role': 'user', 'content': content}]
-
-        try:
-            completion = await self.openai.chat.completions.create(
-                model=bento_args.bentovllm_model_id, messages=messages, stream=True, max_tokens=max_tokens
-            )
-            async for chunk in completion:
-                yield chunk.choices[0].delta.content or ''
-        except Exception:
-            logger.error(traceback.format_exc())
-            yield 'Internal error found. Check server logs for more information'
-            return
