@@ -44,7 +44,6 @@ class BentoArgs(Args):
     max_model_len: int = 8192
     enable_auto_tool_choice: bool = True
     tool_call_parser: str = 'mistral'
-    reasoning_parser: str = 'deepseek_r1'
     max_num_seqs: int = 256
     tensor_parallel_size: int = 2
 
@@ -71,7 +70,9 @@ openai_api_app = fastapi.FastAPI()
     labels={'owner': 'bentoml-team', 'type': 'prebuilt', 'project': 'bentovllm'},
     image=bentoml.images.Image(python_version='3.11', lock_python_packages=True)
     .requirements_file('requirements.txt')
-    .run('uv pip install -U vllm --extra-index-url https://wheels.vllm.ai/0.9.1rc1 --torch-backend=auto'),
+    .run(
+        'uv pip install --compile-bytecode -U vllm --extra-index-url https://wheels.vllm.ai/0.9.1rc1 --torch-backend=cu128'
+    ),
 )
 class VLLM:
     model = bentoml.models.HuggingFaceModel(

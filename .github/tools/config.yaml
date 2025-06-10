@@ -269,7 +269,7 @@
       - curl
       - git
     post:
-      - uv pip install --compile-bytecode torch
+      - uv pip install --compile-bytecode torch --torch-backend=cu128
       - curl -L -o ./causal_conv1d-1.5.0.post8+cu12torch2.6cxx11abiFALSE-cp311-cp311-linux_x86_64.whl https://github.com/Dao-AILab/causal-conv1d/releases/download/v1.5.0.post8/causal_conv1d-1.5.0.post8+cu12torch2.6cxx11abiFALSE-cp311-cp311-linux_x86_64.whl
       - uv pip install --compile-bytecode ./causal_conv1d-1.5.0.post8+cu12torch2.6cxx11abiFALSE-cp311-cp311-linux_x86_64.whl
       - curl -L -o ./mamba_ssm-2.2.4+cu12torch2.6cxx11abiFALSE-cp311-cp311-linux_x86_64.whl https://github.com/state-spaces/mamba/releases/download/v2.2.4/mamba_ssm-2.2.4+cu12torch2.6cxx11abiFALSE-cp311-cp311-linux_x86_64.whl
@@ -305,7 +305,7 @@
       - curl
       - git
     post:
-      - uv pip install --compile-bytecode torch
+      - uv pip install --compile-bytecode torch --torch-backend=cu128
       - curl -L -o ./causal_conv1d-1.5.0.post8+cu12torch2.6cxx11abiFALSE-cp311-cp311-linux_x86_64.whl https://github.com/Dao-AILab/causal-conv1d/releases/download/v1.5.0.post8/causal_conv1d-1.5.0.post8+cu12torch2.6cxx11abiFALSE-cp311-cp311-linux_x86_64.whl
       - uv pip install --compile-bytecode ./causal_conv1d-1.5.0.post8+cu12torch2.6cxx11abiFALSE-cp311-cp311-linux_x86_64.whl
       - curl -L -o ./mamba_ssm-2.2.4+cu12torch2.6cxx11abiFALSE-cp311-cp311-linux_x86_64.whl https://github.com/state-spaces/mamba/releases/download/v2.2.4/mamba_ssm-2.2.4+cu12torch2.6cxx11abiFALSE-cp311-cp311-linux_x86_64.whl
@@ -569,7 +569,7 @@
     exclude:
       - "model*"
     post:
-      - uv pip install --compile-bytecode vllm --pre --extra-index-url https://wheels.vllm.ai/nightly
+      - uv pip install --compile-bytecode -U vllm --extra-index-url https://wheels.vllm.ai/0.9.1rc1 --torch-backend=cu128
   system_prompt: |
     You are Mistral Small 3.1, a Large Language Model (LLM) created by Mistral AI, a French startup headquartered in Paris.
     You power an AI assistant called Le Chat.
@@ -616,12 +616,11 @@
     max_model_len: 8192
     enable_auto_tool_choice: true
     tool_call_parser: "mistral"
-    reasoning_parser: deepseek_r1
   build:
     exclude:
       - "model*"
     post:
-      - uv pip install -U vllm --extra-index-url https://wheels.vllm.ai/0.9.1rc1 --torch-backend=auto
+      - uv pip install --compile-bytecode -U vllm --extra-index-url https://wheels.vllm.ai/0.9.1rc1 --torch-backend=cu128
   system_prompt: |
     A user will ask you to solve a task. You should first draft your thinking process (inner monologue) until you have derived the final answer. Afterwards, write a self-contained summary of your thoughts (i.e. your summary should be succinct but contain all the critical steps you needed to reach the conclusion). You should use Markdown and Latex to format your response. Write both your thoughts and summary in the same language as the task posed by the user.
 
@@ -694,7 +693,7 @@
       - curl
       - git
     post:
-      - uv pip install --compile-bytecode torch setuptools
+      - uv pip install --compile-bytecode torch setuptools --torch-backend=cu128
       - curl -L -o ./flash_attn-2.7.4.post1+cu12torch2.6cxx11abiFALSE-cp311-cp311-linux_x86_64.whl https://github.com/Dao-AILab/flash-attention/releases/download/v2.7.4.post1/flash_attn-2.7.4.post1+cu12torch2.6cxx11abiFALSE-cp311-cp311-linux_x86_64.whl
       - uv pip install --compile-bytecode ./flash_attn-2.7.4.post1+cu12torch2.6cxx11abiFALSE-cp311-cp311-linux_x86_64.whl
   engine_config:

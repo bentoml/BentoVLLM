@@ -57,10 +57,10 @@ openai_api_app = fastapi.FastAPI()
     ],
     labels={'owner': 'bentoml-team', 'type': 'prebuilt', 'project': 'bentovllm'},
     image=bentoml.images.Image(python_version='3.11', lock_python_packages=True)
-    .system_packages('curl')
     .system_packages('git')
+    .system_packages('curl')
     .requirements_file('requirements.txt')
-    .run('uv pip install --compile-bytecode torch')
+    .run('uv pip install --compile-bytecode torch --torch-backend=cu128')
     .run(
         'curl -L -o ./causal_conv1d-1.5.0.post8+cu12torch2.6cxx11abiFALSE-cp311-cp311-linux_x86_64.whl https://github.com/Dao-AILab/causal-conv1d/releases/download/v1.5.0.post8/causal_conv1d-1.5.0.post8+cu12torch2.6cxx11abiFALSE-cp311-cp311-linux_x86_64.whl'
     )

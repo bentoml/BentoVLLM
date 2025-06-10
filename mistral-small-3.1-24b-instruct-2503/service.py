@@ -81,7 +81,9 @@ openai_api_app = fastapi.FastAPI()
     labels={'owner': 'bentoml-team', 'type': 'prebuilt', 'project': 'bentovllm'},
     image=bentoml.images.Image(python_version='3.11', lock_python_packages=True)
     .requirements_file('requirements.txt')
-    .run('uv pip install --compile-bytecode vllm --pre --extra-index-url https://wheels.vllm.ai/nightly'),
+    .run(
+        'uv pip install --compile-bytecode -U vllm --extra-index-url https://wheels.vllm.ai/0.9.1rc1 --torch-backend=cu128'
+    ),
 )
 class VLLM:
     model = bentoml.models.HuggingFaceModel(

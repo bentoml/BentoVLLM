@@ -56,10 +56,10 @@ openai_api_app = fastapi.FastAPI()
     ],
     labels={'owner': 'bentoml-team', 'type': 'prebuilt', 'project': 'bentovllm'},
     image=bentoml.images.Image(python_version='3.11', lock_python_packages=True)
-    .system_packages('curl')
     .system_packages('git')
+    .system_packages('curl')
     .requirements_file('requirements.txt')
-    .run('uv pip install --compile-bytecode torch setuptools')
+    .run('uv pip install --compile-bytecode torch setuptools --torch-backend=cu128')
     .run(
         'curl -L -o ./flash_attn-2.7.4.post1+cu12torch2.6cxx11abiFALSE-cp311-cp311-linux_x86_64.whl https://github.com/Dao-AILab/flash-attention/releases/download/v2.7.4.post1/flash_attn-2.7.4.post1+cu12torch2.6cxx11abiFALSE-cp311-cp311-linux_x86_64.whl'
     )
