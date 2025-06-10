@@ -197,6 +197,7 @@ In addition to Llama 3.1 8B Instruct, we also have examples for other models in 
 | pixtral-12b-2409 | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/pixtral-12b-2409/) • [Hugging Face](https://huggingface.co/mistralai/Pixtral-12B-2409) |
 | ministral-8b-instruct-2410 | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/ministral-8b-instruct-2410/) • [Hugging Face](https://huggingface.co/mistralai/Ministral-8B-Instruct-2410) |
 | mistral-small-3.1-24b-instruct-2503 | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/mistral-small-3.1-24b-instruct-2503/) • [Hugging Face](https://huggingface.co/mistralai/Mistral-Small-3.1-24B-Instruct-2503) |
+| magistral-small-2506 | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/magistral-small-2506/) • [Hugging Face](https://huggingface.co/mistralai/Magistral-Small-2506) |
 | phi4-14b | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/phi4-14b/) • [Hugging Face](https://huggingface.co/microsoft/phi-4) |
 | phi4-14b-reasoning | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/phi4-14b-reasoning/) • [Hugging Face](https://huggingface.co/microsoft/Phi-4-reasoning) |
 | qwen2.5-vl-32b-instruct | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/qwen2.5-vl-32b-instruct/) • [Hugging Face](https://huggingface.co/Qwen/Qwen2.5-VL-32B-Instruct) |

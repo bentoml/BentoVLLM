@@ -594,6 +594,50 @@
     max_tokens: 4096
   requirements:
     - mistral_common[opencv]
+"magistral-small-2506":
+  vision: true
+  metadata:
+    description: Magistral 3.1 24B 2506 Reasoning Model
+    provider: Mistral AI
+    gpu_recommendation: Nvidia GPUs with at least 80GBx2 VRAM (e.g about 2 H100 GPU).
+  service_config:
+    name: magistral-small-2506
+    traffic:
+      timeout: 300
+    resources:
+      gpu: 2
+      gpu_type: nvidia-h100-80gb
+    envs:
+      - name: HF_TOKEN
+  engine_config:
+    model: mistralai/Magistral-Small-2506
+    tokenizer_mode: mistral
+    config_format: mistral
+    load_format: mistral
+    max_model_len: 8192
+    enable_auto_tool_choice: true
+    tool_call_parser: "mistral"
+    reasoning_parser: deepseek_r1
+  build:
+    exclude:
+      - "model*"
+    post:
+      - uv pip install -U vllm --extra-index-url https://wheels.vllm.ai/0.9.1rc1 --torch-backend=auto
+  system_prompt: |
+    A user will ask you to solve a task. You should first draft your thinking process (inner monologue) until you have derived the final answer. Afterwards, write a self-contained summary of your thoughts (i.e. your summary should be succinct but contain all the critical steps you needed to reach the conclusion). You should use Markdown and Latex to format your response. Write both your thoughts and summary in the same language as the task posed by the user.
+
+    Your thinking process must follow the template below:
+    <think>
+    Your thoughts or/and draft, like working through an exercise on scratch paper. Be as casual and as long as you want until you are confident to generate a correct answer.
+    </think>
+
+    Here, provide a concise summary that reflects your reasoning and presents a clear final answer to the user.
+
+    Problem:
+  generate_config:
+    max_tokens: 4096
+  requirements:
+    - mistral_common[opencv]
 "phi4-14b":
   metadata:
     description: Phi 4 14B
