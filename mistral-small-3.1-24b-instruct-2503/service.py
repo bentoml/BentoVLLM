@@ -83,6 +83,9 @@ openai_api_app = fastapi.FastAPI()
     .requirements_file('requirements.txt')
     .run(
         'uv pip install --compile-bytecode -U vllm --extra-index-url https://wheels.vllm.ai/0.9.1rc1 --torch-backend=cu128'
+    )
+    .run(
+        'uv pip install --compile-bytecode --no-progress https://download.pytorch.org/whl/cu128/flashinfer/flashinfer_python-0.2.6.post1%2Bcu128torch2.7-cp39-abi3-linux_x86_64.whl'
     ),
 )
 class VLLM:

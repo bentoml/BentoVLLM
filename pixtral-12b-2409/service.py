@@ -59,7 +59,11 @@ openai_api_app = fastapi.FastAPI()
         {'name': 'UV_NO_PROGRESS', 'value': '1'},
     ],
     labels={'owner': 'bentoml-team', 'type': 'prebuilt', 'project': 'bentovllm'},
-    image=bentoml.images.Image(python_version='3.11', lock_python_packages=True).requirements_file('requirements.txt'),
+    image=bentoml.images.Image(python_version='3.11', lock_python_packages=True)
+    .requirements_file('requirements.txt')
+    .run(
+        'uv pip install --compile-bytecode --no-progress https://download.pytorch.org/whl/cu128/flashinfer/flashinfer_python-0.2.6.post1%2Bcu128torch2.7-cp39-abi3-linux_x86_64.whl'
+    ),
 )
 class VLLM:
     model = bentoml.models.HuggingFaceModel(

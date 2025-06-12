@@ -122,9 +122,9 @@ def generate_jinja_context(model_name: str, config: dict[str, dict[str, typing.A
       "uv pip install --compile-bytecode --no-progress xformers --index-url https://download.pytorch.org/whl/cu126",
       "uv pip install --compile-bytecode --no-progress vllm --extra-index-url https://wheels.vllm.ai/3d13ca0e242a99ef1ca53de1828689130924b3f5",
     ])
-  # build_config["post"].append(
-  #   "uv pip install --compile-bytecode --no-progress flashinfer-python --find-links https://flashinfer.ai/whl/cu126/torch2.6"
-  # )
+  build_config["post"].append(
+    "uv pip install --compile-bytecode --no-progress https://download.pytorch.org/whl/cu128/flashinfer/flashinfer_python-0.2.6.post1%2Bcu128torch2.7-cp39-abi3-linux_x86_64.whl"
+  )
   build_config["system_packages"] = set(build_config["system_packages"])
 
   context = {
