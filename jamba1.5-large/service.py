@@ -52,14 +52,12 @@ openai_api_app = fastapi.FastAPI()
     envs=[
         {'name': 'HF_TOKEN'},
         {'name': 'UV_NO_BUILD_ISOLATION', 'value': '1'},
-        {'name': 'VLLM_ATTENTION_BACKEND', 'value': 'FLASH_ATTN'},
-        {'name': 'VLLM_USE_V1', 'value': '1'},
         {'name': 'UV_NO_PROGRESS', 'value': '1'},
     ],
     labels={'owner': 'bentoml-team', 'type': 'prebuilt', 'project': 'bentovllm'},
     image=bentoml.images.Image(python_version='3.11', lock_python_packages=True)
-    .system_packages('curl')
     .system_packages('git')
+    .system_packages('curl')
     .requirements_file('requirements.txt')
     .run('uv pip install --compile-bytecode torch --torch-backend=cu128')
     .run(

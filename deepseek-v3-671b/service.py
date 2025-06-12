@@ -47,9 +47,8 @@ openai_api_app = fastapi.FastAPI()
     resources={'gpu': bento_args.tensor_parallel_size, 'gpu_type': 'nvidia-h200-141gb'},
     envs=[
         {'name': 'HF_TOKEN'},
-        {'name': 'VLLM_ATTENTION_BACKEND', 'value': 'FLASHMLA'},
-        {'name': 'VLLM_USE_V1', 'value': '1'},
         {'name': 'UV_NO_PROGRESS', 'value': '1'},
+        {'name': 'VLLM_ATTENTION_BACKEND', 'value': 'FLASHMLA'},
     ],
     labels={'owner': 'bentoml-team', 'type': 'prebuilt', 'project': 'bentovllm'},
     image=bentoml.images.Image(python_version='3.11', lock_python_packages=True)

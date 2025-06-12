@@ -48,12 +48,7 @@ openai_api_app = fastapi.FastAPI()
     name='r1-distill-llama3.1-8b',
     traffic={'timeout': 300},
     resources={'gpu': bento_args.tensor_parallel_size, 'gpu_type': 'nvidia-l4'},
-    envs=[
-        {'name': 'HF_TOKEN'},
-        {'name': 'VLLM_ATTENTION_BACKEND', 'value': 'FLASH_ATTN'},
-        {'name': 'VLLM_USE_V1', 'value': '1'},
-        {'name': 'UV_NO_PROGRESS', 'value': '1'},
-    ],
+    envs=[{'name': 'HF_TOKEN'}, {'name': 'UV_NO_PROGRESS', 'value': '1'}],
     labels={'owner': 'bentoml-team', 'type': 'prebuilt', 'project': 'bentovllm'},
     image=bentoml.images.Image(python_version='3.11', lock_python_packages=True)
     .requirements_file('requirements.txt')

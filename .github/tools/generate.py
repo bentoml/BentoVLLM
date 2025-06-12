@@ -88,10 +88,9 @@ def generate_jinja_context(model_name: str, config: dict[str, dict[str, typing.A
   if "envs" not in service_config:
     service_config["envs"] = []
 
-
   service_config["envs"].extend([{"name": "UV_NO_PROGRESS", "value": "1"}])
   if use_mla:
-    service_config['envs'].append({"name": "VLLM_ATTENTION_BACKEND", "value": "FLASHMLA"})
+    service_config["envs"].append({"name": "VLLM_ATTENTION_BACKEND", "value": "FLASHMLA"})
 
   if "max_num_seqs" not in engine_config_struct:
     engine_config_struct["max_num_seqs"] = 256  # Aligned with v0
