@@ -158,7 +158,7 @@
     traffic:
       timeout: 300
     resources:
-      gpu: 2
+      gpu: 4
       gpu_type: nvidia-a100-80gb
     envs:
       - name: HF_TOKEN
@@ -166,7 +166,7 @@
     model: deepseek-ai/DeepSeek-R1-Distill-Llama-70B
     max_model_len: 8192
     reasoning_parser: "deepseek_r1"
-    max_num_seqs: 256
+    max_num_seqs: 1024
     enable_auto_tool_choice: true
     tool_call_parser: "llama3_json"
   generate_config:
@@ -458,14 +458,14 @@
     traffic:
       timeout: 300
     resources:
-      gpu: 2
+      gpu: 4
       gpu_type: nvidia-a100-80gb
     envs:
       - name: HF_TOKEN
   engine_config:
     model: meta-llama/Llama-3.3-70B-Instruct
-    max_model_len: 2048
-    max_num_seqs: 256
+    max_model_len: 8192
+    max_num_seqs: 1024
     tool_call_parser: "pythonic"
     enable_auto_tool_choice: true
   build:
@@ -473,7 +473,7 @@
       - "original"
       - "consolidated*"
   generate_config:
-    max_tokens: 1024
+    max_tokens: 4096
 "pixtral-12b-2409":
   metadata:
     description: Pixtral 12B 2409

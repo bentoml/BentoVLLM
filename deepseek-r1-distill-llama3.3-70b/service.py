@@ -29,10 +29,10 @@ class BentoArgs(Args):
     task: TaskOption = 'generate'
     max_model_len: int = 8192
     reasoning_parser: str = 'deepseek_r1'
-    max_num_seqs: int = 256
+    max_num_seqs: int = 1024
     enable_auto_tool_choice: bool = True
     tool_call_parser: str = 'llama3_json'
-    tensor_parallel_size: int = 2
+    tensor_parallel_size: int = 4
 
     @pydantic.model_serializer
     def serialize_model(self) -> dict[str, typing.Any]:
