@@ -54,10 +54,10 @@ openai_api_app = fastapi.FastAPI()
         {'name': 'UV_NO_BUILD_ISOLATION', 'value': '1'},
         {'name': 'UV_NO_PROGRESS', 'value': '1'},
     ],
-    labels={'owner': 'bentoml-team', 'type': 'prebuilt', 'project': 'bentovllm'},
+    labels={'owner': 'bentoml-team', 'type': 'prebuilt', 'project': 'bentovllm', 'openai_endpoint': '/v1'},
     image=bentoml.images.Image(python_version='3.11', lock_python_packages=True)
-    .system_packages('git')
     .system_packages('curl')
+    .system_packages('git')
     .requirements_file('requirements.txt')
     .run('uv pip install --compile-bytecode torch --torch-backend=cu128')
     .run(

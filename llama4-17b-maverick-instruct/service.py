@@ -52,7 +52,7 @@ openai_api_app = fastapi.FastAPI()
         {'name': 'VLLM_DISABLE_COMPILE_CACHE', 'value': '1'},
         {'name': 'UV_NO_PROGRESS', 'value': '1'},
     ],
-    labels={'owner': 'bentoml-team', 'type': 'prebuilt', 'project': 'bentovllm'},
+    labels={'owner': 'bentoml-team', 'type': 'prebuilt', 'project': 'bentovllm', 'openai_endpoint': '/v1'},
     image=bentoml.images.Image(python_version='3.11', lock_python_packages=True)
     .requirements_file('requirements.txt')
     .run(
