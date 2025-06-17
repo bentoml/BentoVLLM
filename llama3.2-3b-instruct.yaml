@@ -1,0 +1,19 @@
+args:
+  name: llama3.2-3b-instruct
+  gpu_type: nvidia-h100-80gb
+  tp: 1
+  autotune: [1,2,4,8,16]
+  cli_args:
+    - '--max-num-batched-tokens'
+    - '16384'
+  metadata:
+    description: Llama 3.1 3B Instruct
+    provider: Meta
+    gpu_recommendation: an Nvidia GPU with at least 80GB VRAM (e.g about 1 H100 GPU).
+  model_id: meta-llama/Llama-3.2-3B-Instruct
+  tool_parser: pythonic
+  envs:
+    - name: HF_TOKEN
+  hf_generation_config:
+    temperature: 0.6
+    top_p: 0.9

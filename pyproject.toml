@@ -1,0 +1,69 @@
+[project]
+name = "bentovllm"
+version = "0.0.0"
+description = "Self-host LLMs with vLLM and BentoML"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "Apache-2.0" }
+authors = [{ name = "BentoML Team", email = "contact@bentoml.com" }]
+
+[project.urls]
+Website = "https://bentoml.com"
+Documentation = "https://docs.bentoml.com"
+GitHub = "https://github.com/bentoml/OpenLLM"
+Twitter = "https://twitter.com/bentomlai"
+Tracker = "https://github.com/bentoml/OpenLLM/issues"
+
+[tool.bentoml.build]
+service = "service.py:LLM"
+include = ["LICENCE", "*.py", "*.toml", "*.txt", "*.md", "templates/*"]
+
+[tool.bentoml.build.args]
+
+[tool.ruff]
+extend-include = ["*.ipynb"]
+preview = true
+line-length = 119
+indent-width = 2
+
+[tool.ruff.format]
+preview = true
+quote-style = "single"
+indent-style = "space"
+skip-magic-trailing-comma = true
+docstring-code-format = true
+
+[tool.ruff.lint]
+ignore = ["RUF012", "ANN", "E722"]
+select = [
+  "F",
+  "G",
+  "PERF",
+  "RUF",
+  "W6",
+  "E71",
+  "E72",
+  "E112",
+  "E113",
+  "E203",
+  "E272",
+  "E502",
+  "E702",
+  "E703",
+  "E731",
+  "W191",
+  "W291",
+  "W293",
+  "UP039",
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ty.src]
+respect-ignore-files = true
+root = "./"
+
+[tool.ty.environment]
+python = "./.venv"
+python-version = "3.11"

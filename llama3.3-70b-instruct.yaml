@@ -1,0 +1,21 @@
+args:
+  name: llama3.3-70b-instruct
+  gpu_type: nvidia-h100-80gb
+  tp: 4
+  metadata:
+    description: Llama 3.3 70B Instruct
+    provider: Meta
+    gpu_recommendation: Nvidia GPUs with at least 80GBx4 VRAM (e.g about 4 H100 GPUs).
+  model_id: meta-llama/Llama-3.3-70B-Instruct
+  tool_parser: pythonic
+  autotune: [1,2,4,8,16,24]
+  envs:
+    - name: HF_TOKEN
+  exclude:
+      - "original"
+      - "consolidated*"
+      - "*.pth"
+      - "*.pt"
+  hf_generation_config:
+    temperature: 0.6
+    top_p: 0.9

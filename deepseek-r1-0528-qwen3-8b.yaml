@@ -1,0 +1,17 @@
+args:
+  name: r1-0528-qwen3-8b
+  gpu_type: nvidia-h100-80gb
+  tp: 1
+  autotune: [1,2,4,8,16]
+  metadata:
+    description: DeepSeek R1 0528 Qwen3 8B
+    provider: DeepSeek
+    gpu_recommendation: 1 Nvidia GPU with at least 80GB VRAM (e.g. about 1 H100 GPU).
+  model_id: deepseek-ai/DeepSeek-R1-0528-Qwen3-8B
+  reasoning_parser: deepseek_r1
+  tool_parser: hermes
+  envs:
+    - name: HF_TOKEN
+  hf_generation_config:
+    temperature: 0.6
+    top_p: 0.95

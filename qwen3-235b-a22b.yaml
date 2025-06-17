@@ -1,0 +1,17 @@
+args:
+  name: qwen3-235b-a22b
+  gpu_type: nvidia-h100-80gb
+  tp: 4
+  metadata:
+    reasoning: true
+    description: Qwen 3 235B A22B MoE
+    provider: Alibaba
+    gpu_recommendation: Nvidia GPUs with at least 80GBx4 VRAM (e.g about 4 H100 GPUs).
+  model_id: Qwen/Qwen3-235B-A22B-FP8
+  reasoning_parser: deepseek_r1
+  autotune: [1,2,4,8,16,24]
+  tool_parser: hermes
+  hf_generation_config:
+    temperature: 0.6
+    top_k: 20
+    top_p: 0.95

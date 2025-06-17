@@ -1,11 +1,3 @@
-# /// script
-# requires-python = ">=3.12"
-# dependencies = [
-#     "bentoml>=1.4.12",
-#     "huggingface-hub",
-#     "rich",
-# ]
-# ///
 from __future__ import annotations
 import multiprocessing, subprocess, argparse, typing, pathlib, dataclasses
 
@@ -98,10 +90,16 @@ def main() -> int:
   parser.add_argument(
     '--workers', type=int, default=multiprocessing.cpu_count(), help='Number of parallel workers (default: 4)'
   )
+  parser.add_argument(
+    '--build-file', type=str, default='successful_builds.txt', help='Path to file containing built bento tags'
+  )
   args = parser.parse_args()
 
   git_dir = pathlib.Path(__file__).parent.parent.parent
-  builds_file = git_dir / 'successful_builds.txt'
+
+  builds_file = pathlib.Path(args.build_file)
+  if not builds_file.is_absolute():
+    builds_file = git_dir / builds_file
 
   if not builds_file.exists():
     print('Error: successful_builds.txt not found. Run build.py first.')
