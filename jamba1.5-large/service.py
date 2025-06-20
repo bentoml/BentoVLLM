@@ -57,6 +57,7 @@ openai_api_app = fastapi.FastAPI()
     {'name': 'UV_NO_PROGRESS', 'value': '1'},
     {'name': 'VLLM_SKIP_P2P_CHECK', 'value': '1'},
     {'name': 'VLLM_USE_V1', 'value': '0'},
+    {'name': 'VLLM_ATTENTION_BACKEND', 'value': 'FLASH_ATTN'},
   ],
   labels={
     'owner': 'bentoml-team',
