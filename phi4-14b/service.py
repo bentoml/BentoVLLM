@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import logging, contextlib, typing, uuid
+import json, logging, contextlib, typing, uuid
 import bentoml, pydantic, fastapi, typing_extensions, annotated_types
 
 logger = logging.getLogger(__name__)
@@ -20,6 +20,8 @@ else:
 class BentoArgs(Args):
     bentovllm_model_id: str = 'microsoft/phi-4'
     bentovllm_max_tokens: int = 4096
+    bentovllm_full_cudagraph: bool = False
+    bentovllm_use_cudagraph: bool = True
 
     disable_log_requests: bool = True
     max_log_len: int = 1000
@@ -62,14 +64,20 @@ openai_api_app = fastapi.FastAPI()
 @bentoml.service(
     name='phi4-14b',
     traffic={'timeout': 300},
-    resources={'gpu': bento_args.tensor_parallel_size, 'gpu_type': 'nvidia-a100-80gb'},
-    envs=[{'name': 'UV_NO_PROGRESS', 'value': '1'}],
+    resources={'gpu': bento_args.tensor_parallel_size, 'gpu_type': 'nvidia-h100-80gb'},
+    envs=[
+        {'name': 'UV_NO_PROGRESS', 'value': '1'},
+        {'name': 'VLLM_SKIP_P2P_CHECK', 'value': '1'},
+        {'name': 'VLLM_USE_V1', 'value': '1'},
+    ],
     labels={
         'owner': 'bentoml-team',
         'type': 'prebuilt',
         'project': 'bentovllm',
         'openai_endpoint': '/v1',
         'hf_generation_config': '{"temperature": 0.6, "top_p": 0.9, "repetition_penalty": 1.0, "frequency_penalty": 0.2}',
+        'reasoning': '0',
+        'tool': '',
     },
     image=bentoml.images.Image(python_version='3.11', lock_python_packages=True)
     .system_packages('curl')
@@ -91,10 +99,18 @@ class VLLM:
 
         from vllm.utils import FlexibleArgumentParser
         from vllm.entrypoints.openai.cli_args import make_arg_parser
+        from vllm.entrypoints.openai.api_server import mount_metrics
 
         args = make_arg_parser(FlexibleArgumentParser()).parse_args([])
         args.model = self.model
         args.served_model_name = [bento_args.bentovllm_model_id]
+        args.compilation_config = {
+            'level': 3,
+            'use_cudagraph': bento_args.bentovllm_use_cudagraph,
+            'cudagraph_capture_sizes': [128, 120, 112, 104, 96, 88, 80, 72, 64, 56, 48, 40, 32, 24, 16, 8, 4, 2, 1],
+            'cudagraph_num_of_warmups': 1,
+            'full_cuda_graph': bento_args.bentovllm_full_cudagraph,
+        }
         for key, value in bento_args.model_dump().items():
             setattr(args, key, value)
 
@@ -107,6 +123,7 @@ class VLLM:
         for route, endpoint, methods in OPENAI_ENDPOINTS:
             router.add_api_route(path=route, endpoint=endpoint, methods=methods, include_in_schema=True)
         openai_api_app.include_router(router)
+        mount_metrics(openai_api_app)
 
         self.engine = await self.exit_stack.enter_async_context(vllm_api_server.build_async_engine_client(args))
         self.tokenizer = await self.engine.get_tokenizer()

@@ -2,7 +2,6 @@ bentoml==1.4.15
 vllm==0.9.1
 huggingface-hub
 kantoku
-openai
 pyyaml
 fastapi
 mistral_common[opencv]

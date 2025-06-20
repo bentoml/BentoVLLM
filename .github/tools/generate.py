@@ -77,6 +77,8 @@ def update_model_descriptions(config, git_dir):
 def generate_jinja_context(model_name: str, config: dict[str, dict[str, typing.Any]]) -> dict[str, typing.Any]:
   model_config = config[model_name]
   use_mla = model_config.get("use_mla", False)
+  v1 = model_config.get("v1", True)
+  reasoning = model_config.get("reasoning", False)
   use_nightly = model_config.get("nightly", False)
   use_vision = model_config.get("vision", False)
   include_system_prompt = model_config.get("include_system_prompt", True)
@@ -93,7 +95,11 @@ def generate_jinja_context(model_name: str, config: dict[str, dict[str, typing.A
   if "envs" not in service_config:
     service_config["envs"] = []
 
-  service_config["envs"].extend([{"name": "UV_NO_PROGRESS", "value": "1"}])
+  service_config["envs"].extend([
+    {"name": "UV_NO_PROGRESS", "value": "1"},
+    {"name": "VLLM_SKIP_P2P_CHECK", "value": "1"},
+    {"name": "VLLM_USE_V1", "value": "1" if v1 else "0"},
+  ])
   if use_mla:
     service_config["envs"].append({"name": "VLLM_ATTENTION_BACKEND", "value": "FLASHMLA"})
 
@@ -135,6 +141,8 @@ def generate_jinja_context(model_name: str, config: dict[str, dict[str, typing.A
     project="bentovllm",
     openai_endpoint="/v1",
     hf_generation_config=json.dumps(hf_generation_config),
+    reasoning="1" if reasoning else "0",
+    tool=engine_config_struct.get("tool_call_parser", ""),
   )
   if hf_system_prompt and include_system_prompt:
     labels["hf_system_prompt"] = json.dumps(hf_system_prompt)
@@ -144,6 +152,8 @@ def generate_jinja_context(model_name: str, config: dict[str, dict[str, typing.A
     "model_id": model,
     "vision": use_vision,
     "c2a": model_config.get("c2a", True),
+    "v1": v1,
+    "full_cuda_graph": model_config.get("full_cuda_graph", False),
     "task": model_config.get("task", "generate"),
     "deployment_config": model_config.get("deployment_config", {}),
     "generate_config": model_config.get("generate_config", {}),
@@ -155,7 +165,7 @@ def generate_jinja_context(model_name: str, config: dict[str, dict[str, typing.A
     "requires_hf_tokens": requires_hf_tokens,
     "build": build_config,
     "exclude": build_config["exclude"],
-    "reasoning": model_config.get("reasoning", False),
+    "reasoning": reasoning,
     "embeddings": model_config.get("embeddings", False),
     "system_prompt": model_config.get("system_prompt", None),
     "prompt": model_config.get("prompt", None),
