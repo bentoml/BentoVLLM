@@ -81,7 +81,8 @@ openai_api_app = fastapi.FastAPI()
         'hf_generation_config': '{"temperature": 0.7, "top_p": 0.95}',
     },
     image=bentoml.images.Image(python_version='3.11', lock_python_packages=True)
-    .system_packages('curl', 'git')
+    .system_packages('curl')
+    .system_packages('git')
     .requirements_file('requirements.txt')
     .run(
         'uv pip install --compile-bytecode -U vllm --extra-index-url https://wheels.vllm.ai/0.9.1rc1 --torch-backend=cu128'

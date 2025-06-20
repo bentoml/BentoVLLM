@@ -71,7 +71,7 @@ openai_api_app = fastapi.FastAPI()
   {%- endif -%}
   {%- endfor %}
   labels={{labels}},
-  image = bentoml.images.Image(python_version='3.11', lock_python_packages={{not nightly}}).system_packages('curl', 'git')
+  image = bentoml.images.Image(python_version='3.11', lock_python_packages={{not nightly}}).system_packages('curl').system_packages('git')
         {%- if build['system_packages'] | length > 0 %}
         {%- for item in build['system_packages'] -%}
         .system_packages("{{item}}")
