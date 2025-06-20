@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import logging, contextlib, typing, uuid
+import logging, contextlib, traceback, typing
 import bentoml, pydantic, fastapi, typing_extensions, annotated_types
 
 logger = logging.getLogger(__name__)
@@ -60,7 +60,14 @@ openai_api_app = fastapi.FastAPI()
     traffic={'timeout': 300},
     resources={'gpu': bento_args.tensor_parallel_size, 'gpu_type': 'nvidia-h100-80gb'},
     envs=[{'name': 'HF_TOKEN'}, {'name': 'UV_NO_PROGRESS', 'value': '1'}],
-    labels={'owner': 'bentoml-team', 'type': 'prebuilt', 'project': 'bentovllm', 'openai_endpoint': '/v1'},
+    labels={
+        'owner': 'bentoml-team',
+        'type': 'prebuilt',
+        'project': 'bentovllm',
+        'openai_endpoint': '/v1',
+        'hf_generation_config': '{"temperature": 0.7, "top_p": 0.95}',
+        'hf_system_prompt': '"A user will ask you to solve a task. You should first draft your thinking process (inner monologue) until you have derived the final answer. Afterwards, write a self-contained summary of your thoughts (i.e. your summary should be succinct but contain all the critical steps you needed to reach the conclusion). You should use Markdown to format your response. Write both your thoughts and summary in the same language as the task posed by the user. NEVER use \\\\boxed{} in your response.\\n\\nYour thinking process must follow the template below:\\n<think>\\nYour thoughts or/and draft, like working through an exercise on scratch paper. Be as casual and as long as you want until you are confident to generate a correct answer.\\n</think>\\n\\nDon\'t mention that this is a summary.\\n"',
+    },
     image=bentoml.images.Image(python_version='3.11', lock_python_packages=True)
     .requirements_file('requirements.txt')
     .run(
@@ -76,6 +83,9 @@ class VLLM:
     )
 
     def __init__(self):
+        from openai import AsyncOpenAI
+
+        self.openai = AsyncOpenAI(base_url='http://127.0.0.1:3000/v1', api_key='dummy')
         self.exit_stack = contextlib.AsyncExitStack()
 
     @bentoml.on_startup
@@ -119,9 +129,9 @@ class VLLM:
         max_tokens: typing_extensions.Annotated[
             int, annotated_types.Ge(128), annotated_types.Le(bento_args.bentovllm_max_tokens)
         ] = bento_args.bentovllm_max_tokens,
+        show_reasoning: bool = True,
     ) -> typing.AsyncGenerator[str, None]:
-        from vllm import SamplingParams, TokensPrompt
-        from vllm.entrypoints.chat_utils import apply_mistral_chat_template
+        from vllm.entrypoints.openai.protocol import DeltaMessage
 
         if system_prompt is None:
             system_prompt = SYSTEM_PROMPT
@@ -130,18 +140,17 @@ class VLLM:
             {'role': 'system', 'content': system_prompt},
             {'role': 'user', 'content': [{'type': 'text', 'text': prompt}]},
         ]
-
-        params = SamplingParams(max_tokens=max_tokens)
-        prompt = TokensPrompt(
-            prompt_token_ids=apply_mistral_chat_template(
-                self.tokenizer, messages=messages, chat_template=None, tools=None
+        try:
+            completion = await self.openai.chat.completions.create(
+                model=bento_args.bentovllm_model_id, messages=messages, stream=True, max_tokens=max_tokens
             )
-        )
-
-        stream = self.engine.generate(request_id=uuid.uuid4().hex, prompt=prompt, sampling_params=params)
-
-        cursor = 0
-        async for request_output in stream:
-            text = request_output.outputs[0].text
-            yield text[cursor:]
-            cursor = len(text)
+            async for chunk in completion:
+                delta_choice = typing.cast(DeltaMessage, chunk.choices[0].delta)
+                if hasattr(delta_choice, 'reasoning_content') and show_reasoning:
+                    yield delta_choice.reasoning_content or ''
+                else:
+                    yield delta_choice.content or ''
+        except Exception:
+            logger.error(traceback.format_exc())
+            yield 'Internal error found. Check server logs for more information'
+            return

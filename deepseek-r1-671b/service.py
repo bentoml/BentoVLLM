@@ -51,7 +51,13 @@ openai_api_app = fastapi.FastAPI()
         {'name': 'UV_NO_PROGRESS', 'value': '1'},
         {'name': 'VLLM_ATTENTION_BACKEND', 'value': 'FLASHMLA'},
     ],
-    labels={'owner': 'bentoml-team', 'type': 'prebuilt', 'project': 'bentovllm', 'openai_endpoint': '/v1'},
+    labels={
+        'owner': 'bentoml-team',
+        'type': 'prebuilt',
+        'project': 'bentovllm',
+        'openai_endpoint': '/v1',
+        'hf_generation_config': '{"temperature": 0.6, "top_p": 0.95}',
+    },
     image=bentoml.images.Image(python_version='3.11', lock_python_packages=True)
     .requirements_file('requirements.txt')
     .run(

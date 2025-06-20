@@ -79,6 +79,10 @@ def generate_jinja_context(model_name: str, config: dict[str, dict[str, typing.A
   use_mla = model_config.get("use_mla", False)
   use_nightly = model_config.get("nightly", False)
   use_vision = model_config.get("vision", False)
+  hf_generation_config = model_config.get(
+    "hf_generation_config", {"temperature": 0.6, "top_p": 0.9, "repetition_penalty": 1.0, "frequency_penalty": 0.2}
+  )
+  hf_system_prompt = model_config.get("system_prompt", None)
   engine_config_struct = model_config.get("engine_config", {"model": "deepseek-ai/DeepSeek-R1-Distill-Llama-8B"})
   model = engine_config_struct.pop("model")
 
@@ -124,6 +128,15 @@ def generate_jinja_context(model_name: str, config: dict[str, dict[str, typing.A
     "uv pip install --compile-bytecode --no-progress https://download.pytorch.org/whl/cu128/flashinfer/flashinfer_python-0.2.6.post1%2Bcu128torch2.7-cp39-abi3-linux_x86_64.whl"
   )
   build_config["system_packages"] = set(build_config["system_packages"])
+  labels = dict(
+    owner="bentoml-team",
+    type="prebuilt",
+    project="bentovllm",
+    openai_endpoint="/v1",
+    hf_generation_config=json.dumps(hf_generation_config),
+  )
+  if hf_system_prompt:
+    labels["hf_system_prompt"] = json.dumps(hf_system_prompt)
 
   context = {
     "model_name": model_name,
@@ -136,7 +149,7 @@ def generate_jinja_context(model_name: str, config: dict[str, dict[str, typing.A
     "nightly": use_nightly,
     "service_config": service_config,
     "engine_config": engine_config_struct,
-    "labels": dict(owner="bentoml-team", type="prebuilt", project="bentovllm", openai_endpoint="/v1"),
+    "labels": labels,
     "metadata": model_config["metadata"],
     "requires_hf_tokens": requires_hf_tokens,
     "build": build_config,

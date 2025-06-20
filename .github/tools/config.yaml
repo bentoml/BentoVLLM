@@ -1,5 +1,8 @@
 "deepseek-v3-671b":
   use_mla: true
+  hf_generation_config: &deepseek_v3
+    temperature: 0.6
+    top_p: 0.9
   metadata:
     description: DeepSeek V3 671B
     provider: DeepSeek
@@ -22,6 +25,9 @@
 "deepseek-r1-671b":
   reasoning: true
   use_mla: true
+  hf_generation_config: &deepseek_r1
+    temperature: 0.6
+    top_p: 0.95
   metadata:
     description: DeepSeek R1 671B
     provider: DeepSeek
@@ -43,6 +49,7 @@
   generate_config:
     max_tokens: 4096
 "deepseek-prover-v2-671b":
+  hf_generation_config: *deepseek_r1
   metadata:
     description: DeepSeek Prover V2 671B
     provider: DeepSeek
@@ -85,6 +92,7 @@
     The plan should highlight key ideas, intermediate lemmas, and proof structures that will guide the construction of
     the final formal proof.
 "deepseek-prover-v2-7b":
+  hf_generation_config: *deepseek_r1
   metadata:
     description: DeepSeek Prover V2 7B
     provider: DeepSeek
@@ -126,6 +134,7 @@
     the final formal proof.
 "deepseek-r1-0528-qwen3-8b":
   reasoning: true
+  hf_generation_config: *deepseek_r1
   metadata:
     description: DeepSeek R1 0528 Qwen3 8B
     provider: DeepSeek
@@ -148,6 +157,7 @@
   generate_config:
     max_tokens: 4096
 "deepseek-r1-distill-llama3.3-70b":
+  hf_generation_config: *deepseek_r1
   reasoning: true
   metadata:
     description: DeepSeek R1 Distill Llama 3.3 70B
@@ -172,6 +182,7 @@
   generate_config:
     max_tokens: 4096
 "deepseek-r1-distill-llama3.1-8b":
+  hf_generation_config: *deepseek_r1
   reasoning: true
   metadata:
     description: DeepSeek R1 Distill Llama 3.1 8B
@@ -200,6 +211,10 @@
   generate_config:
     max_tokens: 2048
 "gemma3-4b-instruct":
+  hf_generation_config: &gemma3
+    temperature: 0.6
+    top_p: 0.95
+    top_k: 64
   vision: true
   metadata:
     description: Gemma 3 4B Instruct
@@ -220,6 +235,7 @@
   generate_config:
     max_tokens: 8192
 "gemma3-1b-instruct":
+  hf_generation_config: *gemma3
   metadata:
     description: Gemma 3 1B Instruct
     provider: Google
@@ -242,6 +258,9 @@
   generate_config:
     max_tokens: 2048
 "jamba1.5-mini":
+  hf_generation_config: &jamba
+    temperature: 0.4
+    top_p: 0.95
   metadata:
     description: Jamba 1.5 Mini
     provider: AI21 Lab
@@ -277,6 +296,7 @@
   generate_config:
     max_tokens: 4096
 "jamba1.5-large":
+  hf_generation_config: *jamba
   metadata:
     description: Jamba 1.5 Large
     provider: AI21 Lab
@@ -313,6 +333,7 @@
   generate_config:
     max_tokens: 4096
 "llama3.1-8b-instruct":
+  hf_generation_config: *deepseek_v3
   metadata:
     description: Llama 3.1 8B Instruct
     provider: Meta
@@ -339,6 +360,7 @@
   generate_config:
     max_tokens: 2048
 "llama3.2-3b-instruct":
+  hf_generation_config: *deepseek_v3
   metadata:
     description: Llama 3.1 3B Instruct
     provider: Meta
@@ -360,6 +382,7 @@
   generate_config:
     max_tokens: 4096
 "llama3.2-11b-vision-instruct":
+  hf_generation_config: *deepseek_v3
   metadata:
     description: Llama 3.2 11B Vision Instruct
     provider: Meta
@@ -389,6 +412,7 @@
   generate_config:
     max_tokens: 8192
 "llama4-17b-maverick-instruct":
+  hf_generation_config: *deepseek_v3
   vision: true
   c2a: true
   metadata:
@@ -419,6 +443,7 @@
   generate_config:
     max_tokens: 2048
 "llama4-17b-scout-instruct":
+  hf_generation_config: *deepseek_v3
   vision: true
   c2a: true
   metadata:
@@ -449,6 +474,7 @@
   generate_config:
     max_tokens: 4096
 "llama3.3-70b-instruct":
+  hf_generation_config: *deepseek_v3
   metadata:
     description: Llama 3.3 70B Instruct
     provider: Meta
@@ -475,6 +501,9 @@
   generate_config:
     max_tokens: 4096
 "pixtral-12b-2409":
+  hf_generation_config: &mistral
+    temperature: 0.7
+    top_p: 0.95
   metadata:
     description: Pixtral 12B 2409
     provider: Mistral AI
@@ -509,6 +538,7 @@
     exclude:
       - "model*"
 "ministral-8b-instruct-2410":
+  hf_generation_config: *mistral
   metadata:
     description: Ministral 8B Instruct 2410
     provider: Mistral AI
@@ -539,6 +569,7 @@
   requirements:
     - mistral_common[opencv]
 "mistral-small-3.1-24b-instruct-2503":
+  hf_generation_config: *mistral
   vision: true
   metadata:
     description: Mistral Small 3.1 24B Instruct 2503 with Vision and Reasoning capabilities
@@ -595,6 +626,8 @@
   requirements:
     - mistral_common[opencv]
 "magistral-small-2506":
+  hf_generation_config: *mistral
+  reasoning: true
   metadata:
     description: Magistral 3.1 24B 2506 Reasoning Model
     provider: Mistral AI
@@ -709,6 +742,11 @@
   requirements:
     - qwen-vl-utils[decord]==0.0.8
 "qwq-32b":
+  hf_generation_config:
+    temperature: 0.6
+    top_k: 40
+    top_p: 0.95
+    repetition_penalty: 1.0
   reasoning: true
   metadata:
     description: QWQ 32B
@@ -734,6 +772,11 @@
     max_tokens: 2048
 "qwen3-8b":
   reasoning: true
+  hf_generation_config: &qwen3
+    temperature: 0.6
+    top_k: 40
+    top_p: 0.95
+    repetition_penalty: 1.0
   metadata:
     description: Qwen 3 8B
     provider: Alibaba
@@ -756,6 +799,7 @@
     max_tokens: 1024
 "qwen3-30b-a3b":
   reasoning: true
+  hf_generation_config: *qwen3
   metadata:
     description: Qwen 3 30B A3B MoE
     provider: Alibaba
@@ -778,6 +822,7 @@
     max_tokens: 4096
 "qwen3-235b-a22b":
   reasoning: true
+  hf_generation_config: *qwen3
   metadata:
     description: Qwen 3 235B A22B MoE
     provider: Alibaba

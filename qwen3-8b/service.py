@@ -49,7 +49,13 @@ openai_api_app = fastapi.FastAPI()
     traffic={'timeout': 300},
     resources={'gpu': bento_args.tensor_parallel_size, 'gpu_type': 'nvidia-l4'},
     envs=[{'name': 'UV_NO_PROGRESS', 'value': '1'}],
-    labels={'owner': 'bentoml-team', 'type': 'prebuilt', 'project': 'bentovllm', 'openai_endpoint': '/v1'},
+    labels={
+        'owner': 'bentoml-team',
+        'type': 'prebuilt',
+        'project': 'bentovllm',
+        'openai_endpoint': '/v1',
+        'hf_generation_config': '{"temperature": 0.6, "top_k": 40, "top_p": 0.95, "repetition_penalty": 1.0}',
+    },
     image=bentoml.images.Image(python_version='3.11', lock_python_packages=True)
     .requirements_file('requirements.txt')
     .run(
