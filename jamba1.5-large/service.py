@@ -62,8 +62,7 @@ openai_api_app = fastapi.FastAPI()
         'hf_generation_config': '{"temperature": 0.4, "top_p": 0.95}',
     },
     image=bentoml.images.Image(python_version='3.11', lock_python_packages=True)
-    .system_packages('git')
-    .system_packages('curl')
+    .system_packages('curl', 'git')
     .requirements_file('requirements.txt')
     .run('uv pip install --compile-bytecode torch --torch-backend=cu128')
     .run(

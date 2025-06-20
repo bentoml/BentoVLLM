@@ -284,9 +284,6 @@
     enable_auto_tool_choice: true
     tool_call_parser: "jamba"
   build:
-    system_packages:
-      - curl
-      - git
     post:
       - uv pip install --compile-bytecode torch --torch-backend=cu128
       - curl -L -o ./causal_conv1d-1.5.0.post8+cu12torch2.6cxx11abiFALSE-cp311-cp311-linux_x86_64.whl https://github.com/Dao-AILab/causal-conv1d/releases/download/v1.5.0.post8/causal_conv1d-1.5.0.post8+cu12torch2.6cxx11abiFALSE-cp311-cp311-linux_x86_64.whl
@@ -321,9 +318,6 @@
     enable_auto_tool_choice: true
     tool_call_parser: "jamba"
   build:
-    system_packages:
-      - curl
-      - git
     post:
       - uv pip install --compile-bytecode torch --torch-backend=cu128
       - curl -L -o ./causal_conv1d-1.5.0.post8+cu12torch2.6cxx11abiFALSE-cp311-cp311-linux_x86_64.whl https://github.com/Dao-AILab/causal-conv1d/releases/download/v1.5.0.post8/causal_conv1d-1.5.0.post8+cu12torch2.6cxx11abiFALSE-cp311-cp311-linux_x86_64.whl
@@ -571,6 +565,7 @@
 "mistral-small-3.1-24b-instruct-2503":
   hf_generation_config: *mistral
   vision: true
+  include_system_prompt: false
   metadata:
     description: Mistral Small 3.1 24B Instruct 2503 with Vision and Reasoning capabilities
     provider: Mistral AI
@@ -721,9 +716,6 @@
       gpu: 2
       gpu_type: nvidia-a100-80gb
   build:
-    system_packages:
-      - curl
-      - git
     post:
       - uv pip install --compile-bytecode torch setuptools --torch-backend=cu128
       - curl -L -o ./flash_attn-2.7.4.post1+cu12torch2.6cxx11abiFALSE-cp311-cp311-linux_x86_64.whl https://github.com/Dao-AILab/flash-attention/releases/download/v2.7.4.post1/flash_attn-2.7.4.post1+cu12torch2.6cxx11abiFALSE-cp311-cp311-linux_x86_64.whl

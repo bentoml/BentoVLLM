@@ -79,6 +79,7 @@ def generate_jinja_context(model_name: str, config: dict[str, dict[str, typing.A
   use_mla = model_config.get("use_mla", False)
   use_nightly = model_config.get("nightly", False)
   use_vision = model_config.get("vision", False)
+  include_system_prompt = model_config.get("include_system_prompt", True)
   hf_generation_config = model_config.get(
     "hf_generation_config", {"temperature": 0.6, "top_p": 0.9, "repetition_penalty": 1.0, "frequency_penalty": 0.2}
   )
@@ -135,7 +136,7 @@ def generate_jinja_context(model_name: str, config: dict[str, dict[str, typing.A
     openai_endpoint="/v1",
     hf_generation_config=json.dumps(hf_generation_config),
   )
-  if hf_system_prompt:
+  if hf_system_prompt and include_system_prompt:
     labels["hf_system_prompt"] = json.dumps(hf_system_prompt)
 
   context = {
