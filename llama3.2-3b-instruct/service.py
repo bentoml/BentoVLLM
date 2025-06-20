@@ -59,7 +59,7 @@ openai_api_app = fastapi.FastAPI()
     'type': 'prebuilt',
     'project': 'bentovllm',
     'openai_endpoint': '/v1',
-    'hf_generation_config': '{"temperature": 0.6, "top_p": 0.9}',
+    'hf_generation_config': '{"temperature": 0.6, "top_p": 0.9, "max_tokens": 4096}',
     'reasoning': '0',
     'tool': 'pythonic',
   },

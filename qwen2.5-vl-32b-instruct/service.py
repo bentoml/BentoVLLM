@@ -61,7 +61,7 @@ openai_api_app = fastapi.FastAPI()
     'type': 'prebuilt',
     'project': 'bentovllm',
     'openai_endpoint': '/v1',
-    'hf_generation_config': '{"temperature": 0.6, "top_p": 0.9, "repetition_penalty": 1.0, "frequency_penalty": 0.2}',
+    'hf_generation_config': '{"temperature": 0.6, "top_p": 0.9, "repetition_penalty": 1.0, "frequency_penalty": 0.2, "max_tokens": 1024}',
     'reasoning': '0',
     'tool': 'hermes',
   },

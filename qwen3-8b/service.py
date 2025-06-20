@@ -19,7 +19,7 @@ else:
 
 class BentoArgs(Args):
   bentovllm_model_id: str = 'Qwen/Qwen3-8B'
-  bentovllm_max_tokens: int = 1024
+  bentovllm_max_tokens: int = 8192
   bentovllm_full_cudagraph: bool = False
   bentovllm_use_cudagraph: bool = True
 
@@ -29,11 +29,10 @@ class BentoArgs(Args):
   disable_log_stats: bool = True
   use_tqdm_on_load: bool = False
   task: TaskOption = 'generate'
-  max_model_len: int = 2048
   enable_auto_tool_choice: bool = True
   tool_call_parser: str = 'hermes'
   reasoning_parser: str = 'deepseek_r1'
-  max_num_seqs: int = 64
+  max_num_seqs: int = 256
   tensor_parallel_size: int = 1
 
   @pydantic.model_serializer
@@ -49,7 +48,7 @@ openai_api_app = fastapi.FastAPI()
 @bentoml.service(
   name='qwen3-8b',
   traffic={'timeout': 300},
-  resources={'gpu': bento_args.tensor_parallel_size, 'gpu_type': 'nvidia-l4'},
+  resources={'gpu': bento_args.tensor_parallel_size, 'gpu_type': 'nvidia-h100-80gb'},
   envs=[
     {'name': 'UV_NO_PROGRESS', 'value': '1'},
     {'name': 'VLLM_SKIP_P2P_CHECK', 'value': '1'},
@@ -60,7 +59,7 @@ openai_api_app = fastapi.FastAPI()
     'type': 'prebuilt',
     'project': 'bentovllm',
     'openai_endpoint': '/v1',
-    'hf_generation_config': '{"temperature": 0.6, "top_k": 40, "top_p": 0.95, "repetition_penalty": 1.0}',
+    'hf_generation_config': '{"temperature": 0.6, "top_k": 40, "top_p": 0.95, "repetition_penalty": 1.0, "max_tokens": 8192}',
     'reasoning': '1',
     'tool': 'hermes',
   },

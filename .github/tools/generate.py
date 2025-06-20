@@ -82,6 +82,7 @@ def generate_jinja_context(model_name: str, config: dict[str, dict[str, typing.A
   use_nightly = model_config.get('nightly', False)
   use_vision = model_config.get('vision', False)
   include_system_prompt = model_config.get('include_system_prompt', True)
+  generate_config = model_config.get('generate_config', {'max_tokens': 1024})
   hf_generation_config = model_config.get(
     'hf_generation_config', {'temperature': 0.6, 'top_p': 0.9, 'repetition_penalty': 1.0, 'frequency_penalty': 0.2}
   )
@@ -140,7 +141,7 @@ def generate_jinja_context(model_name: str, config: dict[str, dict[str, typing.A
     type='prebuilt',
     project='bentovllm',
     openai_endpoint='/v1',
-    hf_generation_config=json.dumps(hf_generation_config),
+    hf_generation_config=json.dumps({**hf_generation_config, 'max_tokens': generate_config['max_tokens']}),
     reasoning='1' if reasoning else '0',
     tool=engine_config_struct.get('tool_call_parser', ''),
   )
@@ -156,7 +157,7 @@ def generate_jinja_context(model_name: str, config: dict[str, dict[str, typing.A
     'full_cuda_graph': model_config.get('full_cuda_graph', False),
     'task': model_config.get('task', 'generate'),
     'deployment_config': model_config.get('deployment_config', {}),
-    'generate_config': model_config.get('generate_config', {}),
+    'generate_config': generate_config,
     'nightly': use_nightly,
     'service_config': service_config,
     'engine_config': engine_config_struct,

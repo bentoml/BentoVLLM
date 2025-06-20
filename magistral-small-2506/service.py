@@ -72,7 +72,7 @@ openai_api_app = fastapi.FastAPI()
     'type': 'prebuilt',
     'project': 'bentovllm',
     'openai_endpoint': '/v1',
-    'hf_generation_config': '{"temperature": 0.7, "top_p": 0.95}',
+    'hf_generation_config': '{"temperature": 0.7, "top_p": 0.95, "max_tokens": 4096}',
     'reasoning': '0',
     'tool': 'mistral',
     'hf_system_prompt': '"A user will ask you to solve a task. You should first draft your thinking process (inner monologue) until you have derived the final answer. Afterwards, write a self-contained summary of your thoughts (i.e. your summary should be succinct but contain all the critical steps you needed to reach the conclusion). You should use Markdown to format your response. Write both your thoughts and summary in the same language as the task posed by the user. NEVER use \\\\boxed{} in your response.\\n\\nYour thinking process must follow the template below:\\n<think>\\nYour thoughts or/and draft, like working through an exercise on scratch paper. Be as casual and as long as you want until you are confident to generate a correct answer.\\n</think>\\n\\nDon\'t mention that this is a summary.\\n"',

@@ -19,7 +19,7 @@ else:
 
 class BentoArgs(Args):
   bentovllm_model_id: str = 'Qwen/QwQ-32B'
-  bentovllm_max_tokens: int = 2048
+  bentovllm_max_tokens: int = 8192
   bentovllm_full_cudagraph: bool = False
   bentovllm_use_cudagraph: bool = True
 
@@ -60,7 +60,7 @@ openai_api_app = fastapi.FastAPI()
     'type': 'prebuilt',
     'project': 'bentovllm',
     'openai_endpoint': '/v1',
-    'hf_generation_config': '{"temperature": 0.6, "top_k": 40, "top_p": 0.95, "repetition_penalty": 1.0}',
+    'hf_generation_config': '{"temperature": 0.6, "top_k": 40, "top_p": 0.95, "repetition_penalty": 1.0, "max_tokens": 8192}',
     'reasoning': '1',
     'tool': 'hermes',
   },

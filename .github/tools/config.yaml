@@ -761,7 +761,7 @@
     enable_auto_tool_choice: true
     tool_call_parser: "hermes"
   generate_config:
-    max_tokens: 2048
+    max_tokens: 8192
 "qwen3-8b":
   reasoning: true
   hf_generation_config: &qwen3
@@ -779,16 +779,14 @@
       timeout: 300
     resources:
       gpu: 1
-      gpu_type: nvidia-l4
+      gpu_type: nvidia-h100-80gb
   engine_config:
     model: Qwen/Qwen3-8B
-    max_model_len: 2048
     enable_auto_tool_choice: true
     tool_call_parser: "hermes"
     reasoning_parser: deepseek_r1
-    max_num_seqs: 64
   generate_config:
-    max_tokens: 1024
+    max_tokens: 8192
 "qwen3-30b-a3b":
   reasoning: true
   hf_generation_config: *qwen3
@@ -805,13 +803,11 @@
       gpu_type: nvidia-h100-80gb
   engine_config:
     model: Qwen/Qwen3-30B-A3B
-    max_model_len: 8192
     reasoning_parser: "deepseek_r1"
-    max_num_seqs: 256
     enable_auto_tool_choice: true
     tool_call_parser: "hermes"
   generate_config:
-    max_tokens: 4096
+    max_tokens: 8192
 "qwen3-235b-a22b":
   reasoning: true
   hf_generation_config: *qwen3
@@ -828,11 +824,8 @@
       gpu_type: nvidia-h100-80gb
   engine_config:
     model: Qwen/Qwen3-235B-A22B-FP8
-    max_model_len: 4096
     reasoning_parser: "deepseek_r1"
-    max_num_seqs: 16
     enable_auto_tool_choice: true
-    gpu_memory_utilization: 0.8
     tool_call_parser: "hermes"
   generate_config:
-    max_tokens: 3072
+    max_tokens: 8192
