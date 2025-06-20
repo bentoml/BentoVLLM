@@ -1,8 +1,7 @@
 extend-include = ["*.ipynb"]
-extend-exclude = ["_tools/*", "_src/*"]
 preview = true
 line-length = 119
-indent-width = 4
+indent-width = 2
 
 [format]
 preview = true
