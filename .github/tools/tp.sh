@@ -30,15 +30,45 @@ log_warn() { log "WARN" "$1" "$2"; }
 log_error() { log "ERROR" "$1" "$2"; }
 log_debug() { log "DEBUG" "$1" "$2"; }
 
+usage() {
+  cat <<EOF
+Usage: tp.sh -tp <value> [options]
+
+Required:
+  -tp <num>              tensor parallel size
+
+Options:
+  -g, --gpus <num>       total GPU count (auto-detect if omitted)
+  --ignore-error         skip GPU divisibility check and omit CUDA_VISIBLE_DEVICES
+  -f, --force            force rebuild of bentos
+  --flush                copy cache into built bentos instead of building
+  -h, --help             display this help and exit
+EOF
+}
+
 main() {
   TP_VALUE=""
+  NUM_GPUS=0
   FORCE=false
   FLUSH=false
+  IGNORE_ERROR=false
   while [[ $# -gt 0 ]]; do
     case $1 in
     -tp)
       TP_VALUE="$2"
       shift 2
+      ;;
+    -g | --gpus)
+      NUM_GPUS="$2"
+      shift 2
+      ;;
+    -h | --help)
+      usage
+      return 0
+      ;;
+    --ignore-error)
+      IGNORE_ERROR=true
+      shift
       ;;
     -f | --force)
       FORCE=true
@@ -57,6 +87,23 @@ main() {
   if [[ -z "$TP_VALUE" ]]; then
     log_error "tp" "Usage: tp.sh -tp <value>"
     return 1
+  fi
+
+  if [[ "$NUM_GPUS" -le 0 ]]; then
+    if command -v nvidia-smi >/dev/null 2>&1; then
+      NUM_GPUS=$(nvidia-smi --list-gpus | wc -l)
+      log_info "tp" "Detected ${NUM_GPUS} GPU(s) via nvidia-smi; using as default for --gpus"
+    else
+      NUM_GPUS=1
+      log_warn "tp" "nvidia-smi not found; defaulting --gpus to 1"
+    fi
+  fi
+
+  if [[ "$IGNORE_ERROR" == false ]]; then
+    if ((NUM_GPUS % TP_VALUE != 0)); then
+      log_error "tp" "--gpus ($NUM_GPUS) must be divisible by tp ($TP_VALUE) (use --ignore-error to override)"
+      return 1
+    fi
   fi
 
   GIT_ROOT=$(git rev-parse --show-toplevel) || {
@@ -103,7 +150,7 @@ main() {
         rm -rf "${BENTOML_HOME:-$HOME/bentoml}/bentos" || true
       fi
       log_info "tp" "Building bentos: $OUTPUT_FILE"
-      uv run .github/tools/build.py --output-name "$OUTPUT_FILE" "${MODEL_NAMES[@]}" || {
+      YATAI_T_VERSION=0.35.2 uv run .github/tools/build.py --output-name "$OUTPUT_FILE" "${MODEL_NAMES[@]}" || {
         log_error "tp" "build.py failed"
         popd >/dev/null
         return 1
@@ -119,12 +166,30 @@ main() {
 
   if [[ $FLUSH == false ]]; then
     log_info "tp" "Warmup command for $OUTPUT_FILE (you should run twice)"
+    PORT_BASE=8000
+    COUNTER=0
+    if [[ "$IGNORE_ERROR" == false ]]; then
+      GROUP_COUNT=$((NUM_GPUS / TP_VALUE))
+    fi
     while IFS= read -r TAG || [[ -n "$TAG" ]]; do
       [[ -z "$TAG" ]] && continue
       BENTO_PATH=$(bentoml get "$TAG" -o path | tr -d '\n')
       mkdir -p "$BENTO_PATH/.cache"
-      echo "VLLM_CACHE_ROOT=$BENTO_PATH/.cache/vllm VLLM_LOGGING_LEVEL=DEBUG bentoml serve $TAG --port 8000" >>"cmd.txt"
+
+      if [[ "$IGNORE_ERROR" == false ]]; then
+        GROUP_IDX=$((COUNTER % GROUP_COUNT))
+        START_GPU=$((GROUP_IDX * TP_VALUE))
+        END_GPU=$((START_GPU + TP_VALUE - 1))
+        GPU_SET=$(seq -s, $START_GPU $END_GPU)
+        CUR_PORT=$((PORT_BASE + GROUP_IDX))
+        echo "CUDA_VISIBLE_DEVICES=$GPU_SET VLLM_LOGGING_LEVEL=DEBUG bentoml serve $TAG --port $CUR_PORT" >>"cmd.txt"
+      else
+        CUR_PORT=$((PORT_BASE + COUNTER))
+        echo "VLLM_LOGGING_LEVEL=DEBUG bentoml serve $TAG --port $CUR_PORT" >>"cmd.txt"
+      fi
+      ((++COUNTER))
     done <"$OUTPUT_FILE"
+    printf '\n' >>"cmd.txt"
   else
     CACHE_DIR="$HOME/.cache/vllm"
     if [[ -d "$CACHE_DIR" ]]; then

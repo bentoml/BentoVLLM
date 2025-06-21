@@ -1,10 +1,23 @@
 from __future__ import annotations
 
-import logging, json, os, typing
+import logging, json, os, typing, collections.abc
 import pydantic, bentoml
+from starlette.responses import RedirectResponse
 
 logger = logging.getLogger(__name__)
 Jsonable = list[str] | list[dict[str, str]] | None
+
+if typing.TYPE_CHECKING:
+  from starlette.requests import Request
+  from starlette.responses import Response
+
+async def probes(request: Request, call_next: typing.Callable[[Request], collections.abc.Coroutine[typing.Any, typing.Any, Response]]):
+  path = request.url.path
+  if path == '/livez':
+    return RedirectResponse(url='/health', status_code=301)
+  if path == '/readyz':
+    return RedirectResponse(url='/ping', status_code=301)
+  return await call_next(request)
 
 
 class BentoArgs(pydantic.BaseModel):
@@ -110,6 +123,8 @@ image = image.run(
 )
 hf = bentoml.models.HuggingFaceModel(bento_args.model_id.lower(), exclude=bento_args.exclude)
 
+os.environ['PYTHONPATH'] = os.pathsep.join([os.environ.get('PYTHONPATH', ''), os.path.abspath(os.path.dirname(__file__))])
+
 LLM = bentoml.Service(
   name=bento_args.name,
   models=[hf],
@@ -137,6 +152,8 @@ LLM = bentoml.Service(
     '--disable-fastapi-docs',
     '--max-log-len',
     '1000',
+    '--middleware',
+    'service.probes',
     *bento_args.additional_cli_args,
   ],
   labels={
