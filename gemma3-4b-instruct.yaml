@@ -1,0 +1,21 @@
+args:
+  name: gemma3-4b-instruct
+  gpu_type: nvidia-h100-80gb
+  tp: 1
+  autotune: [1,2,4,8,16]
+  metadata:
+    vision: true
+    description: Gemma 3 4B Instruct
+    provider: Google
+    gpu_recommendation: an Nvidia GPU with at least 80GB VRAM (e.g about 1 H100 GPU).
+  model_id: google/gemma-3-4b-it
+  cli_args:
+    - '--limit-mm-per-prompt'
+    - '{"image": 3}'
+  envs:
+    - name: HF_TOKEN
+  attn_backend: FLASH_ATTN
+  hf_generation_config:
+    temperature: 0.6
+    top_p: 0.95
+    top_k: 64

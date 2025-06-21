@@ -1,0 +1,26 @@
+args:
+  name: llama4-17b-scout-instruct
+  gpu_type: nvidia-h100-80gb
+  tp: 8
+  metadata:
+    vision: true
+    description: Llama 4 Scout 17B-16E Instruct
+    provider: Meta
+    gpu_recommendation: Nvidia GPUs with at least 80GBx8 VRAM (e.g about 8 H100 GPUs).
+  model_id: meta-llama/Llama-4-Scout-17B-16E-Instruct
+  tool_parser: pythonic
+  cli_args:
+    - '--max-model-len'
+    - '1000000'
+  envs:
+    - name: HF_TOKEN
+    - name: VLLM_DISABLE_COMPILE_CACHE
+      value: "1"
+  exclude:
+      - "original"
+      - "consolidated*"
+      - "*.pth"
+      - "*.pt"
+  hf_generation_config:
+    temperature: 0.6
+    top_p: 0.9

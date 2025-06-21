@@ -1,0 +1,28 @@
+args:
+  name: jamba1.6-large
+  gpu_type: nvidia-h200-141gb
+  tp: 8
+  metadata:
+    description: Jamba 1.6 Large
+    provider: AI21 Lab
+    gpu_recommendation: Nvidia GPUs with at least 141GBx8 VRAM (e.g about 8 H200 GPUs).
+  model_id: ai21labs/AI21-Jamba-Large-1.6
+  tool_parser: jamba
+  cli_args:
+    - '--quantization'
+    - 'experts_int8'
+    - '--no-enable-prefix-caching'
+  envs:
+    - name: HF_TOKEN
+    - name: UV_NO_BUILD_ISOLATION
+      value: "1"
+  v1: false
+  post:
+    - uv pip install --compile-bytecode torch --torch-backend=cu128
+    - curl -L -o ./causal_conv1d-1.5.0.post8+cu12torch2.6cxx11abiFALSE-cp311-cp311-linux_x86_64.whl https://github.com/Dao-AILab/causal-conv1d/releases/download/v1.5.0.post8/causal_conv1d-1.5.0.post8+cu12torch2.6cxx11abiFALSE-cp311-cp311-linux_x86_64.whl
+    - uv pip install --compile-bytecode ./causal_conv1d-1.5.0.post8+cu12torch2.6cxx11abiFALSE-cp311-cp311-linux_x86_64.whl
+    - curl -L -o ./mamba_ssm-2.2.4+cu12torch2.6cxx11abiFALSE-cp311-cp311-linux_x86_64.whl https://github.com/state-spaces/mamba/releases/download/v2.2.4/mamba_ssm-2.2.4+cu12torch2.6cxx11abiFALSE-cp311-cp311-linux_x86_64.whl
+    - uv pip install --compile-bytecode ./mamba_ssm-2.2.4+cu12torch2.6cxx11abiFALSE-cp311-cp311-linux_x86_64.whl
+  hf_generation_config:
+    temperature: 0.4
+    top_p: 0.95

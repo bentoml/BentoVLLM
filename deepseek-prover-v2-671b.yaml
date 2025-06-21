@@ -1,0 +1,19 @@
+args:
+  name: deepseek-prover-v2-671b
+  gpu_type: nvidia-h200-141gb
+  tp: 8
+  metadata:
+    description: DeepSeek Prover V2 671B
+    provider: DeepSeek
+    gpu_recommendation: Nvidia GPUs with at least 141GBx8 VRAM (e.g. about 8 H200 GPUs).
+  model_id: deepseek-ai/DeepSeek-V3-0324
+  reasoning_parser: deepseek_r1
+  tool_parser: hermes
+  cli_args:
+    - '--trust-remote-code'
+  envs:
+    - name: HF_TOKEN
+  attn_backend: 'FLASHMLA'
+  hf_generation_config:
+    temperature: 0.6
+    top_p: 0.95

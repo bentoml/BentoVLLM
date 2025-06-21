@@ -1,21 +1,9 @@
-# /// script
-# requires-python = ">=3.12"
-# dependencies = [
-#     "pyyaml",
-#     "rich",
-#     "bentoml>=1.4.12",
-#     "huggingface-hub",
-# ]
-# ///
 from __future__ import annotations
 
-import yaml, subprocess, os, argparse, multiprocessing, hashlib, pathlib, dataclasses, typing
+import subprocess, traceback, os, argparse, multiprocessing, pathlib, dataclasses, typing, yaml, tomllib, tempfile, shutil, tomli_w, importlib.metadata
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
-
-if typing.TYPE_CHECKING:
-  from rich.progress import TaskID
 
 
 @dataclasses.dataclass
@@ -23,73 +11,96 @@ class BuildResult:
   model_name: str
   bento_tag: str
   success: bool
-  error: str = ''
+  error: str = ""
+  stderr: str = ''
+  stdout: str = ''
 
 
-def hash_file(file_path):
-  hasher = hashlib.sha256()
-  with file_path.open('rb') as f:
-    for chunk in iter(lambda: f.read(4096), b''):
-      hasher.update(chunk)
-  return hasher.hexdigest()
+def load_generated_config(git_dir: pathlib.Path) -> dict[str, dict[str, typing.Any]]:
+  config: dict[str, dict[str, typing.Any]] = {}
+  for yaml_path in git_dir.glob('*.yaml'):
+    if not yaml_path.is_file():
+      continue
+    try:
+      with yaml_path.open('r', encoding='utf-8') as f:
+        raw_data = yaml.safe_load(f)
+      if not raw_data or 'args' not in raw_data:
+        continue
+      args_struct = raw_data['args']
+      model_name = yaml_path.stem
+      if not model_name:
+        continue
+      config[model_name] = args_struct
+    except yaml.YAMLError:
+      continue
+  return config
 
 
-def ensure_venv(req_txt, venv_dir, cfg):
-  build = cfg.get('build', {})
-  build_args = build.get('args', [])
+def build_model(model_name: str, cfg: dict, git_dir: pathlib.Path) -> BuildResult:
+  pyproject_path = git_dir / 'pyproject.toml'
+  with pyproject_path.open('rb') as f:
+    base_pyproject = tomllib.load(f)
 
-  if not venv_dir.exists():
-    subprocess.run(['uv', 'venv', venv_dir, '-p', '3.11'], check=True)
-    subprocess.run(
-      ['uv', 'pip', 'install', 'bentoml>=1.4.12', '-p', venv_dir / 'bin' / 'python'], check=True, capture_output=True
-    )
-    subprocess.run(
-      ['uv', 'pip', 'install', '-r', req_txt, *build_args, '-p', venv_dir / 'bin' / 'python'],
-      check=True,
-      capture_output=True,
-    )
-  return venv_dir
+  with tempfile.TemporaryDirectory(suffix='bentovlllm') as tempdir:
+    td = pathlib.Path(tempdir)
 
+    files_to_copy = [
+      '.bentoignore',
+      '.python-version',
+      '.gitignore',
+      'service.py',
+      'pyproject.toml',
+      'requirements.txt',
+    ]
 
-def build_model(
-  model_name: str, cfg: dict[str, typing.Any], git_dir: pathlib.Path, progress: Progress, task_id: TaskID
-) -> BuildResult:
-  """Build a single model's bento."""
-  model_dir = git_dir / model_name
-  if not model_dir.exists():
-    return BuildResult(model_name, '', False, f'Directory {model_dir} does not exist')
+    for filename in files_to_copy:
+      src = git_dir / filename
+      if src.exists():
+        shutil.copy2(src, td / filename)
 
-  req_txt_file = model_dir / 'requirements.txt'
-  venv_dir = git_dir / 'venv' / f'{model_name}-{hash_file(req_txt_file)[:7]}'
-  version_path = ensure_venv(req_txt_file, venv_dir, cfg)
+    templates_src = git_dir / 'templates'
+    if templates_src.exists():
+      shutil.copytree(templates_src, td / 'templates', dirs_exist_ok=True)
 
-  try:
-    # Run bentoml build with output capture
-    result = subprocess.run(
-      [version_path / 'bin' / 'python', '-m', 'bentoml', 'build', 'service:VLLM', '--output', 'tag'],
-      capture_output=True,
-      text=True,
-      check=True,
-      cwd=model_dir,
-      env=os.environ,
-    )
+    with (td / 'pyproject.toml').open('rb') as s:
+      data = tomllib.load(s)
+      bento_yaml = data.get('tool', {}).get('bentoml', {}).get('build', {})
 
-    # Extract bento tag from output - format: __tag__:bentovllm-model-name-service:hash
-    output = result.stdout.strip()
-    if output.startswith('__tag__:'):
-      bento_tag = output[8:]  # Remove "__tag__:" prefix
-      return BuildResult(model_name, bento_tag, True)
+    with (td / 'pyproject.toml').open('wb') as s:
+      if 'envs' in cfg and not cfg['envs']:
+        cfg.pop('envs')
+      bento_yaml['args'] = cfg
+      data['project']['name'] = model_name
+      data['project']['version'] = importlib.metadata.version('bentoml')
+      data['tool']['bentoml']['build'] = bento_yaml
+      tomli_w.dump(data, s, indent=2)
 
-    return BuildResult(model_name, '', False, f'Unexpected output format: {output}')
+    try:
+      result = subprocess.run(
+        ['bentoml', 'build', '--output', 'tag'],
+        capture_output=True,
+        text=True,
+        check=True,
+        cwd=tempdir,
+        env=os.environ,
+      )
 
-  except subprocess.CalledProcessError as e:
-    return BuildResult(model_name, '', False, f'Build failed: {e.stderr}')
-  except Exception as e:
-    return BuildResult(model_name, '', False, str(e))
+      output = result.stdout.strip()
+      if output.startswith('__tag__:'):
+        bento_tag = output[8:]
+        return BuildResult(model_name, bento_tag, True)
+
+      return BuildResult(model_name, '', False, f'Unexpected output format: {output}')
+
+    except subprocess.CalledProcessError as e:
+      traceback.print_exc()
+      return BuildResult(model_name, '', False, stderr=e.stderr, stdout=e.stdout)
+    except Exception as e:
+      traceback.print_exc()
+      return BuildResult(model_name, '', False, str(e))
 
 
 def build_bentos(config: dict[str, typing.Any], git_dir: pathlib.Path, workers: int) -> list[BuildResult]:
-  """Build all models in parallel using a thread pool."""
   console = Console()
   results = []
   num_models = len(config)
@@ -100,10 +111,7 @@ def build_bentos(config: dict[str, typing.Any], git_dir: pathlib.Path, workers: 
     overall_task = progress.add_task(f'[yellow]Building {num_models} bentos...[/]', total=num_models)
 
     with ThreadPoolExecutor(max_workers=workers) as executor:
-      future_to_model = {
-        executor.submit(build_model, model, cfg, git_dir, progress, overall_task): model
-        for model, cfg in config.items()
-      }
+      future_to_model = {executor.submit(build_model, model, cfg, git_dir): model for model, cfg in config.items()}
 
       built_count = 0
       for future in as_completed(future_to_model):
@@ -120,7 +128,7 @@ def build_bentos(config: dict[str, typing.Any], git_dir: pathlib.Path, workers: 
         if result.success:
           console.print(f'  [green]✓ Built {result.bento_tag}[/]')
         else:
-          console.print(f'  [red]✗ Failed {model_name}: {result.error}[/]')
+          console.print(f'  [red]✗ Failed {model_name}: {result.stderr}[/]')
 
     progress.update(overall_task, description=f'[bold green]Finished processing {num_models} models.[/]')
 
@@ -139,12 +147,13 @@ def main() -> int:
     default=multiprocessing.cpu_count(),
     help=f'Number of parallel workers (default: {multiprocessing.cpu_count()})',
   )
+  parser.add_argument(
+    '--output-name', type=str, default='successful_builds.txt', help='Filename to store successful bento tags'
+  )
   args = parser.parse_args()
 
   git_dir = pathlib.Path(__file__).parent.parent.parent
-  tools_dir = git_dir / '.github' / 'tools'
-  with (tools_dir / 'config.yaml').open('r') as f:
-    config = yaml.safe_load(f)
+  config = load_generated_config(git_dir)
 
   console = Console()
 
@@ -175,14 +184,14 @@ def main() -> int:
     console.print('\n[bold red]Failed Build Details:[/]')
     for r in results:
       if not r.success:
-        console.print(f'  - {r.model_name}: {r.error}')
+        console.print(f'- {r.model_name}:\n{r.stderr}\n{r.stdout}')
 
   # Save successful bento tags to file for later use
   if successful_builds:
     bento_tags = [r.bento_tag for r in successful_builds]
-    with open(git_dir / 'successful_builds.txt', 'w') as f:
+    with open(git_dir / args.output_name, 'w') as f:
       f.write('\n'.join(bento_tags))
-    console.print('\n[green]Saved successful build tags to successful_builds.txt[/]')
+    console.print(f'\n[green]Saved successful build tags to {args.output_name}[/]')
 
   return 0 if len(successful_builds) == len(filtered_config) else 1
 

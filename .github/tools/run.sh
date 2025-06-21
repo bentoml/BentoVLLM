@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 
-ERROR_COLOR="\033[0;31m" # Red
-LOG_COLOR="\033[0;32m"   # Green
-WARN_COLOR="\033[0;34m"  # Blue
-DEBUG_COLOR="\033[0;35m" # Purple
+set -euo pipefail
+
+ERROR_COLOR="\033[0;31m"
+LOG_COLOR="\033[0;32m"
+WARN_COLOR="\033[0;34m"
+DEBUG_COLOR="\033[0;35m"
 RESET_COLOR="\033[0m"
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 
@@ -11,58 +13,22 @@ log() {
   local level=$1
   local caller=$2
   local message=$3
-
-  # Convert caller to uppercase
   caller=$(echo "$caller" | tr '[:lower:]' '[:upper:]')
-
-  # Set color based on log level
   local color=""
   case $level in
-  "ERROR")
-    color=$ERROR_COLOR
-    ;;
-  "INFO")
-    color=$LOG_COLOR
-    ;;
-  "WARN" | "WARNING")
-    color=$WARN_COLOR
-    ;;
-  "DEBUG")
-    color=$DEBUG_COLOR
-    ;;
-  *)
-    color=$RESET_COLOR
-    ;;
+  "ERROR") color=$ERROR_COLOR ;;
+  "INFO") color=$LOG_COLOR ;;
+  "WARN" | "WARNING") color=$WARN_COLOR ;;
+  "DEBUG") color=$DEBUG_COLOR ;;
+  *) color=$RESET_COLOR ;;
   esac
-
-  # Print formatted log message
   echo -e "${color}[${caller}]${RESET_COLOR} ${message}"
 }
 
-# Log shortcut functions
-log_info() {
-  local caller=$1
-  local message=$2
-  log "INFO" "$caller" "$message"
-}
-
-log_warn() {
-  local caller=$1
-  local message=$2
-  log "WARN" "$caller" "$message"
-}
-
-log_error() {
-  local caller=$1
-  local message=$2
-  log "ERROR" "$caller" "$message"
-}
-
-log_debug() {
-  local caller=$1
-  local message=$2
-  log "DEBUG" "$caller" "$message"
-}
+log_info() { log "INFO" "$1" "$2"; }
+log_warn() { log "WARN" "$1" "$2"; }
+log_error() { log "ERROR" "$1" "$2"; }
+log_debug() { log "DEBUG" "$1" "$2"; }
 
 main() {
   # Get the git root directory
@@ -77,6 +43,8 @@ main() {
     log_error "run" "Failed to change to git root directory"
     return 1
   }
+
+  uv pip install --compile-bytecode --no-progress rich pathspec pyyaml bentoml
 
   # Run the required commands
   log_info "run" "Running generate.py..."

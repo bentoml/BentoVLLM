@@ -1,0 +1,16 @@
+args:
+  name: qwen3-8b
+  gpu_type: nvidia-h100-80gb
+  tp: 1
+  autotune: [1,2,4,8,16,24,32,40]
+  metadata:
+    description: Qwen 3 8B
+    provider: Alibaba
+    gpu_recommendation: an Nvidia GPU with at least 80GB VRAM (e.g about 1 H100 GPU).
+  model_id: Qwen/Qwen3-8B
+  reasoning_parser: deepseek_r1
+  tool_parser: hermes
+  hf_generation_config:
+    temperature: 0.6
+    top_k: 20
+    top_p: 0.95

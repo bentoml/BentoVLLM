@@ -162,5 +162,6 @@ cython_debug/
 
 bentocloud-homepage-news
 uv.lock
-successful_builds.txt
-successful_deploys.txt
+successful_*.txt
+bentofile.yaml
+cmd.txt

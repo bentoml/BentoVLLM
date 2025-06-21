@@ -1,11 +1,3 @@
-# /// script
-# requires-python = ">=3.12"
-# dependencies = [
-#     "bentoml>=1.4.12",
-#     "huggingface-hub",
-#     "rich",
-# ]
-# ///
 from __future__ import annotations
 
 import multiprocessing, subprocess, argparse, uuid, os, json, time, dataclasses, typing, pathlib

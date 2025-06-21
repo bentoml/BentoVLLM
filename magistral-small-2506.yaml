@@ -1,0 +1,35 @@
+args:
+  name: magistral-small-2506
+  gpu_type: nvidia-h100-80gb
+  tp: 2
+  metadata:
+    description: Magistral 3.1 24B 2506 Reasoning Model
+    provider: Mistral AI
+    gpu_recommendation: Nvidia GPUs with at least 80GBx2 VRAM (e.g about 2 H100 GPU).
+  model_id: mistralai/Magistral-Small-2506
+  autotune: [1,2,4,8,16]
+  envs:
+    - name: HF_TOKEN
+  tool_parser: mistral
+  cli_args:
+    - '--tokenizer-mode'
+    - 'mistral'
+    - '--config-format'
+    - 'mistral'
+    - '--load-format'
+    - 'mistral'
+  exclude:
+    - "model*"
+  hf_generation_config:
+    temperature: 0.7
+    top_p: 0.95
+  hf_system_prompt: |
+    A user will ask you to solve a task. You should first draft your thinking process (inner monologue) until you have derived the final answer. Afterwards, write a self-contained summary of your thoughts (i.e. your summary should be succinct but contain all the critical steps you needed to reach the conclusion). You should use Markdown to format your response. Write both your thoughts and summary in the same language as the task posed by the user. NEVER use \boxed{} in your response.
+
+    Your thinking process must follow the template below:
+    <think>
+    Your thoughts or/and draft, like working through an exercise on scratch paper. Be as casual and as long as you want until you are confident to generate a correct answer.
+    </think>
+
+    Don't mention that this is a summary.
+
