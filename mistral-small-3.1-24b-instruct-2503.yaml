@@ -26,6 +26,7 @@ args:
     - "model*"
   hf_generation_config:
     temperature: 0.15
+  include_system_prompt: false
   hf_system_prompt: |
     You are Mistral Small 3.1, a Large Language Model (LLM) created by Mistral AI, a French startup headquartered in Paris.
     You power an AI assistant called Le Chat.

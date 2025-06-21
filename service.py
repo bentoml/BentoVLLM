@@ -31,6 +31,7 @@ class BentoArgs(pydantic.BaseModel):
   max_model_len: int | None = None
   autotune: list[int] | None = None
   hf_system_prompt: str | None = None
+  include_system_prompt: bool = True
 
   name: str = 'llama3.1-8b-instruct'
   gpu_type: str = 'nvidia-h100-80gb'
@@ -95,7 +96,7 @@ class BentoArgs(pydantic.BaseModel):
       'reasoning': 1 if self.reasoning_parser else 0,
       'tool': self.tool_parser or '',
     }
-    if self.hf_system_prompt:
+    if self.hf_system_prompt and self.include_system_prompt:
       default['hf_system_prompt'] = json.dumps(self.hf_system_prompt)
     return default
 

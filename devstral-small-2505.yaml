@@ -20,6 +20,7 @@ args:
     - "model*"
   hf_generation_config:
     temperature: 0.15
+  include_system_prompt: false
   hf_system_prompt: |
     You are Devstral, a helpful agentic model trained by Mistral AI and using the OpenHands scaffold. You can interact with a computer to solve tasks.
 
