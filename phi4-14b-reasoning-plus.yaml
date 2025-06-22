@@ -1,15 +1,15 @@
 args:
-  name: phi4-14b-reasoning
+  name: phi4-14b-reasoning-plus
   gpu_type: nvidia-h100-80gb
-  tp: 1
-  autotune: [1,2,4,8,16]
-  model_id: microsoft/Phi-4-reasoning
+  tp: 2
+  autotune: [1,2,4,8,16,24]
+  model_id: microsoft/Phi-4-reasoning-plus
   reasoning-parser: deepseek_r1
   metadata:
     reasoning: true
     description: Phi 4 14B Reasoning
     provider: Microsoft
-    gpu_recommendation: an Nvidia GPU with at least 80GB VRAM (e.g about 1 H100 GPU).
+    gpu_recommendation: an Nvidia GPU with at least 80GBx2 VRAM (e.g about 2 H100 GPUs).
   hf_generation_config:
     temperature: 0.8
     top_k: 50
