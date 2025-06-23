@@ -5,11 +5,14 @@ import pydantic, bentoml
 from starlette.responses import RedirectResponse
 
 logger = logging.getLogger(__name__)
-Jsonable = list[str] | list[dict[str, str]] | None
 
 if typing.TYPE_CHECKING:
   from starlette.requests import Request
   from starlette.responses import Response
+
+  Jsonable = list[str] | list[dict[str, str]] | None
+else:
+  Jsonable = typing.Any
 
 async def probes(request: Request, call_next: typing.Callable[[Request], collections.abc.Coroutine[typing.Any, typing.Any, Response]]):
   path = request.url.path
@@ -56,13 +59,13 @@ class BentoArgs(pydantic.BaseModel):
   @classmethod
   def _coerce_json_or_csv(cls, v: typing.Any) -> Jsonable:
     if v is None or isinstance(v, (list, dict)):
-      return v
+      return typing.cast(Jsonable, v)
     if isinstance(v, str):
       try:
-        return json.loads(v)
+        return typing.cast(Jsonable, json.loads(v))
       except json.JSONDecodeError:
         return [item.strip() for item in v.split(',') if item.strip()]
-    return v
+    return typing.cast(Jsonable, v)
 
   @property
   def additional_cli_args(self) -> list[str]:
@@ -93,7 +96,7 @@ class BentoArgs(pydantic.BaseModel):
   def additional_labels(self) -> dict[str, str]:
     default = {
       'hf_generation_config': json.dumps(self.hf_generation_config),
-      'reasoning': 1 if self.reasoning_parser else 0,
+      'reasoning': '1' if self.reasoning_parser else '0',
       'tool': self.tool_parser or '',
     }
     if self.hf_system_prompt and self.include_system_prompt:
@@ -106,7 +109,7 @@ class BentoArgs(pydantic.BaseModel):
     if os.getenv('YATAI_T_VERSION'):
       envs.extend([
         {'name': 'HF_HUB_CACHE', 'value': '/home/bentoml/bento/hf-models'},
-        {'name': 'VLLM_CACHE_ROOT', 'value': '/home/bentoml/bento/.cache/vllm'},
+        {'name': 'VLLM_CACHE_ROOT', 'value': '/home/bentoml/bento/vllm-models'},
       ])
     return envs
 
