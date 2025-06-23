@@ -12,6 +12,8 @@ args:
   cli_args:
     - '--max-model-len'
     - '1000000'
+    - '--override-generation-config'
+    - '{"attn_temperature_tuning": true}'
   envs:
     - name: HF_TOKEN
     - name: VLLM_DISABLE_COMPILE_CACHE

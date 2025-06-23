@@ -5,6 +5,7 @@ args:
   autotune: [1,2,4,8,16,24]
   model_id: microsoft/Phi-4-reasoning-plus
   reasoning-parser: deepseek_r1
+  sharded: true
   metadata:
     reasoning: true
     description: Phi 4 14B Reasoning

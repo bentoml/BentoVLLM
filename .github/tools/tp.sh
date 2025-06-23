@@ -197,8 +197,7 @@ main() {
         [[ -z "$TAG" ]] && continue
         BENTO_PATH=$(bentoml get "$TAG" -o path | tr -d '\n')
         if [[ -n "$BENTO_PATH" && -d "$BENTO_PATH" ]]; then
-          mkdir -p "$BENTO_PATH/.cache"
-          rsync -a "$CACHE_DIR/" "$BENTO_PATH/.cache/vllm/"
+          rsync -a "$CACHE_DIR/" "$BENTO_PATH/vllm-models"
           log_info "tp" "Copied cache into $TAG"
         else
           log_warn "tp" "Unable to resolve path for $TAG"
