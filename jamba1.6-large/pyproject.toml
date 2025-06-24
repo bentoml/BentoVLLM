@@ -1,0 +1,117 @@
+[project]
+name = "jamba1.6-large"
+version = "1.4.16"
+description = "Self-host LLMs with vLLM and BentoML"
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [
+  { name = "BentoML Team", email = "contact@bentoml.com" },
+]
+
+[project.license]
+text = "Apache-2.0"
+
+[project.urls]
+Website = "https://bentoml.com"
+Documentation = "https://docs.bentoml.com"
+GitHub = "https://github.com/bentoml/OpenLLM"
+Twitter = "https://twitter.com/bentomlai"
+Tracker = "https://github.com/bentoml/OpenLLM/issues"
+
+[tool.bentoml.build]
+service = "service.py:LLM"
+include = [
+  "LICENCE",
+  "*.py",
+  "*.toml",
+  "*.txt",
+  "*.md",
+  "templates/*",
+]
+
+[tool.bentoml.build.args]
+name = "jamba1.6-large"
+gpu_type = "nvidia-h200-141gb"
+tp = 8
+model_id = "ai21labs/AI21-Jamba-Large-1.6"
+tool_parser = "jamba"
+cli_args = [
+  "--quantization",
+  "experts_int8",
+  "--no-enable-prefix-caching",
+]
+envs = [
+  { name = "HF_TOKEN" },
+  { name = "UV_NO_BUILD_ISOLATION", value = "1" },
+]
+v1 = false
+post = [
+  "uv pip install --compile-bytecode torch --torch-backend=cu128",
+  "curl -L -o ./causal_conv1d-1.5.0.post8+cu12torch2.6cxx11abiFALSE-cp311-cp311-linux_x86_64.whl https://github.com/Dao-AILab/causal-conv1d/releases/download/v1.5.0.post8/causal_conv1d-1.5.0.post8+cu12torch2.6cxx11abiFALSE-cp311-cp311-linux_x86_64.whl",
+  "uv pip install --compile-bytecode ./causal_conv1d-1.5.0.post8+cu12torch2.6cxx11abiFALSE-cp311-cp311-linux_x86_64.whl",
+  "curl -L -o ./mamba_ssm-2.2.4+cu12torch2.6cxx11abiFALSE-cp311-cp311-linux_x86_64.whl https://github.com/state-spaces/mamba/releases/download/v2.2.4/mamba_ssm-2.2.4+cu12torch2.6cxx11abiFALSE-cp311-cp311-linux_x86_64.whl",
+  "uv pip install --compile-bytecode ./mamba_ssm-2.2.4+cu12torch2.6cxx11abiFALSE-cp311-cp311-linux_x86_64.whl",
+]
+
+[tool.bentoml.build.args.metadata]
+description = "Jamba 1.6 Large"
+provider = "AI21 Lab"
+gpu_recommendation = "Nvidia GPUs with at least 141GBx8 VRAM (e.g about 8 H200 GPUs)."
+
+[tool.bentoml.build.args.hf_generation_config]
+temperature = 0.4
+top_p = 0.95
+
+[tool.ruff]
+extend-include = [
+  "*.ipynb",
+]
+preview = true
+line-length = 119
+indent-width = 2
+
+[tool.ruff.format]
+preview = true
+quote-style = "single"
+indent-style = "space"
+skip-magic-trailing-comma = true
+docstring-code-format = true
+
+[tool.ruff.lint]
+ignore = [
+  "RUF012",
+  "ANN",
+  "E722",
+]
+select = [
+  "F",
+  "G",
+  "PERF",
+  "RUF",
+  "W6",
+  "E71",
+  "E72",
+  "E112",
+  "E113",
+  "E203",
+  "E272",
+  "E502",
+  "E702",
+  "E703",
+  "E731",
+  "W191",
+  "W291",
+  "W293",
+  "UP039",
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ty.src]
+respect-ignore-files = true
+root = "./"
+
+[tool.ty.environment]
+python = "./.venv"
+python-version = "3.11"

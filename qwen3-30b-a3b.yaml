@@ -7,7 +7,6 @@ args:
     description: Qwen 3 30B A3B MoE
     provider: Alibaba
     gpu_recommendation: Nvidia GPU with at least 80GBx2 VRAM (e.g about 2 H100 GPUs or 1 H200 GPU).
-  sharded: true
   model_id: Qwen/Qwen3-30B-A3B
   autotune: [1,2,4,8,16,24,32,40]
   reasoning_parser: deepseek_r1

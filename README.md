@@ -22,7 +22,7 @@ The following is a default example of serving one of the LLMs in this repository
 
 ```bash
 git clone https://github.com/bentoml/BentoVLLM.git
-cd BentoVLLM
+cd BentoVLLM/llama3.1-8b-instruct
 
 # Recommend UV and Python 3.11
 uv venv && uv pip install -r requirements.txt

@@ -1,8 +1,12 @@
 from __future__ import annotations
 
 import yaml, json, argparse, multiprocessing, pathlib, typing
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from rich.console import Console
+from rich.progress import Progress, SpinnerColumn, TextColumn
+
+from scaffold import scaffold_model
 
 
 def update_model_descriptions(config, git_dir):
@@ -90,6 +94,7 @@ def main() -> int:
     default=False,
     help='whether to skip generating nightly readme.',
   )
+  parser.add_argument('--output-dir', type=pathlib.Path, help='Directory to place scaffolded model folders')
   args = parser.parse_args()
 
   git_dir = pathlib.Path(__file__).parent.parent.parent
@@ -110,6 +115,33 @@ def main() -> int:
   console.print('\n[yellow]Updating model descriptions...[/]')
   update_model_descriptions(filtered_config, git_dir)
   console.print('[green]✓ Updated model descriptions[/]')
+
+  # Scaffold model directories
+  console.print('\n[yellow]Scaffolding model directories...[/]')
+
+  num_models = len(filtered_config)
+
+  with Progress(
+    SpinnerColumn(spinner_name='bouncingBar'), TextColumn('[progress.description]{task.description}'), console=console
+  ) as progress:
+    overall = progress.add_task(f'[yellow]Scaffolding {num_models} models...[/]', total=num_models)
+
+    with ThreadPoolExecutor(max_workers=args.workers) as executor:
+      futures = {
+        executor.submit(scaffold_model, name, cfg, git_dir, args.output_dir if args.output_dir else git_dir, args.force): name
+        for name, cfg in filtered_config.items()
+      }
+      for fut in as_completed(futures):
+        model_name = futures[fut]
+        try:
+          fut.result()
+          console.print(f'  [green]✓ Scaffolded {model_name}[/]')
+        except Exception as e:
+          console.print(f'  [red]✗ Failed scaffold {model_name}: {e}[/]')
+        finally:
+          progress.update(overall, advance=1)
+
+  console.print('[green]✓ Finished scaffolding[/]')
 
   return 0
 

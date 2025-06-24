@@ -2,7 +2,6 @@ args:
   name: llama4-17b-scout-instruct
   gpu_type: nvidia-h100-80gb
   tp: 8
-  sharded: true
   metadata:
     vision: true
     description: Llama 4 Scout 17B-16E Instruct

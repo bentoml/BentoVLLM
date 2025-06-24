@@ -2,7 +2,6 @@ args:
   name: llama3.3-70b-instruct
   gpu_type: nvidia-h100-80gb
   tp: 4
-  sharded: true
   metadata:
     description: Llama 3.3 70B Instruct
     provider: Meta

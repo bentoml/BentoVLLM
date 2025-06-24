@@ -1,0 +1,7 @@
+bentoml==1.4.16
+vllm==0.9.1
+huggingface-hub
+kantoku
+pyyaml
+fastapi
+mistral_common[opencv]
