@@ -99,6 +99,7 @@ class BentoArgs(pydantic.BaseModel):
       'hf_generation_config': json.dumps(self.hf_generation_config),
       'reasoning': '1' if self.reasoning_parser else '0',
       'tool': self.tool_parser or '',
+      'sharded': bento_args.sharded,
     }
     if self.hf_system_prompt and self.include_system_prompt:
       default['hf_system_prompt'] = json.dumps(self.hf_system_prompt)
