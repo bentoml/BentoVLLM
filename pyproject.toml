@@ -16,7 +16,7 @@ Tracker = "https://github.com/bentoml/OpenLLM/issues"
 
 [tool.bentoml.build]
 service = "service.py:LLM"
-include = ["LICENCE", "*.py", "*.toml", "*.txt", "*.md", "templates/*"]
+include = ["*.py", "*.toml", "*.txt", "*.md", "templates/*"]
 
 [tool.bentoml.build.args]
 
