@@ -98,7 +98,7 @@ def main() -> int:
   args = parser.parse_args()
 
   git_dir = pathlib.Path(__file__).parent.parent.parent
-  config = load_generated_config(git_dir)
+  config = load_generated_config(git_dir / ".github")
 
   console = Console()
 
