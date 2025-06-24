@@ -36,6 +36,7 @@ class BentoArgs(pydantic.BaseModel):
   hf_system_prompt: str | None = None
   include_system_prompt: bool = True
 
+  sharded: bool = False
   name: str = 'llama3.1-8b-instruct'
   gpu_type: str = 'nvidia-h100-80gb'
   model_id: str = 'meta-llama/Meta-Llama-3.1-8B-Instruct'
@@ -98,6 +99,7 @@ class BentoArgs(pydantic.BaseModel):
       'hf_generation_config': json.dumps(self.hf_generation_config),
       'reasoning': '1' if self.reasoning_parser else '0',
       'tool': self.tool_parser or '',
+      'sharded': bento_args.sharded,
     }
     if self.hf_system_prompt and self.include_system_prompt:
       default['hf_system_prompt'] = json.dumps(self.hf_system_prompt)
@@ -113,6 +115,13 @@ class BentoArgs(pydantic.BaseModel):
       ])
     return envs
 
+  @property
+  def runtime_model_id(self) -> str:
+    if not self.sharded: return self.model_id.lower()
+    repo_slug = self.model_id.lower().split("/")[-1]
+    return f'aarnphm/{repo_slug}-sharded-tp{self.tp}'
+
+
 
 bento_args = bentoml.use_arguments(BentoArgs)
 
@@ -125,7 +134,7 @@ if POST := bento_args.post:
 image = image.run(
   'uv pip install --compile-bytecode --no-progress https://download.pytorch.org/whl/cu128/flashinfer/flashinfer_python-0.2.6.post1%2Bcu128torch2.7-cp39-abi3-linux_x86_64.whl'
 )
-hf = bentoml.models.HuggingFaceModel(bento_args.model_id.lower(), exclude=bento_args.exclude)
+hf = bentoml.models.HuggingFaceModel(bento_args.runtime_model_id, exclude=bento_args.exclude)
 
 os.environ['PYTHONPATH'] = os.pathsep.join([os.environ.get('PYTHONPATH', ''), os.path.abspath(os.path.dirname(__file__))])
 

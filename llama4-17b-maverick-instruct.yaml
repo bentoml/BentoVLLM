@@ -2,6 +2,7 @@ args:
   name: llama4-17b-maverick-instruct
   gpu_type: nvidia-h200-141gb
   tp: 8
+  sharded: true
   metadata:
     vision: true
     description: Llama 4 Maverick 17B-128E Instruct
