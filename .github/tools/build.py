@@ -43,7 +43,6 @@ def build_model(model_name: str, cfg: dict, git_dir: pathlib.Path) -> BuildResul
       capture_output=True,
       text=True,
       check=True,
-      cwd=tempdir,
       env=os.environ,
     )
 
@@ -115,7 +114,7 @@ def main() -> int:
   args = parser.parse_args()
 
   git_dir = pathlib.Path(__file__).parent.parent.parent
-  config = load_generated_config(git_dir)
+  config = load_generated_config(git_dir / '.github')
 
   console = Console()
 
