@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import logging, json, os, typing, collections.abc, contextlib
+import logging, json, os, typing, collections.abc, contextlib, httpx
 import pydantic, bentoml, fastapi
 from starlette.responses import RedirectResponse
 
@@ -82,8 +82,6 @@ class BentoArgs(pydantic.BaseModel):
       # '--middleware',
       # 'service.probes',
     ]
-    if os.environ.get('VLLM_LOGGING_LEVEL') is None:
-      default.append('--disable-log-stats')
     if self.tool_parser:
       default.extend(['--enable-auto-tool-choice', '--tool-call-parser', self.tool_parser])
     if self.reasoning_parser:
@@ -178,20 +176,20 @@ class LLM:
 
   def __init__(self):
     self.stack = contextlib.AsyncExitStack()
+    self.client = httpx.AsyncClient(base_url='http://0.0.0.0:3000/v1')
+
 
   @bentoml.on_startup
   async def init_engine(self):
+    import vllm.entrypoints.openai.api_server as vllm_api_server
+
     from vllm.utils import FlexibleArgumentParser
     from vllm.entrypoints.openai.cli_args import make_arg_parser
-    from vllm.entrypoints.openai.api_server import mount_metrics
 
     args = make_arg_parser(FlexibleArgumentParser()).parse_args([
       '--no-use-tqdm-on-load',
       '--disable-uvicorn-access-log',
-      '--disable-log-requests',
       '--disable-fastapi-docs',
-      '--max-log-len',
-      '1000',
       *bento_args.additional_cli_args,
     ])
     args.model = self.hf
@@ -201,12 +199,13 @@ class LLM:
     OPENAI_ENDPOINTS = [
       ['/chat/completions', vllm_api_server.create_chat_completion, ['POST']],
       ['/models', vllm_api_server.show_available_models, ['GET']],
+      ['/health', vllm_api_server.health, ['GET']],
+      ['/ping', vllm_api_server.ping, ['GET']],
     ]
 
     for route, endpoint, methods in OPENAI_ENDPOINTS:
       router.add_api_route(path=route, endpoint=endpoint, methods=methods, include_in_schema=True)
     openai_api_app.include_router(router)
-    mount_metrics(openai_api_app)
 
     self.engine = await self.stack.enter_async_context(vllm_api_server.build_async_engine_client(args))
     self.tokenizer = await self.engine.get_tokenizer()
@@ -216,3 +215,11 @@ class LLM:
   @bentoml.on_shutdown
   async def teardown_engine(self):
     await self.stack.aclose()
+
+  async def __is_ready__(self) -> bool:
+    resp = await self.client.get('/ping')
+    return resp.status_code == 200
+
+  async def __is_alive__(self) -> bool:
+    resp = await self.client.get('/health')
+    return resp.status_code == 200
