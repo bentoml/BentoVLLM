@@ -142,7 +142,7 @@ if POST := bento_args.post:
     image = image.run(cmd)
 image = image.run(
   'uv pip install --compile-bytecode --no-progress https://download.pytorch.org/whl/cu128/flashinfer/flashinfer_python-0.2.6.post1%2Bcu128torch2.7-cp39-abi3-linux_x86_64.whl'
-)
+).run('uv pip uninstall opentelemetry-exporter-otlp-proto-http')
 hf = bentoml.models.HuggingFaceModel(bento_args.runtime_model_id, exclude=bento_args.exclude)
 openai_api_app = fastapi.FastAPI()
 
@@ -177,7 +177,6 @@ class LLM:
   def __init__(self):
     self.stack = contextlib.AsyncExitStack()
     self.client = httpx.AsyncClient(base_url='http://0.0.0.0:3000/v1')
-
 
   @bentoml.on_startup
   async def init_engine(self):
