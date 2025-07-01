@@ -45,6 +45,7 @@ cli_args = [
 ]
 model_id = "meta-llama/Llama-3.2-3B-Instruct"
 tool_parser = "pythonic"
+piecewise_cudagraph = false
 envs = [
   { name = "HF_TOKEN" },
 ]

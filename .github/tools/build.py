@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import subprocess, traceback, os, argparse, multiprocessing, pathlib, dataclasses, typing, yaml, tomllib, tempfile, shutil, tomli_w, importlib.metadata
+import subprocess, traceback, os, argparse, multiprocessing, pathlib, dataclasses, typing, yaml
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
@@ -11,7 +11,7 @@ class BuildResult:
   model_name: str
   bento_tag: str
   success: bool
-  error: str = ""
+  error: str = ''
   stderr: str = ''
   stdout: str = ''
 
@@ -37,67 +37,29 @@ def load_generated_config(git_dir: pathlib.Path) -> dict[str, dict[str, typing.A
 
 
 def build_model(model_name: str, cfg: dict, git_dir: pathlib.Path) -> BuildResult:
-  pyproject_path = git_dir / 'pyproject.toml'
-  with pyproject_path.open('rb') as f:
-    base_pyproject = tomllib.load(f)
+  try:
+    result = subprocess.run(
+      ['bentoml', 'build', (git_dir / model_name).__fspath__(), '--output', 'tag'],
+      capture_output=True,
+      text=True,
+      check=True,
+      cwd=tempdir,
+      env=os.environ,
+    )
 
-  with tempfile.TemporaryDirectory(suffix='bentovlllm') as tempdir:
-    td = pathlib.Path(tempdir)
+    output = result.stdout.strip()
+    if output.startswith('__tag__:'):
+      bento_tag = output[8:]
+      return BuildResult(model_name, bento_tag, True)
 
-    files_to_copy = [
-      '.bentoignore',
-      '.python-version',
-      '.gitignore',
-      'service.py',
-      'pyproject.toml',
-      'requirements.txt',
-    ]
+    return BuildResult(model_name, '', False, f'Unexpected output format: {output}')
 
-    for filename in files_to_copy:
-      src = git_dir / filename
-      if src.exists():
-        shutil.copy2(src, td / filename)
-
-    templates_src = git_dir / 'templates'
-    if templates_src.exists():
-      shutil.copytree(templates_src, td / 'templates', dirs_exist_ok=True)
-
-    with (td / 'pyproject.toml').open('rb') as s:
-      data = tomllib.load(s)
-      bento_yaml = data.get('tool', {}).get('bentoml', {}).get('build', {})
-
-    with (td / 'pyproject.toml').open('wb') as s:
-      if 'envs' in cfg and not cfg['envs']:
-        cfg.pop('envs')
-      bento_yaml['args'] = cfg
-      data['project']['name'] = model_name
-      data['project']['version'] = importlib.metadata.version('bentoml')
-      data['tool']['bentoml']['build'] = bento_yaml
-      tomli_w.dump(data, s, indent=2)
-
-    try:
-      result = subprocess.run(
-        ['bentoml', 'build', '--output', 'tag'],
-        capture_output=True,
-        text=True,
-        check=True,
-        cwd=tempdir,
-        env=os.environ,
-      )
-
-      output = result.stdout.strip()
-      if output.startswith('__tag__:'):
-        bento_tag = output[8:]
-        return BuildResult(model_name, bento_tag, True)
-
-      return BuildResult(model_name, '', False, f'Unexpected output format: {output}')
-
-    except subprocess.CalledProcessError as e:
-      traceback.print_exc()
-      return BuildResult(model_name, '', False, stderr=e.stderr, stdout=e.stdout)
-    except Exception as e:
-      traceback.print_exc()
-      return BuildResult(model_name, '', False, str(e))
+  except subprocess.CalledProcessError as e:
+    traceback.print_exc()
+    return BuildResult(model_name, '', False, stderr=e.stderr, stdout=e.stdout)
+  except Exception as e:
+    traceback.print_exc()
+    return BuildResult(model_name, '', False, str(e))
 
 
 def build_bentos(config: dict[str, typing.Any], git_dir: pathlib.Path, workers: int) -> list[BuildResult]:

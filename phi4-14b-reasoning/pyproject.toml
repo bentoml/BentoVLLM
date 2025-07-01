@@ -43,7 +43,6 @@ model_id = "microsoft/Phi-4-reasoning"
 reasoning-parser = "deepseek_r1"
 
 [tool.bentoml.build.args.metadata]
-reasoning = true
 description = "Phi 4 14B Reasoning"
 provider = "Microsoft"
 gpu_recommendation = "an Nvidia GPU with at least 80GB VRAM (e.g about 1 H100 GPU)."

@@ -12,6 +12,7 @@ args:
     gpu_recommendation: an Nvidia GPU with at least 80GB VRAM (e.g about 1 H100 GPU).
   model_id: meta-llama/Llama-3.2-3B-Instruct
   tool_parser: pythonic
+  piecewise_cudagraph: false
   envs:
     - name: HF_TOKEN
   hf_generation_config:

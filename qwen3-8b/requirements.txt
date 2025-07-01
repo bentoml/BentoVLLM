@@ -1,4 +1,4 @@
-bentoml==1.4.16
+bentoml==1.4.17
 vllm==0.9.1
 huggingface-hub
 kantoku

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import logging, json, os, typing, collections.abc
-import pydantic, bentoml
+import logging, json, os, typing, collections.abc, contextlib
+import pydantic, bentoml, fastapi
 from starlette.responses import RedirectResponse
 
 logger = logging.getLogger(__name__)
@@ -14,7 +14,10 @@ if typing.TYPE_CHECKING:
 else:
   Jsonable = typing.Any
 
-async def probes(request: Request, call_next: typing.Callable[[Request], collections.abc.Coroutine[typing.Any, typing.Any, Response]]):
+
+async def probes(
+  request: Request, call_next: typing.Callable[[Request], collections.abc.Coroutine[typing.Any, typing.Any, Response]]
+):
   path = request.url.path
   if path == '/livez':
     return RedirectResponse(url='/health', status_code=301)
@@ -70,7 +73,15 @@ class BentoArgs(pydantic.BaseModel):
 
   @property
   def additional_cli_args(self) -> list[str]:
-    default = ['-tp', f'{self.tp}', *self.cli_args]
+    default = [
+      '-tp',
+      f'{self.tp}',
+      *self.cli_args,
+      '--task',
+      self.task,
+      # '--middleware',
+      # 'service.probes',
+    ]
     if os.environ.get('VLLM_LOGGING_LEVEL') is None:
       default.append('--disable-log-stats')
     if self.tool_parser:
@@ -88,7 +99,7 @@ class BentoArgs(pydantic.BaseModel):
           'max_capture_size': 128,
           'cudagraph_num_of_warmups': 1,
           'full_cuda_graph': not bento_args.piecewise_cudagraph,
-          'compile_sizes': [], # self.autotune if self.autotune else [] , # TODO: enable autotune once we have cache hit
+          'compile_sizes': [],  # [1,2,4,6,8] self.autotune if self.autotune else [] , # TODO: enable autotune once we have cache hit
         }),
       ])
     return default
@@ -117,10 +128,10 @@ class BentoArgs(pydantic.BaseModel):
 
   @property
   def runtime_model_id(self) -> str:
-    if not self.sharded: return self.model_id.lower()
-    repo_slug = self.model_id.lower().split("/")[-1]
+    if not self.sharded:
+      return self.model_id.lower()
+    repo_slug = self.model_id.lower().split('/')[-1]
     return f'aarnphm/{repo_slug}-sharded-tp{self.tp}'
-
 
 
 bento_args = bentoml.use_arguments(BentoArgs)
@@ -135,12 +146,12 @@ image = image.run(
   'uv pip install --compile-bytecode --no-progress https://download.pytorch.org/whl/cu128/flashinfer/flashinfer_python-0.2.6.post1%2Bcu128torch2.7-cp39-abi3-linux_x86_64.whl'
 )
 hf = bentoml.models.HuggingFaceModel(bento_args.runtime_model_id, exclude=bento_args.exclude)
+openai_api_app = fastapi.FastAPI()
 
-os.environ['PYTHONPATH'] = os.pathsep.join([os.environ.get('PYTHONPATH', ''), os.path.abspath(os.path.dirname(__file__))])
 
-LLM = bentoml.Service(
+@bentoml.asgi_app(openai_api_app, path='/v1')
+@bentoml.service(
   name=bento_args.name,
-  models=[hf],
   envs=[
     {'name': 'UV_NO_PROGRESS', 'value': '1'},
     {'name': 'VLLM_SKIP_P2P_CHECK', 'value': '1'},
@@ -149,26 +160,6 @@ LLM = bentoml.Service(
     *bento_args.runtime_envs,
   ],
   image=image,
-  cmd=[
-    'vllm',
-    'serve',
-    hf.model_id,
-    '--served-model-name',
-    bento_args.model_id,
-    '--port',
-    '$PORT',
-    '--task',
-    bento_args.task,
-    '--no-use-tqdm-on-load',
-    '--disable-uvicorn-access-log',
-    '--disable-log-requests',
-    '--disable-fastapi-docs',
-    '--max-log-len',
-    '1000',
-    '--middleware',
-    'service.probes',
-    *bento_args.additional_cli_args,
-  ],
   labels={
     'owner': 'bentoml-team',
     'type': 'prebuilt',
@@ -182,3 +173,46 @@ LLM = bentoml.Service(
     'resources': {'gpu': bento_args.tp, 'gpu_type': bento_args.gpu_type},
   },
 )
+class LLM:
+  hf = hf
+
+  def __init__(self):
+    self.stack = contextlib.AsyncExitStack()
+
+  @bentoml.on_startup
+  async def init_engine(self):
+    from vllm.utils import FlexibleArgumentParser
+    from vllm.entrypoints.openai.cli_args import make_arg_parser
+    from vllm.entrypoints.openai.api_server import mount_metrics
+
+    args = make_arg_parser(FlexibleArgumentParser()).parse_args([
+      '--no-use-tqdm-on-load',
+      '--disable-uvicorn-access-log',
+      '--disable-log-requests',
+      '--disable-fastapi-docs',
+      '--max-log-len',
+      '1000',
+      *bento_args.additional_cli_args,
+    ])
+    args.model = self.hf
+    args.served_model_name = [bento_args.model_id]
+
+    router = fastapi.APIRouter(lifespan=vllm_api_server.lifespan)
+    OPENAI_ENDPOINTS = [
+      ['/chat/completions', vllm_api_server.create_chat_completion, ['POST']],
+      ['/models', vllm_api_server.show_available_models, ['GET']],
+    ]
+
+    for route, endpoint, methods in OPENAI_ENDPOINTS:
+      router.add_api_route(path=route, endpoint=endpoint, methods=methods, include_in_schema=True)
+    openai_api_app.include_router(router)
+    mount_metrics(openai_api_app)
+
+    self.engine = await self.stack.enter_async_context(vllm_api_server.build_async_engine_client(args))
+    self.tokenizer = await self.engine.get_tokenizer()
+    self.vllm_config = await self.engine.get_vllm_config()
+    await vllm_api_server.init_app_state(self.engine, self.vllm_config, openai_api_app.state, args)
+
+  @bentoml.on_shutdown
+  async def teardown_engine(self):
+    await self.stack.aclose()
