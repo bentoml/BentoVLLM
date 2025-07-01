@@ -1,6 +1,6 @@
 [project]
 name = "phi4-14b-reasoning"
-version = "1.4.16"
+version = "1.4.17"
 description = "Self-host LLMs with vLLM and BentoML"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -43,7 +43,6 @@ model_id = "microsoft/Phi-4-reasoning"
 reasoning-parser = "deepseek_r1"
 
 [tool.bentoml.build.args.metadata]
-reasoning = true
 description = "Phi 4 14B Reasoning"
 provider = "Microsoft"
 gpu_recommendation = "an Nvidia GPU with at least 80GB VRAM (e.g about 1 H100 GPU)."

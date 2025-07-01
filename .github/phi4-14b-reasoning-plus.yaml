@@ -6,7 +6,6 @@ args:
   model_id: microsoft/Phi-4-reasoning-plus
   reasoning-parser: deepseek_r1
   metadata:
-    reasoning: true
     description: Phi 4 14B Reasoning
     provider: Microsoft
     gpu_recommendation: an Nvidia GPU with at least 80GBx2 VRAM (e.g about 2 H100 GPUs).

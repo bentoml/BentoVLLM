@@ -3,7 +3,6 @@ args:
   gpu_type: nvidia-h100-80gb
   tp: 2
   metadata:
-    reasoning: true
     description: Qwen 3 30B A3B MoE
     provider: Alibaba
     gpu_recommendation: Nvidia GPU with at least 80GBx2 VRAM (e.g about 2 H100 GPUs or 1 H200 GPU).

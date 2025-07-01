@@ -3,6 +3,7 @@ from __future__ import annotations
 import yaml, json, argparse, multiprocessing, pathlib, typing
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
+from jinja2 import Template
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
@@ -45,7 +46,7 @@ def update_model_descriptions(config, git_dir):
       description=dict(
         name=metadata['description'],
         text=f"{metadata['description']} developed by {metadata['provider']} and served using vLLM and BentoML. It offers capabilities for streaming and compatibility with OpenAI's API",
-        link=f'github.com/bentoml/BentoVLLM/tree/main/{model_name}.yaml',
+        link=f'github.com/bentoml/BentoVLLM/tree/main/{model_name}',
         image=image_url,
         label=labels,
       ),
@@ -98,7 +99,7 @@ def main() -> int:
   args = parser.parse_args()
 
   git_dir = pathlib.Path(__file__).parent.parent.parent
-  config = load_generated_config(git_dir / ".github")
+  config = load_generated_config(git_dir / '.github')
 
   console = Console()
 
@@ -114,6 +115,12 @@ def main() -> int:
   # Update model descriptions
   console.print('\n[yellow]Updating model descriptions...[/]')
   update_model_descriptions(filtered_config, git_dir)
+  with (git_dir / '.github' / 'README.md').open('w') as f:
+    f.write(
+      Template((git_dir / '.github' / 'README.md.j2').read_text()).render(
+        models=sorted(list(filtered_config.values()), key=lambda v: v['name'])
+      )
+    )
   console.print('[green]✓ Updated model descriptions[/]')
 
   # Scaffold model directories
@@ -128,7 +135,9 @@ def main() -> int:
 
     with ThreadPoolExecutor(max_workers=args.workers) as executor:
       futures = {
-        executor.submit(scaffold_model, name, cfg, git_dir, args.output_dir if args.output_dir else git_dir, args.force): name
+        executor.submit(
+          scaffold_model, name, cfg, git_dir, args.output_dir if args.output_dir else git_dir, args.force
+        ): name
         for name, cfg in filtered_config.items()
       }
       for fut in as_completed(futures):
