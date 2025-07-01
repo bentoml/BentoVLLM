@@ -1,6 +1,6 @@
 [project]
 name = "devstral-small-2505"
-version = "1.4.16"
+version = "1.4.17"
 description = "Self-host LLMs with vLLM and BentoML"
 readme = "README.md"
 requires-python = ">=3.11"
