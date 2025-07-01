@@ -165,11 +165,9 @@ openai_api_app = fastapi.FastAPI()
     'openai_endpoint': '/v1',
     **bento_args.additional_labels,
   },
-  config={
-    'traffic': {'timeout': 300},
-    'endpoints': {'livez': '/health', 'readyz': '/ping'},
-    'resources': {'gpu': bento_args.tp, 'gpu_type': bento_args.gpu_type},
-  },
+  traffic={'timeout': 300},
+  endpoints={'livez': '/health', 'readyz': '/ping'},
+  resources={'gpu': bento_args.tp, 'gpu_type': bento_args.gpu_type},
 )
 class LLM:
   hf = hf
