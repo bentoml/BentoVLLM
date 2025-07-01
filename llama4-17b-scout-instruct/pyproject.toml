@@ -53,7 +53,7 @@ exclude = [
 vision = true
 description = "Llama 4 Scout 17B-16E Instruct"
 provider = "Meta"
-gpu_recommendation = "Nvidia GPUs with at least 80GBx8 VRAM (e.g about 8 H100 GPUs)."
+gpu_recommendation = "Nvidia GPUs with at least 141GBx8 VRAM (e.g about 8 H200 GPUs or 16 H100 GPUs)."
 
 [tool.bentoml.build.args.hf_generation_config]
 temperature = 0.6

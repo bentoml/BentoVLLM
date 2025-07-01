@@ -13,7 +13,7 @@ See [here](https://docs.bentoml.com/en/latest/examples/overview.html) for a full
 
 ## Prerequisites
 - You have gained access to `meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8` on [Hugging Face](https://huggingface.co/meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8).
-- If you want to test the Service locally, we recommend you use Nvidia GPUs with at least 141GBx8 VRAM (e.g about 8 H200 GPUs).
+- If you want to test the Service locally, we recommend you use Nvidia GPUs with at least 141GBx8 VRAM (e.g about 8 H200 GPUs or 16 H100 GPUs).
 
 ## Install dependencies
 
