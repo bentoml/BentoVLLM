@@ -1,6 +1,6 @@
 [project]
 name = "deepseek-prover-v2-671b"
-version = "1.4.17"
+version = "1.4.19"
 description = "Self-host LLMs with vLLM and BentoML"
 readme = "README.md"
 requires-python = ">=3.11"

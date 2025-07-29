@@ -1,6 +1,6 @@
 [project]
 name = "llama3.1-8b-instruct"
-version = "1.4.17"
+version = "1.4.19"
 description = "Self-host LLMs with vLLM and BentoML"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -30,7 +30,7 @@ include = [
 
 [tool.bentoml.build.args]
 name = "llama3.1-8b-instruct"
-gpu_type = "nvidia-h100-80gb"
+gpu_type = "nvidia-tesla-h100"
 tp = 1
 autotune = [
   1,
@@ -52,7 +52,7 @@ envs = [
 [tool.bentoml.build.args.metadata]
 description = "Llama 3.1 8B Instruct"
 provider = "Meta"
-gpu_recommendation = "an Nvidia GPU with at least 80GB VRAM (e.g about 1 H100 GPU)."
+gpu_recommendation = "an Nvidia GPU with at least 40GB VRAM (e.g about 1 A100 GPU)."
 
 [tool.bentoml.build.args.hf_generation_config]
 temperature = 0.6

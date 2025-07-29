@@ -1,5 +1,5 @@
 [project]
-name = "gemma3-4b-instruct"
+name = "qwen3-coder-408b-a35b"
 version = "1.4.19"
 description = "Self-host LLMs with vLLM and BentoML"
 readme = "README.md"
@@ -29,36 +29,32 @@ include = [
 ]
 
 [tool.bentoml.build.args]
-name = "gemma3-4b-instruct"
-gpu_type = "nvidia-h100-80gb"
-tp = 1
+name = "qwen3-coder-480b-a35b"
+gpu_type = "nvidia-h200-141gb"
+tp = 4
+model_id = "Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8"
+reasoning_parser = "deepseek_r1"
 autotune = [
   1,
   2,
   4,
   8,
   16,
+  24,
 ]
-model_id = "google/gemma-3-4b-it"
-cli_args = [
-  "--limit-mm-per-prompt",
-  "{\"image\": 3}",
-]
-envs = [
-  { name = "HF_TOKEN" },
-]
-attn_backend = "FLASH_ATTN"
+tool_parser = "hermes"
+max_model_len = 32768
 
 [tool.bentoml.build.args.metadata]
-vision = true
-description = "Gemma 3 4B Instruct"
-provider = "Google"
-gpu_recommendation = "an Nvidia GPU with at least 80GB VRAM (e.g about 1 H100 GPU)."
+description = "Qwen 3 Coder 480B A35B MoE"
+provider = "Alibaba"
+gpu_recommendation = "Nvidia GPUs with at least 80GBx4 VRAM (e.g about 4 H100 GPUs)."
 
 [tool.bentoml.build.args.hf_generation_config]
-temperature = 0.6
-top_p = 0.95
-top_k = 64
+temperature = 0.7
+top_k = 20
+top_p = 0.8
+repetition_penalty = 1.05
 
 [tool.ruff]
 extend-include = [

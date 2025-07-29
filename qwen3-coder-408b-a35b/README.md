@@ -1,8 +1,8 @@
 <div align="center">
-    <h1 align="center">Self-host Llama 3.1 8B Instruct with vLLM and BentoML</h1>
+    <h1 align="center">Self-host Qwen 3 Coder 480B A35B MoE with vLLM and BentoML</h1>
 </div>
 
-Follow this guide to self-host the Llama 3.1 8B Instruct model with BentoCloud in your own cloud account. If your team doesn’t already have access to BentoCloud, please use the link below to contact us and set it up in your cloud environment.
+Follow this guide to self-host the Qwen 3 Coder 480B A35B MoE model with BentoCloud in your own cloud account. If your team doesn’t already have access to BentoCloud, please use the link below to contact us and set it up in your cloud environment.
 
 [![Deploy on BentoCloud](https://img.shields.io/badge/Deploy_on_BentoCloud-d0bfff?style=for-the-badge)](https://cloud.bentoml.com/)
 [![Talk to sales](https://img.shields.io/badge/Talk_to_sales-eefbe4?style=for-the-badge)](https://bentoml.com/contact)
@@ -12,22 +12,19 @@ See [here](https://docs.bentoml.com/en/latest/examples/overview.html) for a full
 💡 This example is served as a basis for advanced code customization, such as custom model, inference logic or vLLM options. For simple LLM hosting with OpenAI compatible endpoint without writing any code, see [OpenLLM](https://github.com/bentoml/OpenLLM).
 
 ## Prerequisites
-- You have gained access to `meta-llama/Meta-Llama-3.1-8B-Instruct` on [Hugging Face](https://huggingface.co/meta-llama/Meta-Llama-3.1-8B-Instruct).
-- If you want to test the Service locally, we recommend you use an Nvidia GPU with at least 40GB VRAM (e.g about 1 A100 GPU).
+- If you want to test the Service locally, we recommend you use Nvidia GPUs with at least 80GBx4 VRAM (e.g about 4 H100 GPUs).
 
 ## Install dependencies
 
 ```bash
 git clone https://github.com/bentoml/BentoVLLM.git
-cd BentoVLLM/llama3.1-8b-instruct
+cd BentoVLLM/qwen3-coder-408b-a35b
 
 # Recommend Python 3.11
 pip install -r requirements.txt
 
 # if you are running locally, we recommend install additional flashinfer library for better performance.
 pip install flashinfer-python --extra-index-url https://flashinfer.ai/whl/cu124/torch2.6
-
-export HF_TOKEN=<your-api-key>
 ```
 
 ## Run the BentoML Service
@@ -115,12 +112,10 @@ Make sure you have [logged in to BentoCloud](https://docs.bentoml.com/en/latest/
 bentoml cloud login
 ```
 
-Create a BentoCloud secret to store the required environment variable and reference it for deployment.
+Create a BentoCloud deployment from this service:
 
 ```bash
-bentoml secret create huggingface HF_TOKEN=$HF_TOKEN
-
-bentoml deploy service:LLM --secret huggingface
+bentoml deploy service.py:LLM
 ```
 
 Once the application is up and running on BentoCloud, you can access it via the exposed URL.
