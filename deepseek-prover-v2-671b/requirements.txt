@@ -4,4 +4,5 @@ huggingface-hub
 kantoku
 pyyaml
 fastapi
+kernels
 mistral_common[opencv]
