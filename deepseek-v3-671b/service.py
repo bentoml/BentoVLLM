@@ -192,6 +192,7 @@ class LLM:
     router = fastapi.APIRouter(lifespan=vllm_api_server.lifespan)
     OPENAI_ENDPOINTS = [
       ['/chat/completions', vllm_api_server.create_chat_completion, ['POST']],
+      ["/responses", vllm_api_server.create_responses, ["POST"]],
       ['/models', vllm_api_server.show_available_models, ['GET']],
       ['/health', vllm_api_server.health, ['GET']],
       ['/ping', vllm_api_server.ping, ['GET']],
