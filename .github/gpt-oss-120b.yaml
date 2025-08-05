@@ -1,0 +1,15 @@
+args:
+  name: gpt-oss-120b
+  gpu_type: nvidia-h200-141gb
+  tp: 1
+  metadata:
+    description: GPT OSS MoE 120B
+    provider: OpenAI
+    gpu_recommendation: Nvidia GPUs with at least 140GB VRAM (e.g about 1 H200 GPU).
+  model_id: openai/gpt-oss-120b
+  autotune: [1,2,4,8,16,24]
+  cli_args:
+    - '--chat-template'
+    - 'templates/tool_gpt_oss.jinja'
+  envs:
+    - name: HF_TOKEN
