@@ -13,7 +13,7 @@ See [here](https://docs.bentoml.com/en/latest/examples/overview.html) for a full
 
 ## Prerequisites
 - You have gained access to `openai/gpt-oss-120b` on [Hugging Face](https://huggingface.co/openai/gpt-oss-120b).
-- If you want to test the Service locally, we recommend you use Nvidia GPUs with at least 140GB VRAM (e.g about 1 H200 GPU).
+- If you want to test the Service locally, we recommend you use Nvidia GPUs with at least 140GB VRAM (e.g about 1 H200 GPU or 2xH100 GPUs).
 
 ## Install dependencies
 

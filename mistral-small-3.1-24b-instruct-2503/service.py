@@ -29,7 +29,6 @@ async def probes(
 class BentoArgs(pydantic.BaseModel):
   tp: int = 1
   v1: bool = True
-  task: str = 'generate'
   attn_backend: str = 'FLASHINFER'
   piecewise_cudagraph: bool = True
   reasoning_parser: str | None = None
@@ -77,8 +76,6 @@ class BentoArgs(pydantic.BaseModel):
       '-tp',
       f'{self.tp}',
       *self.cli_args,
-      '--task',
-      self.task,
       # '--middleware',
       # 'service.probes',
     ]
@@ -135,14 +132,14 @@ class BentoArgs(pydantic.BaseModel):
 bento_args = bentoml.use_arguments(BentoArgs)
 
 image = (
-  bentoml.images.Image(python_version='3.11').system_packages('curl', 'git').requirements_file('requirements.txt')
+  bentoml.images.Image(python_version='3.12').system_packages('curl', 'git').requirements_file('requirements.txt')
 )
 if POST := bento_args.post:
   for cmd in POST:
     image = image.run(cmd)
 image = image.run(
-  'uv pip install --compile-bytecode --no-progress https://download.pytorch.org/whl/cu128/flashinfer/flashinfer_python-0.2.6.post1%2Bcu128torch2.7-cp39-abi3-linux_x86_64.whl'
-).run('uv pip uninstall opentelemetry-exporter-otlp-proto-http')
+  'uv pip install --no-progress https://download.pytorch.org/whl/cu128/flashinfer/flashinfer_python-0.2.6.post1%2Bcu128torch2.7-cp39-abi3-linux_x86_64.whl'
+)
 hf = bentoml.models.HuggingFaceModel(bento_args.runtime_model_id, exclude=bento_args.exclude)
 openai_api_app = fastapi.FastAPI()
 
