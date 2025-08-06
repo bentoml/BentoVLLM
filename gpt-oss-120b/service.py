@@ -137,9 +137,6 @@ image = (
 if POST := bento_args.post:
   for cmd in POST:
     image = image.run(cmd)
-image = image.run(
-  'uv pip install --no-progress https://download.pytorch.org/whl/cu128/flashinfer/flashinfer_python-0.2.6.post1%2Bcu128torch2.7-cp39-abi3-linux_x86_64.whl'
-)
 hf = bentoml.models.HuggingFaceModel(bento_args.runtime_model_id, exclude=bento_args.exclude)
 openai_api_app = fastapi.FastAPI()
 
