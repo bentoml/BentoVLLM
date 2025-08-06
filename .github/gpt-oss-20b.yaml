@@ -1,12 +1,12 @@
 args:
-  name: gpt-oss-120b
+  name: gpt-oss-20b
   gpu_type: nvidia-h100-80gb
-  tp: 2
+  tp: 1
   metadata:
-    description: GPT OSS MoE 120B
+    description: GPT OSS MoE 20B
     provider: OpenAI
-    gpu_recommendation: Nvidia GPUs with at least 140GB VRAM (e.g about 1 H200 GPU or 2xH100 GPUs).
-  model_id: openai/gpt-oss-120b
+    gpu_recommendation: Nvidia GPUs with at least 80GB VRAM (e.g about 1 H100 GPU).
+  model_id: openai/gpt-oss-20b
   autotune: [1,2,4,8,16,24]
   post:
     - uv pip install -U openai

@@ -140,6 +140,7 @@ In addition to Llama 3.1 8B Instruct, we also have examples for other models in 
 | devstral-small-2505 | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/devstral-small-2505/) • [Hugging Face](https://huggingface.co/mistralai/Devstral-Small-2505) |
 | gemma3-4b-instruct | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/gemma3-4b-instruct/) • [Hugging Face](https://huggingface.co/google/gemma-3-4b-it) |
 | gpt-oss-120b | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/gpt-oss-120b/) • [Hugging Face](https://huggingface.co/openai/gpt-oss-120b) |
+| gpt-oss-20b | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/gpt-oss-20b/) • [Hugging Face](https://huggingface.co/openai/gpt-oss-20b) |
 | jamba1.6-large | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/jamba1.6-large/) • [Hugging Face](https://huggingface.co/ai21labs/AI21-Jamba-Large-1.6) |
 | jamba1.6-mini | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/jamba1.6-mini/) • [Hugging Face](https://huggingface.co/ai21labs/AI21-Jamba-Mini-1.6) |
 | llama3.1-8b-instruct | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/llama3.1-8b-instruct/) • [Hugging Face](https://huggingface.co/meta-llama/Meta-Llama-3.1-8B-Instruct) |

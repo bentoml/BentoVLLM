@@ -1,5 +1,5 @@
 [project]
-name = "gpt-oss-120b"
+name = "gpt-oss-20b"
 version = "1.4.19"
 description = "Self-host LLMs with vLLM and BentoML"
 readme = "README.md"
@@ -29,10 +29,10 @@ include = [
 ]
 
 [tool.bentoml.build.args]
-name = "gpt-oss-120b"
+name = "gpt-oss-20b"
 gpu_type = "nvidia-h100-80gb"
-tp = 2
-model_id = "openai/gpt-oss-120b"
+tp = 1
+model_id = "openai/gpt-oss-20b"
 autotune = [
   1,
   2,
@@ -60,9 +60,9 @@ envs = [
 ]
 
 [tool.bentoml.build.args.metadata]
-description = "GPT OSS MoE 120B"
+description = "GPT OSS MoE 20B"
 provider = "OpenAI"
-gpu_recommendation = "Nvidia GPUs with at least 140GB VRAM (e.g about 1 H200 GPU or 2xH100 GPUs)."
+gpu_recommendation = "Nvidia GPUs with at least 80GB VRAM (e.g about 1 H100 GPU)."
 
 [tool.ruff]
 extend-include = [
