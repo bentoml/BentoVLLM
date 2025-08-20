@@ -103,7 +103,7 @@ class BentoArgs(pydantic.BaseModel):
           'cudagraph_capture_sizes': [128, 120, 112, 104, 96, 88, 80, 72, 64, 56, 48, 40, 32, 24, 16, 8, 4, 2, 1],
           'max_capture_size': 128,
           'cudagraph_num_of_warmups': 1,
-          'full_cuda_graph': not bento_args.piecewise_cudagraph,
+          'full_cuda_graph': not self.piecewise_cudagraph,
           'compile_sizes': [],  # [1,2,4,6,8] self.autotune if self.autotune else [] , # TODO: enable autotune once we have cache hit
         }),
       ])
@@ -115,7 +115,7 @@ class BentoArgs(pydantic.BaseModel):
       'hf_generation_config': json.dumps(self.hf_generation_config),
       'reasoning': '1' if self.reasoning_parser else '0',
       'tool': self.tool_parser or '',
-      'sharded': bento_args.sharded,
+      'sharded': self.sharded,
     }
     if self.hf_system_prompt and self.include_system_prompt:
       default['hf_system_prompt'] = json.dumps(self.hf_system_prompt)
