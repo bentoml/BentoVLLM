@@ -1,5 +1,5 @@
-bentoml==1.4.19
-vllm==0.10.0
+bentoml==1.4.21
+vllm==0.10.1
 huggingface-hub
 kantoku
 pyyaml

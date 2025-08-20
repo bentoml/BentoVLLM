@@ -1,5 +1,5 @@
 [project]
-name = "llama4-17b-scout-instruct"
+name = "llama3.1-8b-kv-offloading"
 version = "1.4.21"
 description = "Self-host LLMs with vLLM and BentoML"
 readme = "README.md"
@@ -29,31 +29,30 @@ include = [
 ]
 
 [tool.bentoml.build.args]
-name = "llama4-17b-scout-instruct"
+name = "llama3.1-8b-kv-offloading"
 gpu_type = "nvidia-h100-80gb"
-tp = 8
-model_id = "meta-llama/Llama-4-Scout-17B-16E-Instruct"
-tool_parser = "pythonic"
-cli_args = [
-  "--max-model-len",
-  "1000000",
+tp = 2
+autotune = [
+  1,
+  2,
+  4,
+  8,
+  16,
 ]
+cli_args = [
+  "--max-num-batched-tokens",
+  "16384",
+]
+model_id = "meta-llama/Meta-Llama-3.1-8B-Instruct"
+tool_parser = "llama3_json"
 envs = [
   { name = "HF_TOKEN" },
-  { name = "VLLM_DISABLE_COMPILE_CACHE", value = "1" },
-]
-exclude = [
-  "original",
-  "consolidated*",
-  "*.pth",
-  "*.pt",
 ]
 
 [tool.bentoml.build.args.metadata]
-vision = true
-description = "Llama 4 Scout 17B-16E Instruct"
+description = "Llama 3.1 8B Instruct with CPU KV offloading"
 provider = "Meta"
-gpu_recommendation = "Nvidia GPUs with at least 141GBx8 VRAM (e.g about 8 H200 GPUs or 16 H100 GPUs)."
+gpu_recommendation = "an Nvidia GPU with at least 40GB VRAM (e.g about 1 A100 GPU)."
 
 [tool.bentoml.build.args.hf_generation_config]
 temperature = 0.6
