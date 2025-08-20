@@ -1,7 +1,16 @@
 from __future__ import annotations
 
-import logging, json, os, typing, collections.abc, contextlib, httpx
-import pydantic, bentoml, fastapi
+import collections.abc
+import contextlib
+import json
+import logging
+import os
+import typing
+
+import bentoml
+import fastapi
+import httpx
+import pydantic
 from starlette.responses import RedirectResponse
 
 logger = logging.getLogger(__name__)
@@ -138,10 +147,14 @@ image = (
 if POST := bento_args.post:
   for cmd in POST:
     image = image.run(cmd)
-if not bento_args.skip_flashinfer:
+if not bento_args.skip_flashinfer and bento_args.gpu_type.startswith('nvidia'):
   image = image.run(
     'uv pip install --no-progress https://download.pytorch.org/whl/cu128/flashinfer/flashinfer_python-0.2.6.post1%2Bcu128torch2.7-cp39-abi3-linux_x86_64.whl'
   )
+if bento_args.gpu_type.startswith('amd'):
+  image.base_image = 'rocm/vllm:rocm6.4.1_vllm_0.10.0_20250812'
+  # Disable locking of Python packages for AMD GPUs to exclude nvidia-* dependencies
+  image.lock_python_packages = False
 hf = bentoml.models.HuggingFaceModel(bento_args.runtime_model_id, exclude=bento_args.exclude)
 openai_api_app = fastapi.FastAPI()
 
@@ -154,6 +167,7 @@ openai_api_app = fastapi.FastAPI()
     {'name': 'VLLM_SKIP_P2P_CHECK', 'value': '1'},
     {'name': 'VLLM_USE_V1', 'value': '1' if bento_args.v1 else '0'},
     {'name': 'VLLM_ATTENTION_BACKEND', 'value': bento_args.attn_backend},
+    {'name': 'UV_TORCH_BACKEND', 'value': 'auto'},
     *bento_args.runtime_envs,
   ],
   image=image,
@@ -178,9 +192,8 @@ class LLM:
   @bentoml.on_startup
   async def init_engine(self):
     import vllm.entrypoints.openai.api_server as vllm_api_server
-
-    from vllm.utils import FlexibleArgumentParser
     from vllm.entrypoints.openai.cli_args import make_arg_parser
+    from vllm.utils import FlexibleArgumentParser
 
     args = make_arg_parser(FlexibleArgumentParser()).parse_args([
       '--no-use-tqdm-on-load',
@@ -194,7 +207,7 @@ class LLM:
     router = fastapi.APIRouter(lifespan=vllm_api_server.lifespan)
     OPENAI_ENDPOINTS = [
       ['/chat/completions', vllm_api_server.create_chat_completion, ['POST']],
-      ["/responses", vllm_api_server.create_responses, ["POST"]],
+      ['/responses', vllm_api_server.create_responses, ['POST']],
       ['/models', vllm_api_server.show_available_models, ['GET']],
       ['/health', vllm_api_server.health, ['GET']],
       ['/ping', vllm_api_server.ping, ['GET']],

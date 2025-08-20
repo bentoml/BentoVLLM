@@ -30,7 +30,6 @@ include = [
 
 [tool.bentoml.build.args]
 name = "llama3.1-8b-instruct"
-gpu_type = "nvidia-tesla-h100"
 tp = 1
 autotune = [
   1,
