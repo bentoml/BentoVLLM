@@ -1,0 +1,10 @@
+__pycache__/
+*.py[cod]
+*$py.class
+.ipynb_checkpoints
+venv/
+.venv/
+bentofile.yaml
+.mypy_cache
+.ruff_cache
+*.yaml

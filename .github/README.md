@@ -144,6 +144,7 @@ In addition to Llama 3.1 8B Instruct, we also have examples for other models in 
 | jamba1.6-large | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/jamba1.6-large/) • [Hugging Face](https://huggingface.co/ai21labs/AI21-Jamba-Large-1.6) |
 | jamba1.6-mini | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/jamba1.6-mini/) • [Hugging Face](https://huggingface.co/ai21labs/AI21-Jamba-Mini-1.6) |
 | llama3.1-8b-instruct | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/llama3.1-8b-instruct/) • [Hugging Face](https://huggingface.co/meta-llama/Meta-Llama-3.1-8B-Instruct) |
+| llama3.1-8b-kv-offloading | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/llama3.1-8b-kv-offloading/) • [Hugging Face](https://huggingface.co/meta-llama/Meta-Llama-3.1-8B-Instruct) |
 | llama3.2-3b-instruct | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/llama3.2-3b-instruct/) • [Hugging Face](https://huggingface.co/meta-llama/Llama-3.2-3B-Instruct) |
 | llama3.3-70b-instruct | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/llama3.3-70b-instruct/) • [Hugging Face](https://huggingface.co/meta-llama/Llama-3.3-70B-Instruct) |
 | llama4-17b-maverick-instruct | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/llama4-17b-maverick-instruct/) • [Hugging Face](https://huggingface.co/meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8) |
