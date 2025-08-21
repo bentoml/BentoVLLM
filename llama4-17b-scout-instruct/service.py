@@ -9,7 +9,6 @@ import typing
 
 import bentoml
 import fastapi
-import httpx
 import pydantic
 from starlette.responses import RedirectResponse
 
@@ -124,6 +123,12 @@ class BentoArgs(pydantic.BaseModel):
   @property
   def runtime_envs(self) -> list[dict[str, str]]:
     envs = [*self.envs]
+    envs.extend([
+      {'name': 'VLLM_SKIP_P2P_CHECK', 'value': '1'},
+      {'name': 'VLLM_USE_V1', 'value': '1' if self.v1 else '0'},
+    ])
+    if not self.gpu_type.startswith('amd'):
+      envs.append({'name': 'VLLM_ATTENTION_BACKEND', 'value': self.attn_backend})
     if os.getenv('YATAI_T_VERSION'):
       envs.extend([
         {'name': 'HF_HUB_CACHE', 'value': '/home/bentoml/bento/hf-models'},
@@ -155,6 +160,10 @@ if bento_args.gpu_type.startswith('amd'):
   image.base_image = 'rocm/vllm:rocm6.4.1_vllm_0.10.0_20250812'
   # Disable locking of Python packages for AMD GPUs to exclude nvidia-* dependencies
   image.lock_python_packages = False
+  # The GPU device is accessible by group 992
+  image.run('groupadd -g 992 -o rocm && usermod -aG rocm bentoml')
+  # Remove the vllm and torch deps to reuse the pre-installed ones in the base image
+  image.run('uv pip uninstall vllm torch torchvision torchaudio triton')
 hf = bentoml.models.HuggingFaceModel(bento_args.runtime_model_id, exclude=bento_args.exclude)
 openai_api_app = fastapi.FastAPI()
 
@@ -164,9 +173,6 @@ openai_api_app = fastapi.FastAPI()
   name=bento_args.name,
   envs=[
     {'name': 'UV_NO_PROGRESS', 'value': '1'},
-    {'name': 'VLLM_SKIP_P2P_CHECK', 'value': '1'},
-    {'name': 'VLLM_USE_V1', 'value': '1' if bento_args.v1 else '0'},
-    {'name': 'VLLM_ATTENTION_BACKEND', 'value': bento_args.attn_backend},
     {'name': 'UV_TORCH_BACKEND', 'value': 'auto'},
     *bento_args.runtime_envs,
   ],
@@ -179,7 +185,7 @@ openai_api_app = fastapi.FastAPI()
     **bento_args.additional_labels,
   },
   traffic={'timeout': 300},
-  endpoints={'livez': '/health', 'readyz': '/ping'},
+  endpoints={'livez': '/v1/health', 'readyz': '/v1/ping'},
   resources={'gpu': bento_args.tp, 'gpu_type': bento_args.gpu_type},
 )
 class LLM:
@@ -187,7 +193,6 @@ class LLM:
 
   def __init__(self):
     self.stack = contextlib.AsyncExitStack()
-    self.client = httpx.AsyncClient(base_url='http://0.0.0.0:3000/v1')
 
   @bentoml.on_startup
   async def init_engine(self):
@@ -225,11 +230,3 @@ class LLM:
   @bentoml.on_shutdown
   async def teardown_engine(self):
     await self.stack.aclose()
-
-  async def __is_ready__(self) -> bool:
-    resp = await self.client.get('/ping')
-    return resp.status_code == 200
-
-  async def __is_alive__(self) -> bool:
-    resp = await self.client.get('/health')
-    return resp.status_code == 200
