@@ -1,7 +1,15 @@
 from __future__ import annotations
 
-import logging, json, os, typing, collections.abc, contextlib, httpx
-import pydantic, bentoml, fastapi
+import collections.abc
+import contextlib
+import json
+import logging
+import os
+import typing
+
+import bentoml
+import fastapi
+import pydantic
 from starlette.responses import RedirectResponse
 
 logger = logging.getLogger(__name__)
@@ -94,7 +102,7 @@ class BentoArgs(pydantic.BaseModel):
           'cudagraph_capture_sizes': [128, 120, 112, 104, 96, 88, 80, 72, 64, 56, 48, 40, 32, 24, 16, 8, 4, 2, 1],
           'max_capture_size': 128,
           'cudagraph_num_of_warmups': 1,
-          'full_cuda_graph': not bento_args.piecewise_cudagraph,
+          'full_cuda_graph': not self.piecewise_cudagraph,
           'compile_sizes': [],  # [1,2,4,6,8] self.autotune if self.autotune else [] , # TODO: enable autotune once we have cache hit
         }),
       ])
@@ -106,7 +114,7 @@ class BentoArgs(pydantic.BaseModel):
       'hf_generation_config': json.dumps(self.hf_generation_config),
       'reasoning': '1' if self.reasoning_parser else '0',
       'tool': self.tool_parser or '',
-      'sharded': bento_args.sharded,
+      'sharded': self.sharded,
     }
     if self.hf_system_prompt and self.include_system_prompt:
       default['hf_system_prompt'] = json.dumps(self.hf_system_prompt)
@@ -115,6 +123,12 @@ class BentoArgs(pydantic.BaseModel):
   @property
   def runtime_envs(self) -> list[dict[str, str]]:
     envs = [*self.envs]
+    envs.extend([
+      {'name': 'VLLM_SKIP_P2P_CHECK', 'value': '1'},
+      {'name': 'VLLM_USE_V1', 'value': '1' if self.v1 else '0'},
+    ])
+    if not self.gpu_type.startswith('amd'):
+      envs.append({'name': 'VLLM_ATTENTION_BACKEND', 'value': self.attn_backend})
     if os.getenv('YATAI_T_VERSION'):
       envs.extend([
         {'name': 'HF_HUB_CACHE', 'value': '/home/bentoml/bento/hf-models'},
@@ -138,10 +152,18 @@ image = (
 if POST := bento_args.post:
   for cmd in POST:
     image = image.run(cmd)
-if not bento_args.skip_flashinfer:
+if not bento_args.skip_flashinfer and bento_args.gpu_type.startswith('nvidia'):
   image = image.run(
     'uv pip install --no-progress https://download.pytorch.org/whl/cu128/flashinfer/flashinfer_python-0.2.6.post1%2Bcu128torch2.7-cp39-abi3-linux_x86_64.whl'
   )
+if bento_args.gpu_type.startswith('amd'):
+  image.base_image = 'rocm/vllm:rocm6.4.1_vllm_0.10.0_20250812'
+  # Disable locking of Python packages for AMD GPUs to exclude nvidia-* dependencies
+  image.lock_python_packages = False
+  # The GPU device is accessible by group 992
+  image.run('groupadd -g 992 -o rocm && usermod -aG rocm bentoml')
+  # Remove the vllm and torch deps to reuse the pre-installed ones in the base image
+  image.run('uv pip uninstall vllm torch torchvision torchaudio triton')
 hf = bentoml.models.HuggingFaceModel(bento_args.runtime_model_id, exclude=bento_args.exclude)
 openai_api_app = fastapi.FastAPI()
 
@@ -151,9 +173,7 @@ openai_api_app = fastapi.FastAPI()
   name=bento_args.name,
   envs=[
     {'name': 'UV_NO_PROGRESS', 'value': '1'},
-    {'name': 'VLLM_SKIP_P2P_CHECK', 'value': '1'},
-    {'name': 'VLLM_USE_V1', 'value': '1' if bento_args.v1 else '0'},
-    {'name': 'VLLM_ATTENTION_BACKEND', 'value': bento_args.attn_backend},
+    {'name': 'UV_TORCH_BACKEND', 'value': 'auto'},
     *bento_args.runtime_envs,
   ],
   image=image,
@@ -165,7 +185,7 @@ openai_api_app = fastapi.FastAPI()
     **bento_args.additional_labels,
   },
   traffic={'timeout': 300},
-  endpoints={'livez': '/health', 'readyz': '/ping'},
+  endpoints={'livez': '/v1/health', 'readyz': '/v1/ping'},
   resources={'gpu': bento_args.tp, 'gpu_type': bento_args.gpu_type},
 )
 class LLM:
@@ -173,14 +193,12 @@ class LLM:
 
   def __init__(self):
     self.stack = contextlib.AsyncExitStack()
-    self.client = httpx.AsyncClient(base_url='http://0.0.0.0:3000/v1')
 
   @bentoml.on_startup
   async def init_engine(self):
     import vllm.entrypoints.openai.api_server as vllm_api_server
-
-    from vllm.utils import FlexibleArgumentParser
     from vllm.entrypoints.openai.cli_args import make_arg_parser
+    from vllm.utils import FlexibleArgumentParser
 
     args = make_arg_parser(FlexibleArgumentParser()).parse_args([
       '--no-use-tqdm-on-load',
@@ -194,7 +212,7 @@ class LLM:
     router = fastapi.APIRouter(lifespan=vllm_api_server.lifespan)
     OPENAI_ENDPOINTS = [
       ['/chat/completions', vllm_api_server.create_chat_completion, ['POST']],
-      ["/responses", vllm_api_server.create_responses, ["POST"]],
+      ['/responses', vllm_api_server.create_responses, ['POST']],
       ['/models', vllm_api_server.show_available_models, ['GET']],
       ['/health', vllm_api_server.health, ['GET']],
       ['/ping', vllm_api_server.ping, ['GET']],
@@ -212,11 +230,3 @@ class LLM:
   @bentoml.on_shutdown
   async def teardown_engine(self):
     await self.stack.aclose()
-
-  async def __is_ready__(self) -> bool:
-    resp = await self.client.get('/ping')
-    return resp.status_code == 200
-
-  async def __is_alive__(self) -> bool:
-    resp = await self.client.get('/health')
-    return resp.status_code == 200
