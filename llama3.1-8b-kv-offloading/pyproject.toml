@@ -31,7 +31,7 @@ include = [
 [tool.bentoml.build.args]
 name = "llama3.1-8b-kv-offloading"
 gpu_type = "nvidia-h100-80gb"
-tp = 2
+tp = 1
 autotune = [
   1,
   2,
@@ -43,6 +43,7 @@ cli_args = [
   "--max-num-batched-tokens",
   "16384",
 ]
+max_model_len = 16384
 model_id = "meta-llama/Meta-Llama-3.1-8B-Instruct"
 tool_parser = "llama3_json"
 envs = [
