@@ -52,6 +52,7 @@ class BentoArgs(pydantic.BaseModel):
   gpu_type: str = 'nvidia-h100-80gb'
   model_id: str = 'meta-llama/Meta-Llama-3.1-8B-Instruct'
 
+  kv_transfer_config: dict[str, typing.Any] = pydantic.Field(default_factory=dict)
   post: list[str] = pydantic.Field(default_factory=list)
   cli_args: list[str] = pydantic.Field(default_factory=list)
   envs: list[dict[str, str]] = pydantic.Field(default_factory=list)
@@ -88,6 +89,8 @@ class BentoArgs(pydantic.BaseModel):
       # '--middleware',
       # 'service.probes',
     ]
+    if self.kv_transfer_config:
+      default.extend(['--kv-transfer-config', json.dumps(self.kv_transfer_config)])
     if self.tool_parser:
       default.extend(['--enable-auto-tool-choice', '--tool-call-parser', self.tool_parser])
     if self.reasoning_parser:

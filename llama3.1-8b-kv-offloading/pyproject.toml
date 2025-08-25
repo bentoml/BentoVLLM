@@ -47,12 +47,19 @@ model_id = "meta-llama/Meta-Llama-3.1-8B-Instruct"
 tool_parser = "llama3_json"
 envs = [
   { name = "HF_TOKEN" },
+  { name = "LMCACHE_CHUNK_SIZE", value = "256" },
+  { name = "LMCACHE_LOCAL_CPU", value = "True" },
+  { name = "LMCACHE_MAX_LOCAL_CPU_SIZE", value = "5.0" },
 ]
 
 [tool.bentoml.build.args.metadata]
 description = "Llama 3.1 8B Instruct with CPU KV offloading"
 provider = "Meta"
 gpu_recommendation = "an Nvidia GPU with at least 40GB VRAM (e.g about 1 A100 GPU)."
+
+[tool.bentoml.build.args.kv_transfer_config]
+kv_connector = "LMCacheConnectorV1"
+kv_role = "kv_both"
 
 [tool.bentoml.build.args.hf_generation_config]
 temperature = 0.6
