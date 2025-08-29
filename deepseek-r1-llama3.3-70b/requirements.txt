@@ -1,4 +1,4 @@
-bentoml==1.4.21
+bentoml==1.4.22
 vllm==0.10.1.1
 huggingface-hub
 lmcache
