@@ -1,10 +1,19 @@
 from __future__ import annotations
 
-import json, asyncio, logging, os, time, uuid, functools, typing as t
+import asyncio
+import functools
+import json
+import logging
+import os
+import time
+import typing as t
+import uuid
 from collections.abc import Iterable
 from dataclasses import dataclass, field
 
-import bentoml, pydantic, httpx
+import bentoml
+import httpx
+import pydantic
 from fastapi import FastAPI, Request
 from fastapi.responses import StreamingResponse
 
@@ -214,7 +223,7 @@ async def handle_request(request: Request):
 
   prefill_client, decode_client = await sd.select_pair()
   logger.info(
-    f'handle_request count: {sd.count}, [HTTP:{prefill_client.http_address}, '
+    f'handle_request count: {sd.count}, [HTTP:{prefill_client.http_address}, '  # noqa: G004
     f'ZMQ:{prefill_client.zmq_address}] 👉 [HTTP:{decode_client.http_address}, '
     f'ZMQ:{decode_client.zmq_address}]'
   )
@@ -259,3 +268,13 @@ async def list_models():
 class Router:
   decoder = bentoml.depends(Decoder)
   prefiller = bentoml.depends(Prefiller)
+
+  async def __is_ready__(self) -> bool:
+    # Keep P & D running when the router is live.
+    async with httpx.AsyncClient() as client:
+      responses = await asyncio.gather(
+        # Carry the headers so that runner-lb can route to the right service.
+        client.get(f'{Prefiller.url}/health', headers={'Runner-Name': 'Prefiller'}),
+        client.get(f'{Decoder.url}/health', headers={'Runner-Name': 'Decoder'}),
+      )
+      return all(r.is_success for r in responses)
