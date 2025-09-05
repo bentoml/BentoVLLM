@@ -1,5 +1,5 @@
 [project]
-name = "deepseek-r1-671b"
+name = "llama3.1-8b-xpyd"
 version = "1.4.23"
 description = "Self-host LLMs with vLLM and BentoML"
 readme = "README.md"
@@ -17,40 +17,6 @@ Documentation = "https://docs.bentoml.com"
 GitHub = "https://github.com/bentoml/OpenLLM"
 Twitter = "https://twitter.com/bentomlai"
 Tracker = "https://github.com/bentoml/OpenLLM/issues"
-
-[tool.bentoml.build]
-service = "service.py:LLM"
-include = [
-  "*.py",
-  "*.toml",
-  "*.txt",
-  "*.md",
-  "templates/*",
-]
-
-[tool.bentoml.build.args]
-name = "deepseek-r1-671b"
-gpu_type = "nvidia-h200-141gb"
-tp = 8
-model_id = "deepseek-ai/DeepSeek-V3-0324"
-reasoning_parser = "deepseek_r1"
-tool_parser = "hermes"
-cli_args = [
-  "--trust-remote-code",
-]
-envs = [
-  { name = "HF_TOKEN" },
-]
-attn_backend = "FLASHMLA"
-
-[tool.bentoml.build.args.metadata]
-description = "DeepSeek R1 671B"
-provider = "DeepSeek"
-gpu_recommendation = "Nvidia GPUs with at least 141GBx8 VRAM (e.g. about 8 H200 GPUs)."
-
-[tool.bentoml.build.args.hf_generation_config]
-temperature = 0.6
-top_p = 0.95
 
 [tool.ruff]
 extend-include = [
@@ -72,6 +38,7 @@ ignore = [
   "RUF012",
   "ANN",
   "E722",
+  "G004",
 ]
 select = [
   "F",
