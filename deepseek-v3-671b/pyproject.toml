@@ -1,6 +1,6 @@
 [project]
 name = "deepseek-v3-671b"
-version = "1.4.22"
+version = "1.4.23"
 description = "Self-host LLMs with vLLM and BentoML"
 readme = "README.md"
 requires-python = ">=3.11"
