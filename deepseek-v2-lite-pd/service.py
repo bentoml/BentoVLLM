@@ -276,5 +276,6 @@ class Router:
         # Carry the headers so that runner-lb can route to the right service.
         client.get(f'{Prefiller.url}/health', headers={'Runner-Name': 'Prefiller'}),
         client.get(f'{Decoder.url}/health', headers={'Runner-Name': 'Decoder'}),
+        return_exceptions=True,
       )
-      return all(r.is_success for r in responses)
+      return all(not isinstance(r, BaseException) and r.is_success for r in responses)
