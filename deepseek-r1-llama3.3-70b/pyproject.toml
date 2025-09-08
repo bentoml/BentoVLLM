@@ -103,11 +103,3 @@ select = [
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
-
-[tool.ty.src]
-respect-ignore-files = true
-root = "./"
-
-[tool.ty.environment]
-python = "./.venv"
-python-version = "3.11"

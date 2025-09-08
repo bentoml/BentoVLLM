@@ -42,14 +42,15 @@ autotune = [
   24,
 ]
 post = [
-  "uv pip install -U openai",
-  "uv pip install --pre vllm==0.10.1+gptoss --extra-index-url https://wheels.vllm.ai/gpt-oss/ --extra-index-url https://download.pytorch.org/whl/nightly/cu128 --index-strategy unsafe-best-match",
+  "uv pip uninstall vllm",
+  "uv pip install -U openai lmcache nixl",
+  "uv pip install --pre vllm --extra-index-url https://wheels.vllm.ai/nightly/ --extra-index-url https://download.pytorch.org/whl/nightly/cu128 --index-strategy unsafe-best-match",
 ]
 exclude = [
   "original/**/*",
-  "metal",
+  "metal/**/*",
 ]
-attn_backend = "FLASH_ATTN"
+attn_backend = "TRITON_ATTN_VLLM_V1"
 skip_flashinfer = true
 cli_args = [
   "--chat-template",
@@ -109,11 +110,3 @@ select = [
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
-
-[tool.ty.src]
-respect-ignore-files = true
-root = "./"
-
-[tool.ty.environment]
-python = "./.venv"
-python-version = "3.11"

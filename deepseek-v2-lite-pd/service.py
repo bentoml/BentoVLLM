@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-import json, asyncio, logging, os, time, uuid, functools, typing as t
+import json, asyncio, logging, os, time, uuid, functools, enum, typing as t
+import bentoml, pydantic, httpx
+
 from collections.abc import Iterable
 from dataclasses import dataclass, field
-
-import bentoml, pydantic, httpx
 from fastapi import FastAPI, Request
 from fastapi.responses import StreamingResponse
 
@@ -16,18 +16,23 @@ T = t.TypeVar('T')
 DEFAULT_PING_SECONDS = 5
 logger = logging.getLogger('bentoml.service')
 
+class KVConnectorMapping(enum.StrEnum):
+  lmcache: str = "LMCacheConnectorV1"
+  p2p: str = "P2pNcclConnector"
+
 
 class BentoArgs(pydantic.BaseModel):
   num_prefill: int = 1
   num_decode: int = 1
   model_id: str = 'deepseek-ai/DeepSeek-V2-Lite-Chat'
+  kv_connector: KVConnectorMapping = pydantic.Field(default=KVConnectorMapping.lmcache)
 
 
 bento_args = bentoml.use_arguments(BentoArgs)
 
 
 @bentoml.service(
-  envs=[{'name': 'HF_TOKEN'}],
+    envs=[{'name': 'HF_TOKEN'}, {"name": "PYTHONHASHSEED", "value": "0"}, {"name": "UCX_TLS", "value": "cuda_ipc,cuda_copy,tcp"}],
   endpoints={'livez': '/health', 'readyz': '/health'},
   resources={'gpu': 1, 'gpu_type': 'nvidia-h100-80gb'},
   extra_ports=[DECODE_KV_PORT],
@@ -42,7 +47,7 @@ class Decoder:
     http_port = DECODE_PORT + worker_index - 1
     kv_port = DECODE_KV_PORT + worker_index - 1
     transfer_config = {
-      'kv_connector': 'P2pNcclConnector',
+      'kv_connector': bento_args.kv_connector,
       'kv_role': 'kv_consumer',
       'kv_buffer_size': '8e9',
       'kv_port': str(kv_port),
@@ -130,7 +135,7 @@ def random_uuid() -> str:
   return str(uuid.uuid4().hex)
 
 
-async def forward_request(url: str, json_data: dict[str, Any], request_id: str):
+async def forward_request(url: str, json_data: dict[str, t.Any], request_id: str):
   async with httpx.AsyncClient(timeout=None) as client:
     headers = {'Authorization': f'Bearer {os.environ.get("OPENAI_API_KEY")}', 'X-Request-Id': request_id}
     async with client.stream('POST', url, json=json_data, headers=headers) as resp:
@@ -155,20 +160,17 @@ class ServiceDiscovery:
 
   if IS_BENTOCLOUD:
 
-    def enumerator(self, iterable: Iterable[T]) -> Iterator[tuple[int, T]]:
+    def enumerator(self, iterable: Iterable[T]) -> t.Iterator[tuple[int, T]]:
       # Do not need port offset for bencloud.
       for x in iterable:
         yield 0, x
 
   else:
 
-    def enumerator(self, iterable: Iterable[T]) -> Iterator[tuple[int, T]]:
+    def enumerator(self, iterable: Iterable[T]) -> t.Iterator[tuple[int, T]]:
       return enumerate(iterable)
 
   async def _update_service_info(self) -> None:
-    from .decode import Decoder
-    from .prefill import Prefiller
-
     if self.next_check > (current_time := time.time()) and self.prefill_instances and not self.decode_instances:
       return
     async with self._lock:

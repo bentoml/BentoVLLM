@@ -1,37 +1,17 @@
 from __future__ import annotations
 
-import collections.abc
-import contextlib
-import json
-import logging
-import os
-import typing
+import contextlib, json, logging, os, typing
+import bentoml, fastapi, pydantic, httpx
 
-import bentoml
-import fastapi
-import pydantic
-from starlette.responses import RedirectResponse
+from starlette.responses import JSONResponse
 
 logger = logging.getLogger(__name__)
 
 if typing.TYPE_CHECKING:
-  from starlette.requests import Request
-  from starlette.responses import Response
 
   Jsonable = list[str] | list[dict[str, str]] | None
 else:
   Jsonable = typing.Any
-
-
-async def probes(
-  request: Request, call_next: typing.Callable[[Request], collections.abc.Coroutine[typing.Any, typing.Any, Response]]
-):
-  path = request.url.path
-  if path == '/livez':
-    return RedirectResponse(url='/health', status_code=301)
-  if path == '/readyz':
-    return RedirectResponse(url='/ping', status_code=301)
-  return await call_next(request)
 
 
 class BentoArgs(pydantic.BaseModel):
@@ -86,8 +66,6 @@ class BentoArgs(pydantic.BaseModel):
       '-tp',
       f'{self.tp}',
       *self.cli_args,
-      # '--middleware',
-      # 'service.probes',
     ]
     if self.kv_transfer_config:
       default.extend(['--kv-transfer-config', json.dumps(self.kv_transfer_config)])
@@ -171,7 +149,18 @@ hf = bentoml.models.HuggingFaceModel(bento_args.runtime_model_id, exclude=bento_
 openai_api_app = fastapi.FastAPI()
 
 
+rewrite = fastapi.FastAPI()
+@rewrite.get('/v1/models')
+async def wrap_list_models():
+  async with httpx.AsyncClient() as client:
+    resp = await client.get(f'http://{LLM.url}/v1/models')
+    results = resp.json()
+    results['data'][0]['id'] = bento_args.model_id
+    return JSONResponse(results, media_type="application/json")
+
+
 @bentoml.asgi_app(openai_api_app, path='/v1')
+@bentoml.asgi_app(rewrite, path='/')
 @bentoml.service(
   name=bento_args.name,
   envs=[

@@ -77,6 +77,7 @@ def scaffold_model(
   data['project']['name'] = model_name
   data['project']['version'] = importlib.metadata.version('bentoml')
   data['tool']['bentoml']['build'] = bento_yaml
+  data['tool'].pop('ty', None)
 
   with pyproject_path.open('wb') as f:
     tomli_w.dump(data, f, indent=2)
