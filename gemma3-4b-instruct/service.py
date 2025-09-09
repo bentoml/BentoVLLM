@@ -63,9 +63,11 @@ class BentoArgs(pydantic.BaseModel):
 
   @property
   def additional_cli_args(self) -> list[str]:
+    import torch
+
     default = [
       '-tp',
-      f'{self.tp}',
+      f'{torch.cuda.device_count()}',
       *self.cli_args,
     ]
     if self.kv_transfer_config:
