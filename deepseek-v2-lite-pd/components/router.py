@@ -11,7 +11,7 @@ from dataclasses import dataclass, field
 from fastapi import FastAPI, Request
 from fastapi.responses import StreamingResponse
 
-from .config import IS_BENTOCLOUD
+from .config import IS_BENTOCLOUD, NIXL_PEER_ALLOC_PORT, NIXL_PEER_INIT_PORT
 
 T = t.TypeVar('T')
 DEFAULT_PING_SECONDS = 5
@@ -44,9 +44,19 @@ async def forward_request(url: str, json_data: dict[str, t.Any], request_id: str
         yield chunk
 
 
+async def send_request(url: str, json_data: dict[str, t.Any], request_id: str):
+  async with httpx.AsyncClient(timeout=None) as client:
+    headers = {'Authorization': f'Bearer {os.environ.get("OPENAI_API_KEY")}', 'X-Request-Id': request_id}
+    response = await client.post(url, json=json_data, headers=headers)
+    response.raise_for_status()
+    return response
+
+
 @dataclass(frozen=True)
 class ClientInfo:
   http_address: str
+  init_port: list[int] | None = None
+  alloc_port: list[int] | None = None
 
 
 @dataclass
@@ -84,9 +94,14 @@ class ServiceDiscovery:
         ClientInfo(f'{host}:{port + i}')
         for i, (host, port) in self.enumerator([_fix_host(host) for host in await Prefiller.get_hosts()])
       ]
+      hosts = await Decoder.get_hosts()
       self.decode_instances = [
-        ClientInfo(f'{host}:{port + i}')
-        for i, (host, port) in self.enumerator([_fix_host(host) for host in await Decoder.get_hosts()])
+        ClientInfo(
+          f'{host}:{port + i}',
+          init_port=[NIXL_PEER_INIT_PORT + a for a, _ in enumerate(hosts)],
+          alloc_port=[NIXL_PEER_ALLOC_PORT + a for a, _ in enumerate(hosts)],
+        )
+        for i, (host, port) in self.enumerator([_fix_host(host) for host in hosts])
       ]
       self.next_check = current_time + DEFAULT_PING_SECONDS
 
@@ -106,40 +121,52 @@ sd = ServiceDiscovery()
 @app.post('/v1/completions')
 @app.post('/v1/chat/completions')
 async def handle_request(request: Request):
-  original_request_data = await request.json()
+  req_data = await request.json()
 
-  prefill_request = original_request_data.copy()
+  org_max_tokens = req_data['max_tokens']
+  prefill_request = req_data.copy()
+
   # change max_tokens = 1 to let it only do prefill
   prefill_request['max_tokens'] = 1
   if 'max_completion_tokens' in prefill_request:
     prefill_request['max_completion_tokens'] = 1
   prefill_request['stream'] = False
-  prefill_request.pop('stream_options', None)
+  stream_options = prefill_request.pop('stream_options', None)
 
   prefill_client, decode_client = await sd.select_pair()
   logger.info(
-    f'handle_request count: {sd.count}, [HTTP:{prefill_client.http_address} 👉 [HTTP:{decode_client.http_address}'
+    f'handle_request count: {sd.count}, [HTTP:{prefill_client.http_address}] 👉 [HTTP:{decode_client.http_address}]'
   )
 
   request_id = random_uuid()
-  # disagg_spec = {
-  #   "req_id": request_id,
-  #   "receiver_host": decode_client.host,
-  #   "receiver_init_port": decode_client.init_port,
-  #   "receiver_alloc_port": decode_client.alloc_port,
-  # }
+  disagg_spec = {
+    'req_id': request_id,
+    'receiver_host': decode_client.http_address.split(':')[0],
+    'receiver_init_port': decode_client.init_port,
+    'receiver_alloc_port': decode_client.alloc_port,
+  }
+  prefill_request['kv_transfer_params'] = {'return_first_tok': True, 'disagg_spec': disagg_spec}
 
   # finish prefill
-  async for _ in forward_request(
+  prefill_output = await send_request(
     f'http://{prefill_client.http_address}{request.url.path}', prefill_request, request_id
-  ):
-    pass
-  # return decode
-  generator = forward_request(
-    f'http://{decode_client.http_address}{request.url.path}', original_request_data, request_id
   )
+  prefill_output = prefill_output.json()
+  print(prefill_output, prefill_request)
+  # TODO: wait til kv sync
 
-  media_type = 'text/event-stream' if original_request_data.get('stream', False) else 'application/json'
+  req_data['max_tokens'] = org_max_tokens - 1
+  req_data['prompt'].append(prefill_output['kv_transfer_params']['first_tok'])
+  req_data.pop('kv_transfer_params')
+
+  req_data['stream'] = True
+  if stream_options is not None:
+    req_data['stream_options'] = stream_options
+
+  # return decode
+  generator = forward_request(f'http://{decode_client.http_address}{request.url.path}', req_data, request_id)
+
+  media_type = 'text/event-stream' if req_data.get('stream', False) else 'application/json'
 
   return StreamingResponse(generator, media_type=media_type)
 
