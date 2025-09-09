@@ -4,7 +4,16 @@ import json, os
 
 import bentoml, yaml
 
-from .config import DECODE_KV_PORT, ENVS, WORKING_ROOT, NIXL_PEER_INIT_PORT, NIXL_PEER_ALLOC_PORT, BentoArgs
+from .config import (
+  DECODE_PORT,
+  ENVS,
+  WORKING_ROOT,
+  NIXL_PEER_INIT_PORT,
+  NIXL_PEER_ALLOC_PORT,
+  BentoArgs,
+  get_aligned_bytes,
+  CHUNK_SIZE,
+)
 
 bento_args = bentoml.use_arguments(BentoArgs)
 
@@ -13,7 +22,7 @@ bento_args = bentoml.use_arguments(BentoArgs)
   envs=ENVS,
   endpoints={'livez': '/health', 'readyz': '/health'},
   resources={'gpu': 1, 'gpu_type': 'nvidia-h100-80gb'},
-  extra_ports=[DECODE_KV_PORT, NIXL_PEER_INIT_PORT, NIXL_PEER_ALLOC_PORT],
+  extra_ports=[NIXL_PEER_INIT_PORT, NIXL_PEER_ALLOC_PORT],
   workers=bento_args.num_decode,
 )
 class Decoder:
@@ -25,6 +34,7 @@ class Decoder:
     with (WORKING_ROOT / f'decoder-{worker_index}.yaml').open('w') as f:
       yaml.dump(
         {
+          'chunk_size': CHUNK_SIZE,
           'local_cpu': False,
           'max_local_cpu_size': 0,
           'enable_nixl': True,
@@ -33,7 +43,7 @@ class Decoder:
           'nixl_peer_host': 'localhost',
           'nixl_peer_init_port': nixl_decode_init_port,
           'nixl_peer_alloc_port': nixl_peer_alloc_port,
-          'nixl_buffer_size': 2147483648,  # 2GB
+          'nixl_buffer_size': get_aligned_bytes(bento_args, self.model) * 256,  # 2GB
           'nixl_buffer_device': 'cuda',
           'nixl_backends': ['UCX'],
         },
@@ -42,6 +52,7 @@ class Decoder:
 
   def __command__(self) -> list[str]:
     worker_index, *_ = self.get_port_config()
+    http_port = DECODE_PORT + worker_index - 1
     os.environ['CUDA_VISIBLE_DEVICES'] = str(worker_index - 1)
     os.environ['LMCACHE_CONFIG_FILE'] = (WORKING_ROOT / f'decoder-{worker_index}.yaml').__fspath__()
     transfer_config = {
@@ -65,9 +76,17 @@ class Decoder:
       bento_args.model_id,
       '--port',
       str(http_port),
+      '--tensor-parallel-size',
+      '1',
       '--no-enable-prefix-caching',
       '--max-num-batched-tokens',
-      '16384',
+      '10000',
+      '--max-model-len',
+      '10000',
+      '--max-num-seqs',
+      '256',
+      '--gpu-memory-utilization',
+      '0.7',
       '--kv-transfer-config',
       json.dumps(transfer_config),
       '--enable-auto-tool-choice',

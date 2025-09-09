@@ -1,6 +1,6 @@
 [project]
 name = "deepseek-v2-lite-chat-pd"
-version = "1.4.21"
+version = "1.4.23"
 description = "Self-host LLMs with vLLM and BentoML"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -17,8 +17,16 @@ Twitter = "https://twitter.com/bentomlai"
 Tracker = "https://github.com/bentoml/OpenLLM/issues"
 
 [tool.bentoml.build]
-service = "service.py:LLM"
-include = ["*.py", "*.toml", "*.txt", "*.md", "templates/*", "config/*"]
+service = "service.py:Router"
+include = [
+  "*.py",
+  "*.toml",
+  "*.txt",
+  "*.md",
+  "templates/*",
+  "config/*",
+  "components/*",
+]
 
 [tool.ruff]
 extend-include = ["*.ipynb"]
@@ -59,11 +67,3 @@ select = [
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
-
-[tool.ty.src]
-respect-ignore-files = true
-root = "./"
-
-[tool.ty.environment]
-python = "./.venv"
-python-version = "3.11"

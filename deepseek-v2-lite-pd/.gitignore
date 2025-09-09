@@ -166,3 +166,5 @@ successful_*.txt
 bentofile.yaml
 cmd.txt
 configs/
+decoder-*.yaml
+prefiller-*.yaml
