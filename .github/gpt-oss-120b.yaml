@@ -9,9 +9,8 @@ args:
   model_id: openai/gpt-oss-120b
   autotune: [1,2,4,8,16,24]
   post:
-    - uv pip uninstall vllm
     - uv pip install -U openai lmcache nixl
-    - uv pip install --pre vllm --extra-index-url https://wheels.vllm.ai/nightly/ --extra-index-url https://download.pytorch.org/whl/nightly/cu128 --index-strategy unsafe-best-match
+    - uv pip install -U --pre vllm --extra-index-url https://wheels.vllm.ai/nightly/ --torch-backend=cu128 --extra-index-url https://download.pytorch.org/whl/nightly/cu128 --index-strategy unsafe-best-match
   exclude:
     - "original/**/*"
     - "metal/**/*"
