@@ -19,6 +19,7 @@ args:
   skip_flashinfer: true
   nightly: true
   tool_parser: openai
+  reasoning_parser: openai_gptoss
   cli_args:
     - '--chat-template'
     - 'templates/tool_gpt_oss.jinja'

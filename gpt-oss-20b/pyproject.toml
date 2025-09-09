@@ -53,6 +53,7 @@ exclude = [
 attn_backend = "TRITON_ATTN_VLLM_V1"
 skip_flashinfer = true
 nightly = true
+reasoning_parser = "openai_gptoss"
 tool_parser = "openai"
 cli_args = [
   "--chat-template",
