@@ -7,4 +7,6 @@ fastapi
 kernels
 msgpack
 pyzmq
+nixl
+lmcache
 mistral_common[opencv]

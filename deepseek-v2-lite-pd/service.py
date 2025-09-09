@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import json, asyncio, logging, os, time, uuid, functools, enum, typing as t
-import bentoml, pydantic, httpx
+import json, asyncio, logging, os, time, uuid, functools, typing as t
+import bentoml, httpx
 
 from collections.abc import Iterable
 from dataclasses import dataclass, field
@@ -16,62 +16,8 @@ T = t.TypeVar('T')
 DEFAULT_PING_SECONDS = 5
 logger = logging.getLogger('bentoml.service')
 
-class KVConnectorMapping(enum.StrEnum):
-  lmcache: str = "LMCacheConnectorV1"
-  p2p: str = "P2pNcclConnector"
-
-
-class BentoArgs(pydantic.BaseModel):
-  num_prefill: int = 1
-  num_decode: int = 1
-  model_id: str = 'deepseek-ai/DeepSeek-V2-Lite-Chat'
-  kv_connector: KVConnectorMapping = pydantic.Field(default=KVConnectorMapping.lmcache)
-
 
 bento_args = bentoml.use_arguments(BentoArgs)
-
-
-@bentoml.service(
-    envs=[{'name': 'HF_TOKEN'}, {"name": "PYTHONHASHSEED", "value": "0"}, {"name": "UCX_TLS", "value": "cuda_ipc,cuda_copy,tcp"}],
-  endpoints={'livez': '/health', 'readyz': '/health'},
-  resources={'gpu': 1, 'gpu_type': 'nvidia-h100-80gb'},
-  extra_ports=[DECODE_KV_PORT],
-  workers=bento_args.num_decode,
-)
-class Decoder:
-  model = bentoml.models.HuggingFaceModel(bento_args.model_id, exclude=['*.pth', '*.pt', 'original/**/*'])
-
-  def __command__(self) -> list[str]:
-    worker_index = bentoml.server_context.worker_index or 1
-    os.environ['CUDA_VISIBLE_DEVICES'] = str(worker_index - 1)
-    http_port = DECODE_PORT + worker_index - 1
-    kv_port = DECODE_KV_PORT + worker_index - 1
-    transfer_config = {
-      'kv_connector': bento_args.kv_connector,
-      'kv_role': 'kv_consumer',
-      'kv_buffer_size': '8e9',
-      'kv_port': str(kv_port),
-      'kv_connector_extra_config': {'http_port': str(http_port), 'send_type': 'PUT_ASYNC', 'nccl_num_channels': '16'},
-    }
-    return [
-      'vllm',
-      'serve',
-      self.model,
-      '--no-use-tqdm-on-load',
-      '--disable-uvicorn-access-log',
-      '--disable-fastapi-docs',
-      '--served-model-name',
-      bento_args.model_id,
-      '--port',
-      str(http_port),
-      '--max-num-batched-tokens',
-      '16384',
-      '--kv-transfer-config',
-      json.dumps(transfer_config),
-      '--enable-auto-tool-choice',
-      '--tool-call-parser',
-      'hermes',
-    ]
 
 
 @bentoml.service(
