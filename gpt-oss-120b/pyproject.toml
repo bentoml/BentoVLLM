@@ -52,6 +52,8 @@ exclude = [
 ]
 attn_backend = "TRITON_ATTN_VLLM_V1"
 skip_flashinfer = true
+nightly = true
+tool_parser = "openai"
 cli_args = [
   "--chat-template",
   "templates/tool_gpt_oss.jinja",

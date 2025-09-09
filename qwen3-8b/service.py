@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import contextlib, json, logging, os, typing
-import bentoml, fastapi, pydantic, httpx
+import bentoml, fastapi, pydantic
 
 from starlette.responses import JSONResponse
 
@@ -19,6 +19,7 @@ class BentoArgs(pydantic.BaseModel):
   v1: bool = True
   attn_backend: str = 'FLASHINFER'
   skip_flashinfer: bool = False
+  nightly: bool = False
   piecewise_cudagraph: bool = True
   reasoning_parser: str | None = None
   tool_parser: str | None = None
@@ -145,22 +146,14 @@ if bento_args.gpu_type.startswith('amd'):
   image.run('groupadd -g 992 -o rocm && usermod -aG rocm bentoml')
   # Remove the vllm and torch deps to reuse the pre-installed ones in the base image
   image.run('uv pip uninstall vllm torch torchvision torchaudio triton')
+if bento_args.nightly:
+  image.run('uv pip uninstall vllm')
+  image.run('uv pip install -U vllm --torch-backend=auto --extra-index-url https://wheels.vllm.ai/nightly')
 hf = bentoml.models.HuggingFaceModel(bento_args.runtime_model_id, exclude=bento_args.exclude)
 openai_api_app = fastapi.FastAPI()
 
 
-rewrite = fastapi.FastAPI()
-@rewrite.get('/v1/models')
-async def wrap_list_models():
-  async with httpx.AsyncClient() as client:
-    resp = await client.get(f'http://{LLM.url}/v1/models')
-    results = resp.json()
-    results['data'][0]['id'] = bento_args.model_id
-    return JSONResponse(results, media_type="application/json")
-
-
 @bentoml.asgi_app(openai_api_app, path='/v1')
-@bentoml.asgi_app(rewrite, path='/')
 @bentoml.service(
   name=bento_args.name,
   envs=[
@@ -202,10 +195,17 @@ class LLM:
     args.served_model_name = [bento_args.model_id]
 
     router = fastapi.APIRouter(lifespan=vllm_api_server.lifespan)
+
+    @router.get('/models')
+    async def wrap_list_models(request: fastapi.Request):
+      resp = await vllm_api_server.show_available_models(request)
+      results = json.loads(resp.body.decode('utf-8'))
+      results['data'][0]['id'] = bento_args.model_id
+      return JSONResponse(results, media_type="application/json")
+
     OPENAI_ENDPOINTS = [
       ['/chat/completions', vllm_api_server.create_chat_completion, ['POST']],
       ['/responses', vllm_api_server.create_responses, ['POST']],
-      ['/models', vllm_api_server.show_available_models, ['GET']],
       ['/health', vllm_api_server.health, ['GET']],
       ['/ping', vllm_api_server.ping, ['GET']],
     ]
