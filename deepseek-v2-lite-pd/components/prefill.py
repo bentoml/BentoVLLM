@@ -14,7 +14,7 @@ bento_args = bentoml.use_arguments(BentoArgs)
   endpoints={'livez': '/health', 'readyz': '/health'},
   resources={'gpu': 1, 'gpu_type': 'nvidia-h100-80gb'},
   extra_ports=[],
-  workers=bento_args.num_decode,
+  workers=bento_args.num_prefill,
 )
 class Prefiller:
   model = bentoml.models.HuggingFaceModel(bento_args.model_id, exclude=['*.pth', '*.pt', 'original/**/*'])

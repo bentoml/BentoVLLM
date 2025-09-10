@@ -44,25 +44,25 @@ async def forward_request(url: str, json_data: dict[str, t.Any], request_id: str
         yield chunk
 
 
-async def send_request(url: str, json_data: dict[str, t.Any], request_id: str):
-  async with httpx.AsyncClient(timeout=None) as client:
-    headers = {'Authorization': f'Bearer {os.environ.get("OPENAI_API_KEY")}', 'X-Request-Id': request_id}
-    response = await client.post(url, json=json_data, headers=headers)
-    response.raise_for_status()
-    return response
-
-
 @dataclass(frozen=True)
 class ClientInfo:
   http_address: str
-  init_port: list[int] | None = None
-  alloc_port: list[int] | None = None
+  # Per-instance NiXL peer ports (single port per paired instance)
+  init_port: int | None = None
+  alloc_port: int | None = None
+
+
+@dataclass(frozen=True)
+class InstancePair:
+  """Represents a paired prefill-decode instance for LMCache + NIXL"""
+  prefill: ClientInfo
+  decode: ClientInfo
+  pair_id: int  # Worker index for this pair
 
 
 @dataclass
 class ServiceDiscovery:
-  prefill_instances: list[ClientInfo] = field(default_factory=list)
-  decode_instances: list[ClientInfo] = field(default_factory=list)
+  instance_pairs: list[InstancePair] = field(default_factory=list)
   next_check: float = 0
   count: int = 0
   _lock: asyncio.Lock = field(default_factory=asyncio.Lock)
@@ -83,36 +83,70 @@ class ServiceDiscovery:
     from .decode import Decoder
     from .prefill import Prefiller
 
-    if self.next_check > (current_time := time.time()) and self.prefill_instances and not self.decode_instances:
+    if self.next_check > (current_time := time.time()) and self.instance_pairs:
       return
+
     async with self._lock:
       # Check again after acquiring the lock
-      if self.next_check > current_time and self.prefill_instances and not self.decode_instances:
+      if self.next_check > current_time and self.instance_pairs:
         return
 
-      self.prefill_instances = [
+      # Get raw host lists
+      prefill_hosts = await Prefiller.get_hosts()
+      decode_hosts = await Decoder.get_hosts()
+
+      # Create paired instances - CRITICAL: maintain 1:1 mapping for LMCache + NIXL
+      prefill_clients = [
         ClientInfo(f'{host}:{port + i}')
-        for i, (host, port) in self.enumerator([_fix_host(host) for host in await Prefiller.get_hosts()])
+        for i, (host, port) in self.enumerator([_fix_host(host) for host in prefill_hosts])
       ]
-      hosts = await Decoder.get_hosts()
-      self.decode_instances = [
+      decode_clients = [
         ClientInfo(
           f'{host}:{port + i}',
-          init_port=[NIXL_PEER_INIT_PORT + a for a, _ in enumerate(hosts)],
-          alloc_port=[NIXL_PEER_ALLOC_PORT + a for a, _ in enumerate(hosts)],
+          init_port=NIXL_PEER_INIT_PORT + i,
+          alloc_port=NIXL_PEER_ALLOC_PORT + i,
         )
-        for i, (host, port) in self.enumerator([_fix_host(host) for host in hosts])
+        for i, (host, port) in self.enumerator([_fix_host(host) for host in decode_hosts])
       ]
+
+      # Ensure equal number of instances for proper pairing
+      min_instances = min(len(prefill_clients), len(decode_clients))
+      if len(prefill_clients) != len(decode_clients):
+        logger.warning(
+          f'Mismatched instance counts: {len(prefill_clients)} prefill, {len(decode_clients)} decode. '
+          f'Using first {min_instances} of each for proper pairing.'
+        )
+
+      # Create 1:1 paired instances for LMCache + NIXL communication
+      self.instance_pairs = [
+        InstancePair(
+          prefill=prefill_clients[i],
+          decode=decode_clients[i],
+          pair_id=i + 1  # 1-based for matching worker configs
+        )
+        for i in range(min_instances)
+      ]
+
+      logger.info(f'Updated {len(self.instance_pairs)} paired instances for LMCache + NIXL')
       self.next_check = current_time + DEFAULT_PING_SECONDS
 
-  async def select_pair(self) -> tuple[ClientInfo, ClientInfo]:
+  async def select_pair(self) -> InstancePair:
+    """Select a paired prefill-decode instance for LMCache + NIXL coordination"""
     await self._update_service_info()
-    selected = (
-      self.prefill_instances[self.count % len(self.prefill_instances)],
-      self.decode_instances[self.count % len(self.decode_instances)],
-    )
+
+    if not self.instance_pairs:
+      raise RuntimeError('No paired instances available')
+
+    # Round-robin through paired instances (not independent selection)
+    selected_pair = self.instance_pairs[self.count % len(self.instance_pairs)]
     self.count += 1
-    return selected
+
+    logger.info(
+      f'Selected pair {selected_pair.pair_id}: '
+      f'prefill={selected_pair.prefill.http_address} → decode={selected_pair.decode.http_address}'
+    )
+
+    return selected_pair
 
 
 sd = ServiceDiscovery()
@@ -121,61 +155,66 @@ sd = ServiceDiscovery()
 @app.post('/v1/completions')
 @app.post('/v1/chat/completions')
 async def handle_request(request: Request):
-  req_data = await request.json()
+  original_request_data = await request.json()
 
-  org_max_tokens = req_data['max_tokens']
-  prefill_request = req_data.copy()
-
+  prefill_request = original_request_data.copy()
+  max_tokens = original_request_data.get('max_tokens', 128)
   # change max_tokens = 1 to let it only do prefill
   prefill_request['max_tokens'] = 1
   if 'max_completion_tokens' in prefill_request:
     prefill_request['max_completion_tokens'] = 1
   prefill_request['stream'] = False
-  stream_options = prefill_request.pop('stream_options', None)
+  prefill_request.pop('stream_options', None)
 
-  prefill_client, decode_client = await sd.select_pair()
-  logger.info(
-    f'handle_request count: {sd.count}, [HTTP:{prefill_client.http_address}] 👉 [HTTP:{decode_client.http_address}]'
-  )
+  selected_pair = await sd.select_pair()
 
+  # Generate a consistent request_id for KV cache correlation
   request_id = random_uuid()
   disagg_spec = {
     'req_id': request_id,
-    'receiver_host': decode_client.http_address.split(':')[0],
-    'receiver_init_port': decode_client.init_port,
-    'receiver_alloc_port': decode_client.alloc_port,
+    'receiver_host': selected_pair.decode.http_address.split(':')[0],
+    'receiver_init_port': selected_pair.decode.init_port,
+    'receiver_alloc_port': selected_pair.decode.alloc_port,
   }
   prefill_request['kv_transfer_params'] = {'return_first_tok': True, 'disagg_spec': disagg_spec}
 
-  # finish prefill
-  prefill_output = await send_request(
-    f'http://{prefill_client.http_address}{request.url.path}', prefill_request, request_id
+  logger.info(
+    f'Processing request {request_id} with pair {selected_pair.pair_id}: prefill={selected_pair.prefill.http_address} → decode={selected_pair.decode.http_address}'
   )
-  prefill_output = prefill_output.json()
-  print(prefill_output, prefill_request)
-  # TODO: wait til kv sync
 
-  req_data['max_tokens'] = org_max_tokens - 1
-  req_data['prompt'].append(prefill_output['kv_transfer_params']['first_tok'])
-  req_data.pop('kv_transfer_params')
+  # Step 1: Send prefill request to paired prefiller
+  async for i in forward_request(
+    f'http://{selected_pair.prefill.http_address}{request.url.path}',
+    prefill_request,
+    request_id
+  ):
+    print(i)
+    # exhaust the response to completion (no-op per chunk)
+    pass
 
-  req_data['stream'] = True
-  if stream_options is not None:
-    req_data['stream_options'] = stream_options
+  # Step 2: Send decode request to paired decoder (KV cache transferred via LMCache + NIXL)
+  # Include kv_transfer_params with matching req_id so decoder can consume transferred KV
+  decode_request = original_request_data.copy()
+  decode_request.setdefault('kv_transfer_params', {})
+  decode_request['max_tokens'] = max_tokens - 1
+  decode_request['kv_transfer_params'].setdefault('disagg_spec', {})
+  decode_request['kv_transfer_params']['disagg_spec']['req_id'] = request_id
 
-  # return decode
-  generator = forward_request(f'http://{decode_client.http_address}{request.url.path}', req_data, request_id)
+  generator = forward_request(
+    f'http://{selected_pair.decode.http_address}{request.url.path}',
+    decode_request,
+    request_id
+  )
 
-  media_type = 'text/event-stream' if req_data.get('stream', False) else 'application/json'
-
+  media_type = 'text/event-stream' if original_request_data.get('stream', False) else 'application/json'
   return StreamingResponse(generator, media_type=media_type)
 
 
 @app.get('/v1/models')
 async def list_models():
-  prefill_client, _ = await sd.select_pair()
+  selected_pair = await sd.select_pair()
   async with httpx.AsyncClient() as client:
-    response = await client.get(f'http://{prefill_client.http_address}/v1/models')
+    response = await client.get(f'http://{selected_pair.prefill.http_address}/v1/models')
     return response.json()
 
 

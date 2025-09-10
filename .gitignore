@@ -165,3 +165,6 @@ uv.lock
 successful_*.txt
 bentofile.yaml
 cmd.txt
+node_modules
+package.json
+pnpm-lock.yaml
