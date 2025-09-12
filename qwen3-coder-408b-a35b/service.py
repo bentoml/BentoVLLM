@@ -3,7 +3,6 @@ from __future__ import annotations
 import contextlib, json, logging, os, typing
 import bentoml, fastapi, pydantic
 
-from starlette.responses import JSONResponse
 
 logger = logging.getLogger(__name__)
 
@@ -192,23 +191,18 @@ class LLM:
       '--disable-uvicorn-access-log',
       '--disable-fastapi-docs',
       *bento_args.additional_cli_args,
+      '--served-model-name',
+      bento_args.model_id,
     ])
     args.model = self.hf
-    args.served_model_name = [bento_args.model_id]
 
     router = fastapi.APIRouter(lifespan=vllm_api_server.lifespan)
-
-    @router.get('/models')
-    async def wrap_list_models(request: fastapi.Request):
-      resp = await vllm_api_server.show_available_models(request)
-      results = json.loads(resp.body.decode('utf-8'))
-      results['data'][0]['id'] = bento_args.model_id
-      return JSONResponse(results, media_type="application/json")
 
     OPENAI_ENDPOINTS = [
       ['/chat/completions', vllm_api_server.create_chat_completion, ['POST']],
       ['/responses', vllm_api_server.create_responses, ['POST']],
       ['/health', vllm_api_server.health, ['GET']],
+      ['/models', vllm_api_server.show_available_models, ['GET']],
       ['/ping', vllm_api_server.ping, ['GET']],
     ]
 

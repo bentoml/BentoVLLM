@@ -1,70 +1,35 @@
-from __future__ import annotations
+import json
+import os
 
-import json, os
+import bentoml
 
-import bentoml, yaml
-
-from .config import (
-  DECODE_PORT,
-  ENVS,
-  WORKING_ROOT,
-  NIXL_PEER_INIT_PORT,
-  NIXL_PEER_ALLOC_PORT,
-  BentoArgs,
-  get_aligned_bytes,
-  CHUNK_SIZE,
-)
+from .config import DECODE_KV_PORT, DECODE_PORT, MODEL_ID, BentoArgs
 
 bento_args = bentoml.use_arguments(BentoArgs)
 
 
 @bentoml.service(
-  envs=ENVS,
+  envs=[{'name': 'HF_TOKEN'}],
   endpoints={'livez': '/health', 'readyz': '/health'},
   resources={'gpu': 1, 'gpu_type': 'nvidia-h100-80gb'},
-  extra_ports=[NIXL_PEER_INIT_PORT, NIXL_PEER_ALLOC_PORT],
+  extra_ports=[DECODE_KV_PORT],
   workers=bento_args.num_decode,
 )
 class Decoder:
-  model = bentoml.models.HuggingFaceModel(bento_args.model_id, exclude=['*.pth', '*.pt', 'original/**/*'])
-
-  @bentoml.on_startup
-  def setup_config(self):
-    worker_index, nixl_decode_init_port, nixl_peer_alloc_port = self.get_port_config()
-    with (WORKING_ROOT / f'decoder-{worker_index}.yaml').open('w') as f:
-      yaml.dump(
-        {
-          'chunk_size': CHUNK_SIZE,
-          'local_cpu': False,
-          'max_local_cpu_size': 0,
-          'enable_nixl': True,
-          'enable_xpyd': True,
-          'nixl_role': 'receiver',
-          'nixl_peer_host': 'localhost',
-          'nixl_peer_init_port': nixl_decode_init_port,
-          'nixl_peer_alloc_port': nixl_peer_alloc_port,
-          'nixl_buffer_size': get_aligned_bytes(bento_args, self.model) * 256,  # 2GB
-          'nixl_buffer_device': 'cuda',
-          'nixl_backends': ['UCX'],
-        },
-        stream=f,
-      )
+  model = bentoml.models.HuggingFaceModel(MODEL_ID, exclude=['*.pth', '*.pt', 'original/**/*'])
 
   def __command__(self) -> list[str]:
-    worker_index, *_ = self.get_port_config()
-    http_port = DECODE_PORT + worker_index - 1
+    worker_index = bentoml.server_context.worker_index or 1
     os.environ['CUDA_VISIBLE_DEVICES'] = str(worker_index - 1)
-    os.environ['LMCACHE_CONFIG_FILE'] = (WORKING_ROOT / f'decoder-{worker_index}.yaml').__fspath__()
+    http_port = DECODE_PORT + worker_index - 1
+    kv_port = DECODE_KV_PORT + worker_index - 1
     transfer_config = {
-      'kv_connector': bento_args.kv_connector,
+      'kv_connector': 'P2pNcclConnector',
       'kv_role': 'kv_consumer',
-      'kv_connector_extra_config': {
-        'discard_partial_chunks': False,
-        'lmcache_rpc_port': f'consumer{worker_index}',
-        'skip_last_n_tokens': 1,
-      },
+      'kv_buffer_size': '8e9',
+      'kv_port': str(kv_port),
+      'kv_connector_extra_config': {'http_port': str(http_port), 'send_type': 'PUT_ASYNC', 'nccl_num_channels': '16'},
     }
-
     return [
       'vllm',
       'serve',
@@ -73,30 +38,21 @@ class Decoder:
       '--disable-uvicorn-access-log',
       '--disable-fastapi-docs',
       '--served-model-name',
-      bento_args.model_id,
-      '--port',
-      str(http_port),
-      '--tensor-parallel-size',
-      '1',
+      MODEL_ID,
       '--no-enable-prefix-caching',
       '--max-num-batched-tokens',
       '10000',
       '--max-model-len',
       '10000',
-      '--max-num-seqs',
-      '256',
-      '--gpu-memory-utilization',
-      '0.7',
-      '--kv-transfer-config',
-      json.dumps(transfer_config),
+      '--tensor-parallel-size',
+      '1',
+      '--port',
+      str(http_port),
+      '--max-num-batched-tokens',
+      '16384',
       '--enable-auto-tool-choice',
       '--tool-call-parser',
       'hermes',
+      '--kv-transfer-config',
+      json.dumps(transfer_config),
     ]
-
-  @staticmethod
-  def get_port_config() -> tuple[int, int, int]:
-    worker_index = bentoml.server_context.worker_index or 1
-    nixl_peer_init_port = NIXL_PEER_INIT_PORT + worker_index - 1
-    nixl_peer_alloc_port = NIXL_PEER_ALLOC_PORT + worker_index - 1
-    return worker_index, nixl_peer_init_port, nixl_peer_alloc_port

@@ -2,23 +2,28 @@
 # SPDX-FileCopyrightText: Copyright contributors to the vLLM project
 from __future__ import annotations
 
-import asyncio, logging, os, functools, time, uuid, typing as t
-import httpx
-
-from collections.abc import Iterable, Iterator
+import asyncio
+import logging
+import os
+import time
+import uuid
+from collections.abc import Iterable
 from dataclasses import dataclass, field
+from functools import lru_cache
+from typing import Any, Iterator, TypeVar
 
+import httpx
 from fastapi import FastAPI, Request
 from fastapi.responses import StreamingResponse
 
-from .config import IS_BENTOCLOUD
+from .config import DECODE_KV_PORT, IS_BENTOCLOUD, PREFILL_KV_PORT
 
-T = t.TypeVar('T')
+T = TypeVar('T')
 DEFAULT_PING_SECONDS = 5
 logger = logging.getLogger('bentoml.service')
 
 
-@functools.lru_cache(maxsize=128)
+@lru_cache(maxsize=128)
 def _fix_host(netloc: str) -> tuple[str, int]:
   from vllm.utils import get_ip
 
@@ -35,7 +40,7 @@ def random_uuid() -> str:
   return str(uuid.uuid4().hex)
 
 
-async def forward_request(url: str, json_data: dict[str, t.Any], request_id: str):
+async def forward_request(url: str, json_data: dict[str, Any], request_id: str):
   async with httpx.AsyncClient(timeout=None) as client:
     headers = {'Authorization': f'Bearer {os.environ.get("OPENAI_API_KEY")}', 'X-Request-Id': request_id}
     async with client.stream('POST', url, json=json_data, headers=headers) as resp:
@@ -47,6 +52,7 @@ async def forward_request(url: str, json_data: dict[str, t.Any], request_id: str
 @dataclass(frozen=True)
 class ClientInfo:
   http_address: str
+  zmq_address: str
 
 
 @dataclass
@@ -81,11 +87,11 @@ class ServiceDiscovery:
         return
 
       self.prefill_instances = [
-        ClientInfo(f'{host}:{port + i}')
+        ClientInfo(f'{host}:{port + i}', f'{host}:{PREFILL_KV_PORT + i}')
         for i, (host, port) in self.enumerator([_fix_host(host) for host in await Prefiller.get_hosts()])
       ]
       self.decode_instances = [
-        ClientInfo(f'{host}:{port + i}')
+        ClientInfo(f'{host}:{port + i}', f'{host}:{DECODE_KV_PORT + i}')
         for i, (host, port) in self.enumerator([_fix_host(host) for host in await Decoder.get_hosts()])
       ]
       self.next_check = current_time + DEFAULT_PING_SECONDS
@@ -118,16 +124,14 @@ async def handle_request(request: Request):
 
   prefill_client, decode_client = await sd.select_pair()
   logger.info(
-    f'handle_request count: {sd.count}, [HTTP:{prefill_client.http_address} 👉 [HTTP:{decode_client.http_address}'
+    f'handle_request count: {sd.count}, [HTTP:{prefill_client.http_address}, '
+    f'ZMQ:{prefill_client.zmq_address}] 👉 [HTTP:{decode_client.http_address}, '
+    f'ZMQ:{decode_client.zmq_address}]'
   )
 
-  request_id = random_uuid()
-  # disagg_spec = {
-  #   "req_id": request_id,
-  #   "receiver_host": decode_client.host,
-  #   "receiver_init_port": decode_client.init_port,
-  #   "receiver_alloc_port": decode_client.alloc_port,
-  # }
+  request_id = (
+    f'___prefill_addr_{prefill_client.zmq_address}___decode_addr_{decode_client.zmq_address}_{random_uuid()}'
+  )
 
   # finish prefill
   async for _ in forward_request(
