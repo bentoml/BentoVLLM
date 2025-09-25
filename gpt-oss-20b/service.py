@@ -1,13 +1,18 @@
 from __future__ import annotations
 
-import contextlib, json, logging, os, typing
-import bentoml, fastapi, pydantic
+import contextlib
+import json
+import logging
+import os
+import typing
 
+import bentoml
+import fastapi
+import pydantic
 
 logger = logging.getLogger(__name__)
 
 if typing.TYPE_CHECKING:
-
   Jsonable = list[str] | list[dict[str, str]] | None
 else:
   Jsonable = typing.Any
@@ -64,11 +69,7 @@ class BentoArgs(pydantic.BaseModel):
   def additional_cli_args(self) -> list[str]:
     import torch
 
-    default = [
-      '-tp',
-      f'{torch.cuda.device_count()}',
-      *self.cli_args,
-    ]
+    default = ['-tp', f'{torch.cuda.device_count()}', *self.cli_args]
     if self.kv_transfer_config:
       default.extend(['--kv-transfer-config', json.dumps(self.kv_transfer_config)])
     if self.tool_parser:
@@ -140,7 +141,7 @@ if not bento_args.skip_flashinfer and bento_args.gpu_type.startswith('nvidia'):
     'uv pip install --no-progress https://download.pytorch.org/whl/cu128/flashinfer/flashinfer_python-0.2.6.post1%2Bcu128torch2.7-cp39-abi3-linux_x86_64.whl'
   )
 if bento_args.gpu_type.startswith('amd'):
-  image.base_image = 'rocm/vllm:rocm6.4.1_vllm_0.10.0_20250812'
+  image.base_image = 'rocm/vllm:rocm6.4.1_vllm_0.10.1_20250909'
   # Disable locking of Python packages for AMD GPUs to exclude nvidia-* dependencies
   image.lock_python_packages = False
   # The GPU device is accessible by group 992
@@ -154,7 +155,7 @@ hf = bentoml.models.HuggingFaceModel(bento_args.runtime_model_id, exclude=bento_
 openai_api_app = fastapi.FastAPI()
 
 
-@bentoml.asgi_app(openai_api_app, path='/v1')
+@bentoml.asgi_app(openai_api_app)
 @bentoml.service(
   name=bento_args.name,
   envs=[
@@ -171,7 +172,7 @@ openai_api_app = fastapi.FastAPI()
     **bento_args.additional_labels,
   },
   traffic={'timeout': 300},
-  endpoints={'livez': '/v1/health', 'readyz': '/v1/ping'},
+  endpoints={'livez': '/health', 'readyz': '/ping'},
   resources={'gpu': bento_args.tp, 'gpu_type': bento_args.gpu_type},
 )
 class LLM:
@@ -199,10 +200,11 @@ class LLM:
     router = fastapi.APIRouter(lifespan=vllm_api_server.lifespan)
 
     OPENAI_ENDPOINTS = [
-      ['/chat/completions', vllm_api_server.create_chat_completion, ['POST']],
-      ['/responses', vllm_api_server.create_responses, ['POST']],
+      ['/v1/chat/completions', vllm_api_server.create_chat_completion, ['POST']],
+      ['/v1/completions', vllm_api_server.create_completion, ['POST']],
+      ['/v1/responses', vllm_api_server.create_responses, ['POST']],
+      ['/v1/models', vllm_api_server.show_available_models, ['GET']],
       ['/health', vllm_api_server.health, ['GET']],
-      ['/models', vllm_api_server.show_available_models, ['GET']],
       ['/ping', vllm_api_server.ping, ['GET']],
     ]
 
