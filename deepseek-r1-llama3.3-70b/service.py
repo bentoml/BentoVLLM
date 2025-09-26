@@ -145,7 +145,7 @@ if bento_args.gpu_type.startswith('amd'):
   # Disable locking of Python packages for AMD GPUs to exclude nvidia-* dependencies
   image.lock_python_packages = False
   # The GPU device is accessible by group 992
-  image.run('groupadd -g 992 -o rocm && usermod -aG rocm bentoml')
+  image.run('groupadd -g 992 -o rocm && usermod -aG rocm bentoml && usermod -aG render bentoml')
   # Remove the vllm and torch deps to reuse the pre-installed ones in the base image
   image.run('uv pip uninstall vllm torch torchvision torchaudio triton')
 if bento_args.nightly:
