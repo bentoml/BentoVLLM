@@ -1,6 +1,6 @@
 [project]
 name = "phi4-14b"
-version = "1.4.23"
+version = "1.4.25"
 description = "Self-host LLMs with vLLM and BentoML"
 readme = "README.md"
 requires-python = ">=3.11"
