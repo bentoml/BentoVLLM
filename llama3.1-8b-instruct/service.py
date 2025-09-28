@@ -21,7 +21,7 @@ class BentoArgs(pydantic.BaseModel):
   tp: int = 1
   v1: bool = True
   port: int = 8000
-  attn_backend: str = 'FLASHINFER'
+  attn_backend: str = 'FLASH_ATTN'
   skip_flashinfer: bool = False
   nightly: bool = False
   piecewise_cudagraph: bool = True
