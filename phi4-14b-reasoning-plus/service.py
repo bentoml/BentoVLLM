@@ -144,7 +144,6 @@ if not bento_args.skip_flashinfer and bento_args.gpu_type.startswith('nvidia'):
   image = image.run(
     'uv pip install https://wheels.vllm.ai/flashinfer-python/flashinfer_python-0.3.1-cp39-abi3-manylinux1_x86_64.whl --extra-index-url https://download.pytorch.org/whl/cu128'
   )
-  image = image.run('uv run python -m flashinfer --download-cubin')
 
 if bento_args.gpu_type.startswith('amd'):
   image.base_image = 'rocm/vllm:rocm6.4.1_vllm_0.10.1_20250909'
