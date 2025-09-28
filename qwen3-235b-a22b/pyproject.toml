@@ -43,7 +43,6 @@ autotune = [
   24,
 ]
 tool_parser = "hermes"
-kv_cache_dtype = "fp8"
 
 [tool.bentoml.build.args.metadata]
 description = "Qwen 3 235B A22B MoE"

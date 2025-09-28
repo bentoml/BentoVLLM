@@ -10,7 +10,6 @@ args:
   reasoning_parser: qwen3
   autotune: [1,2,4,8,16,24]
   tool_parser: hermes
-  kv_cache_dtype: fp8
   hf_generation_config:
     temperature: 0.7
     top_k: 20
