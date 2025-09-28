@@ -1,5 +1,5 @@
 [project]
-name = "deepseek-r1-671b"
+name = "deepseek-v3.1-671b"
 version = "1.4.25"
 description = "Self-host LLMs with vLLM and BentoML"
 readme = "README.md"
@@ -29,13 +29,14 @@ include = [
 ]
 
 [tool.bentoml.build.args]
-name = "deepseek-r1-671b"
+name = "deepseek-v3.1-671b"
 gpu_type = "nvidia-h200-141gb"
 tp = 8
-model_id = "deepseek-ai/DeepSeek-R1-0528"
-reasoning_parser = "deepseek_r1"
-tool_parser = "hermes"
+model_id = "deepseek-ai/DeepSeek-V3.1"
+tool_parser = "deepseek_v3"
 cli_args = [
+  "--chat-template",
+  "templates/tool_deepseek_v3.jinja",
   "--trust-remote-code",
 ]
 envs = [
@@ -44,13 +45,13 @@ envs = [
 attn_backend = "FLASHMLA"
 
 [tool.bentoml.build.args.metadata]
-description = "DeepSeek R1 671B"
+description = "DeepSeek V3.1 671B"
 provider = "DeepSeek"
 gpu_recommendation = "Nvidia GPUs with at least 141GBx8 VRAM (e.g. about 8 H200 GPUs)."
 
 [tool.bentoml.build.args.hf_generation_config]
-temperature = 0.6
-top_p = 0.95
+temperature = 0.3
+top_p = 0.9
 
 [tool.ruff]
 extend-include = [

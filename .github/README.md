@@ -135,8 +135,9 @@ In addition to Llama 3.1 8B Instruct, we also have examples for other models in 
 | Model | Links |
 |-------|-------|
 | deepseek-prover-v2-671b | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/deepseek-prover-v2-671b/) • [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-V3-0324) |
-| deepseek-r1-671b | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/deepseek-r1-671b/) • [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-V3-0324) |
+| deepseek-r1-671b | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/deepseek-r1-671b/) • [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-R1-0528) |
 | deepseek-v3-671b | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/deepseek-v3-671b/) • [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-V3-0324) |
+| deepseek-v3.1-671b | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/deepseek-v3.1-671b/) • [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-V3.1) |
 | devstral-small-2505 | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/devstral-small-2505/) • [Hugging Face](https://huggingface.co/mistralai/Devstral-Small-2505) |
 | gemma3-4b-instruct | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/gemma3-4b-instruct/) • [Hugging Face](https://huggingface.co/google/gemma-3-4b-it) |
 | gpt-oss-120b | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/gpt-oss-120b/) • [Hugging Face](https://huggingface.co/openai/gpt-oss-120b) |

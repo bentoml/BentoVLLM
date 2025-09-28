@@ -1,8 +1,8 @@
 <div align="center">
-    <h1 align="center">Self-host DeepSeek R1 671B with vLLM and BentoML</h1>
+    <h1 align="center">Self-host DeepSeek V3.1 671B with vLLM and BentoML</h1>
 </div>
 
-Follow this guide to self-host the DeepSeek R1 671B model with BentoCloud in your own cloud account. If your team doesn’t already have access to BentoCloud, please use the link below to contact us and set it up in your cloud environment.
+Follow this guide to self-host the DeepSeek V3.1 671B model with BentoCloud in your own cloud account. If your team doesn’t already have access to BentoCloud, please use the link below to contact us and set it up in your cloud environment.
 
 [![Deploy on BentoCloud](https://img.shields.io/badge/Deploy_on_BentoCloud-d0bfff?style=for-the-badge)](https://cloud.bentoml.com/)
 [![Talk to sales](https://img.shields.io/badge/Talk_to_sales-eefbe4?style=for-the-badge)](https://bentoml.com/contact)
@@ -12,14 +12,14 @@ See [here](https://docs.bentoml.com/en/latest/examples/overview.html) for a full
 💡 This example is served as a basis for advanced code customization, such as custom model, inference logic or vLLM options. For simple LLM hosting with OpenAI compatible endpoint without writing any code, see [OpenLLM](https://github.com/bentoml/OpenLLM).
 
 ## Prerequisites
-- You have gained access to `deepseek-ai/DeepSeek-R1-0528` on [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-R1-0528).
+- You have gained access to `deepseek-ai/DeepSeek-V3.1` on [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-V3.1).
 - If you want to test the Service locally, we recommend you use Nvidia GPUs with at least 141GBx8 VRAM (e.g. about 8 H200 GPUs).
 
 ## Install dependencies
 
 ```bash
 git clone https://github.com/bentoml/BentoVLLM.git
-cd BentoVLLM/deepseek-r1-671b
+cd BentoVLLM/deepseek-v3.1-671b
 
 # Recommend Python 3.11
 pip install -r requirements.txt

@@ -1,19 +1,20 @@
 args:
-  name: deepseek-r1-671b
+  name: deepseek-v3.1-671b
   gpu_type: nvidia-h200-141gb
   tp: 8
   metadata:
-    description: DeepSeek R1 671B
+    description: DeepSeek V3.1 671B
     provider: DeepSeek
     gpu_recommendation: Nvidia GPUs with at least 141GBx8 VRAM (e.g. about 8 H200 GPUs).
-  model_id: deepseek-ai/DeepSeek-R1-0528
-  reasoning_parser: deepseek_r1
-  tool_parser: hermes
+  model_id: deepseek-ai/DeepSeek-V3.1
+  tool_parser: deepseek_v3
   cli_args:
+    - '--chat-template'
+    - 'templates/tool_deepseek_v3.jinja'
     - '--trust-remote-code'
   envs:
     - name: HF_TOKEN
   attn_backend: 'FLASHMLA'
   hf_generation_config:
-    temperature: 0.6
-    top_p: 0.95
+    temperature: 0.3
+    top_p: 0.9
