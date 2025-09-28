@@ -27,6 +27,7 @@ class BentoArgs(pydantic.BaseModel):
   piecewise_cudagraph: bool = True
   reasoning_parser: str | None = None
   tool_parser: str | None = None
+  kv_cache_dtype: str | None = None
   max_model_len: int | None = None
   autotune: list[int] | None = None
   hf_system_prompt: str | None = None
@@ -70,6 +71,8 @@ class BentoArgs(pydantic.BaseModel):
     import torch
 
     default = ['-tp', f'{torch.cuda.device_count()}', *self.cli_args]
+    if self.kv_cache_dtype:
+      default.extend(["--kv-cache-dtype", str(self.kv_cache_dtype)])
     if self.kv_transfer_config:
       default.extend(['--kv-transfer-config', json.dumps(self.kv_transfer_config)])
     if self.tool_parser:

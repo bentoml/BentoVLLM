@@ -43,7 +43,7 @@ autotune = [
   40,
 ]
 model_id = "Qwen/Qwen3-8B"
-reasoning_parser = "deepseek_r1"
+reasoning_parser = "qwen3"
 tool_parser = "hermes"
 
 [tool.bentoml.build.args.metadata]

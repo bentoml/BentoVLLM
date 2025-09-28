@@ -32,7 +32,7 @@ include = [
 name = "qwen3-30b-a3b"
 gpu_type = "nvidia-h100-80gb"
 tp = 2
-model_id = "Qwen/Qwen3-30B-A3B"
+model_id = "Qwen/Qwen3-30B-A3B-Instruct-2507-FP8"
 autotune = [
   1,
   2,
@@ -43,8 +43,9 @@ autotune = [
   32,
   40,
 ]
-reasoning_parser = "deepseek_r1"
+reasoning_parser = "qwen3"
 tool_parser = "hermes"
+kv_cache_dtype = "fp8"
 
 [tool.bentoml.build.args.metadata]
 description = "Qwen 3 30B A3B MoE"
@@ -52,9 +53,10 @@ provider = "Alibaba"
 gpu_recommendation = "Nvidia GPU with at least 80GBx2 VRAM (e.g about 2 H100 GPUs or 1 H200 GPU)."
 
 [tool.bentoml.build.args.hf_generation_config]
-temperature = 0.6
+temperature = 0.7
 top_k = 20
-top_p = 0.95
+top_p = 0.8
+min_p = 0
 presence_penalty = 1.5
 
 [tool.ruff]

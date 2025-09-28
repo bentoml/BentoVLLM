@@ -1,0 +1,23 @@
+args:
+  name: qwen3-next-80b-a3b
+  gpu_type: nvidia-h100-80gb
+  tp: 4
+  metadata:
+    description: Qwen 3 Next 80B A3B MoE
+    provider: Alibaba
+    gpu_recommendation: Nvidia GPU with at least 80GBx4 VRAM (e.g about 4 H100 GPUs or 2 H200 GPU).
+  model_id: Qwen/Qwen3-30B-A3B-Instruct-2507-FP8
+  autotune: [1,2,4,8,16,24,32,40]
+  reasoning_parser: deepseek_r1
+  tool_parser: hermes
+  kv_cache_dtype: fp8
+  max_model_len: 262144
+  hf_generation_config:
+    temperature: 0.7
+    top_k: 20
+    top_p: 0.8
+    min_p: 0
+    presence_penalty: 1.5
+  cli_args:
+    - --speculative-config
+    - '{"method":"qwen3_next_mtp","num_speculative_tokens":2}'

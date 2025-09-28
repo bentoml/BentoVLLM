@@ -154,9 +154,10 @@ In addition to Llama 3.1 8B Instruct, we also have examples for other models in 
 | phi4-14b | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/phi4-14b/) • [Hugging Face](https://huggingface.co/microsoft/phi-4) |
 | phi4-14b-reasoning | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/phi4-14b-reasoning/) • [Hugging Face](https://huggingface.co/microsoft/Phi-4-reasoning) |
 | phi4-14b-reasoning-plus | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/phi4-14b-reasoning-plus/) • [Hugging Face](https://huggingface.co/microsoft/Phi-4-reasoning-plus) |
-| qwen3-235b-a22b | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/qwen3-235b-a22b/) • [Hugging Face](https://huggingface.co/Qwen/Qwen3-235B-A22B-FP8) |
-| qwen3-30b-a3b | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/qwen3-30b-a3b/) • [Hugging Face](https://huggingface.co/Qwen/Qwen3-30B-A3B) |
+| qwen3-235b-a22b | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/qwen3-235b-a22b/) • [Hugging Face](https://huggingface.co/Qwen/Qwen3-235B-A22B-Instruct-2507-FP8) |
+| qwen3-30b-a3b | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/qwen3-30b-a3b/) • [Hugging Face](https://huggingface.co/Qwen/Qwen3-30B-A3B-Instruct-2507-FP8) |
 | qwen3-8b | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/qwen3-8b/) • [Hugging Face](https://huggingface.co/Qwen/Qwen3-8B) |
 | qwen3-coder-480b-a35b | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/qwen3-coder-480b-a35b/) • [Hugging Face](https://huggingface.co/Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8) |
+| qwen3-next-80b-a3b | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/qwen3-next-80b-a3b/) • [Hugging Face](https://huggingface.co/Qwen/Qwen3-30B-A3B-Instruct-2507-FP8) |
 | r1-0528-qwen3-8b | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/r1-0528-qwen3-8b/) • [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-R1-0528-Qwen3-8B) |
 | r1-distill-llama3.3-70b | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/r1-distill-llama3.3-70b/) • [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Llama-70B) |

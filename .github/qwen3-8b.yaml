@@ -8,7 +8,7 @@ args:
     provider: Alibaba
     gpu_recommendation: an Nvidia GPU with at least 80GB VRAM (e.g about 1 H100 GPU).
   model_id: Qwen/Qwen3-8B
-  reasoning_parser: deepseek_r1
+  reasoning_parser: qwen3
   tool_parser: hermes
   hf_generation_config:
     temperature: 0.6
