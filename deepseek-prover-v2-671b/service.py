@@ -6,8 +6,8 @@ import os
 import typing
 
 import bentoml
-import pydantic
 import httpx
+import pydantic
 
 logger = logging.getLogger(__name__)
 
@@ -53,6 +53,7 @@ class BentoArgs(pydantic.BaseModel):
       'gpu_recommendation': 'an Nvidia GPU with at least 80GB VRAM (e.g about 1 H100 GPU).',
     }
   )
+  use_sglang_router: bool = False
 
   @pydantic.field_validator('exclude', 'cli_args', 'post', 'envs', 'hf_generation_config', 'metadata', mode='before')
   @classmethod
@@ -159,8 +160,13 @@ if bento_args.nightly:
 
 hf = bentoml.models.HuggingFaceModel(bento_args.runtime_model_id, exclude=bento_args.exclude)
 
+if bento_args.use_sglang_router:
+  from bento_sgl_router import service
+else:
+  service = bentoml.service
 
-@bentoml.service(
+
+@service(
   name=bento_args.name,
   envs=[
     {'name': 'UV_NO_PROGRESS', 'value': '1'},
