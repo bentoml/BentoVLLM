@@ -7,4 +7,5 @@ pyyaml
 fastapi
 kernels
 mistral_common[opencv]
-bento-sgl-router>=0.0.6
+bento-sgl-router==0.0.6
+sglang-router==0.1.9
