@@ -1,0 +1,5 @@
+# Treat all files inside top-level directories as generated artifacts for GitHub Linguist
+/*/** linguist-generated=true
+
+# Preserve this template as non-generated
+/.github/README.md.j2 linguist-generated=false
