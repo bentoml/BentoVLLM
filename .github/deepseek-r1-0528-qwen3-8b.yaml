@@ -2,7 +2,6 @@ args:
   name: r1-0528-qwen3-8b
   gpu_type: nvidia-h100-80gb
   tp: 1
-  autotune: [1,2,4,8,16]
   metadata:
     description: DeepSeek R1 0528 Qwen3 8B
     provider: DeepSeek

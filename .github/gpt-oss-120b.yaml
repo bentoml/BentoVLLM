@@ -7,7 +7,6 @@ args:
     provider: OpenAI
     gpu_recommendation: Nvidia GPUs with at least 140GB VRAM (e.g about 1 H200 GPU or 2xH100 GPUs).
   model_id: openai/gpt-oss-120b
-  autotune: [1,2,4,8,16,24]
   post:
     - uv pip install -U openai lmcache nixl
     - uv pip install -U --pre vllm --extra-index-url https://wheels.vllm.ai/nightly/ --torch-backend=cu128 --extra-index-url https://download.pytorch.org/whl/nightly/cu128 --index-strategy unsafe-best-match

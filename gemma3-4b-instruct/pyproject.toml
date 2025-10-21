@@ -32,13 +32,6 @@ include = [
 name = "gemma3-4b-instruct"
 gpu_type = "nvidia-h100-80gb"
 tp = 1
-autotune = [
-  1,
-  2,
-  4,
-  8,
-  16,
-]
 model_id = "google/gemma-3-4b-it"
 cli_args = [
   "--limit-mm-per-prompt",

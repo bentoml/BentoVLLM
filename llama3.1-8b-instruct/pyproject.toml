@@ -31,13 +31,6 @@ include = [
 [tool.bentoml.build.args]
 name = "llama3.1-8b-instruct"
 tp = 1
-autotune = [
-  1,
-  2,
-  4,
-  8,
-  16,
-]
 cli_args = [
   "--max-num-batched-tokens",
   "16384",

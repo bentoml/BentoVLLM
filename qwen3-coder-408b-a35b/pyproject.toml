@@ -34,14 +34,6 @@ gpu_type = "nvidia-h200-141gb"
 tp = 4
 model_id = "Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8"
 reasoning_parser = "qwen3"
-autotune = [
-  1,
-  2,
-  4,
-  8,
-  16,
-  24,
-]
 tool_parser = "hermes"
 max_model_len = 32768
 

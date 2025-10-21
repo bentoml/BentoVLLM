@@ -7,7 +7,6 @@ args:
     provider: DeepSeek
     gpu_recommendation: Nvidia GPUs with at least 80GBx4 VRAM (e.g about 4 H100 GPUs).
   model_id: deepseek-ai/DeepSeek-R1-Distill-Llama-70B
-  autotune: [1,2,4,8,16,24,32,40]
   reasoning_parser: deepseek_r1
   tool_parser: llama3_json
   envs:

@@ -2,7 +2,6 @@ args:
   name: qwen3-8b
   gpu_type: nvidia-h100-80gb
   tp: 1
-  autotune: [1,2,4,8,16,24,32,40]
   metadata:
     description: Qwen 3 8B
     provider: Alibaba

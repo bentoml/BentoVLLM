@@ -32,20 +32,12 @@ include = [
 name = "llama3.2-3b-instruct"
 gpu_type = "nvidia-h100-80gb"
 tp = 1
-autotune = [
-  1,
-  2,
-  4,
-  8,
-  16,
-]
 cli_args = [
   "--max-num-batched-tokens",
   "16384",
 ]
 model_id = "meta-llama/Llama-3.2-3B-Instruct"
 tool_parser = "pythonic"
-piecewise_cudagraph = false
 envs = [
   { name = "HF_TOKEN" },
 ]

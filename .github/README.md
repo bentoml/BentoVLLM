@@ -138,7 +138,6 @@ In addition to Llama 3.1 8B Instruct, we also have examples for other models in 
 | deepseek-r1-671b | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/deepseek-r1-671b/) • [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-R1-0528) |
 | deepseek-v3-671b | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/deepseek-v3-671b/) • [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-V3-0324) |
 | deepseek-v3.1-671b | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/deepseek-v3.1-671b/) • [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-V3.1) |
-| devstral-small-2505 | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/devstral-small-2505/) • [Hugging Face](https://huggingface.co/mistralai/Devstral-Small-2505) |
 | gemma3-4b-instruct | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/gemma3-4b-instruct/) • [Hugging Face](https://huggingface.co/google/gemma-3-4b-it) |
 | gpt-oss-120b | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/gpt-oss-120b/) • [Hugging Face](https://huggingface.co/openai/gpt-oss-120b) |
 | gpt-oss-20b | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/gpt-oss-20b/) • [Hugging Face](https://huggingface.co/openai/gpt-oss-20b) |
@@ -150,8 +149,6 @@ In addition to Llama 3.1 8B Instruct, we also have examples for other models in 
 | llama3.3-70b-instruct | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/llama3.3-70b-instruct/) • [Hugging Face](https://huggingface.co/meta-llama/Llama-3.3-70B-Instruct) |
 | llama4-17b-maverick-instruct | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/llama4-17b-maverick-instruct/) • [Hugging Face](https://huggingface.co/meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8) |
 | llama4-17b-scout-instruct | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/llama4-17b-scout-instruct/) • [Hugging Face](https://huggingface.co/meta-llama/Llama-4-Scout-17B-16E-Instruct) |
-| magistral-small-2506 | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/magistral-small-2506/) • [Hugging Face](https://huggingface.co/mistralai/Magistral-Small-2506) |
-| mistral-small-3.1-24b-instruct-2503 | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/mistral-small-3.1-24b-instruct-2503/) • [Hugging Face](https://huggingface.co/mistralai/Mistral-Small-3.1-24B-Instruct-2503) |
 | phi4-14b | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/phi4-14b/) • [Hugging Face](https://huggingface.co/microsoft/phi-4) |
 | phi4-14b-reasoning | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/phi4-14b-reasoning/) • [Hugging Face](https://huggingface.co/microsoft/Phi-4-reasoning) |
 | phi4-14b-reasoning-plus | [GitHub](https://github.com/bentoml/BentoVLLM/tree/main/phi4-14b-reasoning-plus/) • [Hugging Face](https://huggingface.co/microsoft/Phi-4-reasoning-plus) |

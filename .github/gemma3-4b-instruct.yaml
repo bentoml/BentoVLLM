@@ -2,7 +2,6 @@ args:
   name: gemma3-4b-instruct
   gpu_type: nvidia-h100-80gb
   tp: 1
-  autotune: [1,2,4,8,16]
   metadata:
     vision: true
     description: Gemma 3 4B Instruct

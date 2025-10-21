@@ -32,13 +32,6 @@ include = [
 name = "r1-0528-qwen3-8b"
 gpu_type = "nvidia-h100-80gb"
 tp = 1
-autotune = [
-  1,
-  2,
-  4,
-  8,
-  16,
-]
 model_id = "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B"
 reasoning_parser = "deepseek_r1"
 tool_parser = "hermes"

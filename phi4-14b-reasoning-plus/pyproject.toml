@@ -32,14 +32,6 @@ include = [
 name = "phi4-14b-reasoning-plus"
 gpu_type = "nvidia-h100-80gb"
 tp = 2
-autotune = [
-  1,
-  2,
-  4,
-  8,
-  16,
-  24,
-]
 model_id = "microsoft/Phi-4-reasoning-plus"
 reasoning-parser = "deepseek_r1"
 

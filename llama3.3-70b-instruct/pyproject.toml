@@ -34,14 +34,6 @@ gpu_type = "nvidia-h100-80gb"
 tp = 4
 model_id = "meta-llama/Llama-3.3-70B-Instruct"
 tool_parser = "pythonic"
-autotune = [
-  1,
-  2,
-  4,
-  8,
-  16,
-  24,
-]
 envs = [
   { name = "HF_TOKEN" },
 ]

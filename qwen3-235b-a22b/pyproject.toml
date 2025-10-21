@@ -34,14 +34,6 @@ gpu_type = "nvidia-h100-80gb"
 tp = 4
 model_id = "Qwen/Qwen3-235B-A22B-Instruct-2507-FP8"
 reasoning_parser = "qwen3"
-autotune = [
-  1,
-  2,
-  4,
-  8,
-  16,
-  24,
-]
 tool_parser = "hermes"
 
 [tool.bentoml.build.args.metadata]

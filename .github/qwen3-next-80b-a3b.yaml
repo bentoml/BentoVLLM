@@ -7,7 +7,6 @@ args:
     provider: Alibaba
     gpu_recommendation: Nvidia GPU with at least 80GBx4 VRAM (e.g about 4 H100 GPUs or 2 H200 GPU).
   model_id: Qwen/Qwen3-30B-A3B-Instruct-2507-FP8
-  autotune: [1,2,4,8,16,24,32,40]
   reasoning_parser: deepseek_r1
   tool_parser: hermes
   max_model_len: 262144

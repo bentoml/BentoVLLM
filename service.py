@@ -19,21 +19,16 @@ else:
 
 class BentoArgs(pydantic.BaseModel):
   tp: int = 1
-  v1: bool = True
+  dp: int | None = None
   port: int = 8000
   attn_backend: str = 'FLASH_ATTN'
-  skip_flashinfer: bool = True
   nightly: bool = False
-  piecewise_cudagraph: bool = True
   reasoning_parser: str | None = None
   tool_parser: str | None = None
   kv_cache_dtype: str | None = None
   max_model_len: int | None = None
-  autotune: list[int] | None = None
   hf_system_prompt: str | None = None
-  include_system_prompt: bool = True
 
-  sharded: bool = False
   name: str = 'llama3.1-8b-instruct'
   gpu_type: str = 'nvidia-h100-80gb'
   model_id: str = 'meta-llama/Meta-Llama-3.1-8B-Instruct'
@@ -82,16 +77,7 @@ class BentoArgs(pydantic.BaseModel):
       default.extend(['--reasoning-parser', self.reasoning_parser])
     if self.max_model_len:
       default.extend(['--max-model-len', str(self.max_model_len)])
-    if self.v1:
-      default.extend([
-        '--compilation-config',
-        json.dumps({
-          'level': 3,
-          'cudagraph_capture_sizes': [128, 120, 112, 104, 96, 88, 80, 72, 64, 56, 48, 40, 32, 24, 16, 8, 4, 2, 1],
-          'max_capture_size': 128,
-          'cudagraph_num_of_warmups': 1,
-        }),
-      ])
+    default.extend(['--compilation-config', json.dumps({ 'level': 3 })])
     return default
 
   @property
@@ -100,10 +86,7 @@ class BentoArgs(pydantic.BaseModel):
       'hf_generation_config': json.dumps(self.hf_generation_config),
       'reasoning': '1' if self.reasoning_parser else '0',
       'tool': self.tool_parser or '',
-      'sharded': self.sharded,
     }
-    if self.hf_system_prompt and self.include_system_prompt:
-      default['hf_system_prompt'] = json.dumps(self.hf_system_prompt)
     return default
 
   @property
@@ -111,7 +94,8 @@ class BentoArgs(pydantic.BaseModel):
     envs = [*self.envs]
     envs.extend([
       {'name': 'VLLM_SKIP_P2P_CHECK', 'value': '1'},
-      {'name': 'VLLM_USE_V1', 'value': '1' if self.v1 else '0'},
+      {'name': 'UV_NO_PROGRESS', 'value': '1'},
+      {'name': 'UV_TORCH_BACKEND', 'value': 'cu128'},
     ])
     if not self.gpu_type.startswith('amd'):
       envs.extend([
@@ -126,39 +110,34 @@ class BentoArgs(pydantic.BaseModel):
     return envs
 
   @property
-  def runtime_model_id(self) -> str:
-    if not self.sharded:
-      return self.model_id.lower()
-    repo_slug = self.model_id.lower().split('/')[-1]
-    return f'aarnphm/{repo_slug}-sharded-tp{self.tp}'
+  def image(self) -> bentoml.images.Image:
+    image = (
+      bentoml.images.Image(python_version='3.12').system_packages('curl', 'git').requirements_file('requirements.txt')
+    )
+    if self.post:
+      for cmd in self.post: image = image.run(cmd)
+
+    if self.gpu_type.startswith('nvidia'):
+      image = image.run('uv pip install flashinfer-python flashinfer-cubin --torch-backend=cu128')
+      image = image.run('uv pip install flashinfer-jit-cache --index-url https://flashinfer.ai/whl/cu128')
+
+    if self.gpu_type.startswith('amd'):
+      image.base_image = 'rocm/vllm:rocm6.4.1_vllm_0.10.1_20250909'
+      # Disable locking of Python packages for AMD GPUs to exclude nvidia-* dependencies
+      image.lock_python_packages = False
+      # The GPU device is accessible by group 992
+      image.run('groupadd -g 992 -o rocm && usermod -aG rocm bentoml && usermod -aG render bentoml')
+      # Remove the vllm and torch deps to reuse the pre-installed ones in the base image
+      image.run('uv pip uninstall vllm torch torchvision torchaudio triton')
+
+    if self.nightly:
+      image.run('uv pip uninstall vllm')
+      image.run('uv pip install -U vllm --torch-backend=cu129 --extra-index-url https://wheels.vllm.ai/nightly')
+
+    return image
 
 
 bento_args = bentoml.use_arguments(BentoArgs)
-
-image = (
-  bentoml.images.Image(python_version='3.12').system_packages('curl', 'git').requirements_file('requirements.txt')
-)
-if POST := bento_args.post:
-  for cmd in POST:
-    image = image.run(cmd)
-if not bento_args.skip_flashinfer and bento_args.gpu_type.startswith('nvidia'):
-  image = image.run(
-    'uv pip install https://wheels.vllm.ai/flashinfer-python/flashinfer_python-0.3.1-cp39-abi3-manylinux1_x86_64.whl --extra-index-url https://download.pytorch.org/whl/cu128'
-  )
-
-if bento_args.gpu_type.startswith('amd'):
-  image.base_image = 'rocm/vllm:rocm6.4.1_vllm_0.10.1_20250909'
-  # Disable locking of Python packages for AMD GPUs to exclude nvidia-* dependencies
-  image.lock_python_packages = False
-  # The GPU device is accessible by group 992
-  image.run('groupadd -g 992 -o rocm && usermod -aG rocm bentoml && usermod -aG render bentoml')
-  # Remove the vllm and torch deps to reuse the pre-installed ones in the base image
-  image.run('uv pip uninstall vllm torch torchvision torchaudio triton')
-if bento_args.nightly:
-  image.run('uv pip uninstall vllm')
-  image.run('uv pip install -U vllm --torch-backend=auto --extra-index-url https://wheels.vllm.ai/nightly')
-
-hf = bentoml.models.HuggingFaceModel(bento_args.runtime_model_id, exclude=bento_args.exclude)
 
 if bento_args.use_sglang_router:
   from bento_sgl_router import service
@@ -168,12 +147,8 @@ else:
 
 @service(
   name=bento_args.name,
-  envs=[
-    {'name': 'UV_NO_PROGRESS', 'value': '1'},
-    {'name': 'UV_TORCH_BACKEND', 'value': 'cu128'},
-    *bento_args.runtime_envs,
-  ],
-  image=image,
+  envs=bento_args.runtime_envs,
+  image=bento_args.image,
   labels={
     'owner': 'bentoml-team',
     'type': 'prebuilt',
@@ -186,7 +161,7 @@ else:
   resources={'gpu': bento_args.tp, 'gpu_type': bento_args.gpu_type},
 )
 class LLM:
-  hf = hf
+  hf = bentoml.models.HuggingFaceModel(bento_args.model_id.lower(), exclude=bento_args.exclude)
 
   def __command__(self) -> list[str]:
     return [

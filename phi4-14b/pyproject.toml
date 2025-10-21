@@ -33,13 +33,6 @@ name = "phi4-14b"
 gpu_type = "nvidia-h100-80gb"
 tp = 1
 model_id = "microsoft/phi-4"
-autotune = [
-  1,
-  2,
-  4,
-  8,
-  16,
-]
 
 [tool.bentoml.build.args.metadata]
 description = "Phi 4 14B"
