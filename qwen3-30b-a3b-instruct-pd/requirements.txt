@@ -1,0 +1,10 @@
+bentoml==1.4.25
+fastapi
+huggingface-hub
+ninja
+vllm==0.11.0
+kernels
+msgpack
+pyzmq
+nixl
+mistral_common[opencv]

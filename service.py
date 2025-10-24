@@ -77,7 +77,7 @@ class BentoArgs(pydantic.BaseModel):
       default.extend(['--reasoning-parser', self.reasoning_parser])
     if self.max_model_len:
       default.extend(['--max-model-len', str(self.max_model_len)])
-    default.extend(['--compilation-config', json.dumps({ 'level': 3 })])
+    default.extend(['--compilation-config', json.dumps({'level': 3})])
     return default
 
   @property
@@ -115,9 +115,10 @@ class BentoArgs(pydantic.BaseModel):
       bentoml.images.Image(python_version='3.12').system_packages('curl', 'git').requirements_file('requirements.txt')
     )
     if self.post:
-      for cmd in self.post: image = image.run(cmd)
+      for cmd in self.post:
+        image = image.run(cmd)
 
-    if self.gpu_type.startswith('nvidia'):
+    if False:  # self.gpu_type.startswith('nvidia'):
       image = image.run('uv pip install flashinfer-python flashinfer-cubin --torch-backend=cu128')
       image = image.run('uv pip install flashinfer-jit-cache --index-url https://flashinfer.ai/whl/cu128')
 
