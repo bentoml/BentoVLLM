@@ -29,7 +29,7 @@ class Prefiller:
   def __command__(self) -> list[str]:
     if not IS_BENTOCLOUD:
       os.environ['CUDA_VISIBLE_DEVICES'] = PREFILL_VISIBLE_DEVICES
-    os.environ['VLLM_NIXL_SIDE_CHANNEL_PORT'] = PREFILL_DISAGGREGATION_PORT
+    os.environ['VLLM_NIXL_SIDE_CHANNEL_PORT'] = str(PREFILL_DISAGGREGATION_PORT)
     extra_args = os.environ.get('PREFILL_EXTRA_ARGS')
     kv_transfer_config = {'kv_connector': 'NixlConnector', 'kv_role': 'kv_both'}
 
@@ -48,6 +48,7 @@ class Prefiller:
       str(PREFILL_PORT),
       '-dp',
       str(PREFILL_GPU_NUM),
+      '--enable-expert-parallel',
       '-tp',
       '1',
       '--enable-auto-tool-choice',

@@ -9,6 +9,7 @@ from .config import (
   DECODE_GPU_NUM,
   DECODE_DISAGGREGATION_PORT,
   DECODE_PORT,
+  DECODE_VISIBLE_DEVICES,
 )
 
 bento_args = bentoml.use_arguments(BentoArgs)
@@ -28,7 +29,7 @@ class Decoder:
   def __command__(self) -> list[str]:
     if not IS_BENTOCLOUD:
       os.environ['CUDA_VISIBLE_DEVICES'] = DECODE_VISIBLE_DEVICES
-    os.environ['VLLM_NIXL_SIDE_CHANNEL_PORT'] = DECODE_DISAGGREGATION_PORT
+    os.environ['VLLM_NIXL_SIDE_CHANNEL_PORT'] = str(DECODE_DISAGGREGATION_PORT)
     extra_args = os.environ.get('DECODE_EXTRA_ARGS')
     kv_transfer_config = {'kv_connector': 'NixlConnector', 'kv_role': 'kv_both'}
 
@@ -47,6 +48,7 @@ class Decoder:
       str(DECODE_PORT),
       '-dp',
       str(DECODE_GPU_NUM),
+      '--enable-expert-parallel',
       '-tp',
       '1',
       '--enable-auto-tool-choice',
