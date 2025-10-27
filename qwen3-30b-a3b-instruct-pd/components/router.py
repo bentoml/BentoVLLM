@@ -14,7 +14,7 @@ import httpx
 from fastapi import FastAPI, Request
 from fastapi.responses import StreamingResponse
 
-from .config import DECODE_DISAGGREGATION_PORT, IS_BENTOCLOUD, PREFILL_DISAGGREGATION_PORT
+from .config import DECODE_DISAGGREGATION_PORT, DECODE_PORT, IS_BENTOCLOUD, PREFILL_DISAGGREGATION_PORT, PREFILL_PORT
 
 T = TypeVar('T')
 DEFAULT_PING_SECONDS = 5
@@ -92,12 +92,13 @@ class ServiceDiscovery:
       if self.next_check > current_time and self.prefill_instances and not self.decode_instances:
         return
 
+
       self.prefill_instances = [
-        ClientInfo(f'{host}:{port + i}', f'{host}:{PREFILL_DISAGGREGATION_PORT + i}')
+        ClientInfo(f'{host}:{(PREFILL_PORT if not IS_BENTOCLOUD else port) + i}', f'{host}:{PREFILL_DISAGGREGATION_PORT + i}')
         for i, (host, port) in self.enumerator([_fix_host(host) for host in await Prefiller.get_hosts()])
       ]
       self.decode_instances = [
-        ClientInfo(f'{host}:{port + i}', f'{host}:{DECODE_DISAGGREGATION_PORT + i}')
+        ClientInfo(f'{host}:{(DECODE_PORT if not IS_BENTOCLOUD else port) + i}', f'{host}:{DECODE_DISAGGREGATION_PORT + i}')
         for i, (host, port) in self.enumerator([_fix_host(host) for host in await Decoder.get_hosts()])
       ]
       self.next_check = current_time + DEFAULT_PING_SECONDS

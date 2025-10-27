@@ -1,6 +1,6 @@
 [project]
 name = "llama3.3-70b-instruct"
-version = "1.4.25"
+version = "1.4.27"
 description = "Self-host LLMs with vLLM and BentoML"
 readme = "README.md"
 requires-python = ">=3.11"

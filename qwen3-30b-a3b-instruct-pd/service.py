@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import asyncio, json, logging
 import bentoml, httpx
-from components import Decoder, Prefiller
+
+from components import Decoder, Prefiller, proxy
 from components.config import PREFILL_GPU_TYPE
 
 logger = logging.getLogger(__name__)
@@ -33,6 +34,7 @@ if 'b200' in PREFILL_GPU_TYPE:
   },
   image=image,
 )
+@bentoml.asgi_app(proxy)
 class Router:
   decoder = bentoml.depends(Decoder)
   prefiller = bentoml.depends(Prefiller)

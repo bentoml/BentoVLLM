@@ -56,4 +56,5 @@ class Prefiller:
       'hermes',
       '--kv-transfer-config',
       json.dumps(transfer_config),
+      '--enforce-eager',
     ]

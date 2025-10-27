@@ -56,6 +56,7 @@ class Prefiller:
       'hermes',
       '--kv-transfer-config',
       json.dumps(kv_transfer_config),
+      '--enforce-eager',
     ]
 
     if extra_args:
@@ -65,7 +66,7 @@ class Prefiller:
     return cmd_list
 
   async def __is_ready__(self) -> bool:
-    client = cast(httpx.AsyncClient, Prefiller.context.state['client'])
+    client = typing.cast(httpx.AsyncClient, Prefiller.context.state['client'])
     try:
       response = await client.get(f'http://localhost:{PREFILL_PORT}/health', timeout=5.0)
     except (httpx.ConnectError, httpx.RequestError):

@@ -74,7 +74,7 @@ class BentoArgs(pydantic.BaseModel):
 
     default = ['-tp', f'{tp_rank}', *self.cli_args]
     if self.dp:
-      default.extend(['-dp', self.dp])
+      default.extend(['-dp', f'{self.dp}'])
     if self.kv_cache_dtype:
       default.extend(['--kv-cache-dtype', str(self.kv_cache_dtype)])
     if self.kv_transfer_config:
