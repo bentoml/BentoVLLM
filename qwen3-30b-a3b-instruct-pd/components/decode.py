@@ -2,14 +2,12 @@ import os, json, typing
 import bentoml, httpx
 
 from .config import (
-  IS_BENTOCLOUD,
   MODEL_ID,
   BentoArgs,
   DECODE_GPU_TYPE,
   DECODE_GPU_NUM,
   DECODE_DISAGGREGATION_PORT,
   DECODE_PORT,
-  DECODE_VISIBLE_DEVICES,
 )
 
 bento_args = bentoml.use_arguments(BentoArgs)
@@ -27,9 +25,10 @@ class Decoder:
   model = bentoml.models.HuggingFaceModel(MODEL_ID.lower(), exclude=['*.pth', '*.pt', 'original/**/*'])
 
   def __command__(self) -> list[str]:
-    if not IS_BENTOCLOUD:
-      os.environ['CUDA_VISIBLE_DEVICES'] = DECODE_VISIBLE_DEVICES
-    os.environ['VLLM_NIXL_SIDE_CHANNEL_PORT'] = str(DECODE_DISAGGREGATION_PORT)
+    worker_index = bentoml.server_context.worker_index or 1
+    os.environ['CUDA_VISIBLE_DEVICES'] = str(worker_index - 1)
+    http_port = DECODE_PORT + worker_index - 1
+    os.environ['VLLM_NIXL_SIDE_CHANNEL_PORT'] = str(DECODE_DISAGGREGATION_PORT + worker_index - 1)
     extra_args = os.environ.get('DECODE_EXTRA_ARGS')
     kv_transfer_config = {'kv_connector': 'NixlConnector', 'kv_role': 'kv_both'}
 
@@ -45,10 +44,9 @@ class Decoder:
       '--host',
       '0.0.0.0',
       '--port',
-      str(DECODE_PORT),
+      str(http_port),
       '-dp',
-      str(DECODE_GPU_NUM),
-      '--enable-expert-parallel',
+      '1',
       '-tp',
       '1',
       '--enable-auto-tool-choice',

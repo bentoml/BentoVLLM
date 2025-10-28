@@ -6,7 +6,6 @@ from .config import (
   BentoArgs,
   PREFILL_GPU_TYPE,
   PREFILL_GPU_NUM,
-  PREFILL_VISIBLE_DEVICES,
   PREFILL_PORT,
   PREFILL_DISAGGREGATION_PORT,
   IS_BENTOCLOUD,
@@ -27,9 +26,11 @@ class Prefiller:
   model = bentoml.models.HuggingFaceModel(MODEL_ID.lower(), exclude=['*.pth', '*.pt', 'original/**/*'])
 
   def __command__(self) -> list[str]:
-    if not IS_BENTOCLOUD:
-      os.environ['CUDA_VISIBLE_DEVICES'] = PREFILL_VISIBLE_DEVICES
-    os.environ['VLLM_NIXL_SIDE_CHANNEL_PORT'] = str(PREFILL_DISAGGREGATION_PORT)
+    worker_index = bentoml.server_context.worker_index or 1
+    gpu_offset = 0 if IS_BENTOCLOUD else 4
+    os.environ['CUDA_VISIBLE_DEVICES'] = str(gpu_offset + worker_index - 1)
+    http_port = PREFILL_PORT + worker_index - 1
+    os.environ['VLLM_NIXL_SIDE_CHANNEL_PORT'] = str(PREFILL_DISAGGREGATION_PORT + worker_index - 1)
     extra_args = os.environ.get('PREFILL_EXTRA_ARGS')
     kv_transfer_config = {'kv_connector': 'NixlConnector', 'kv_role': 'kv_both'}
 
@@ -45,10 +46,9 @@ class Prefiller:
       '--host',
       '0.0.0.0',
       '--port',
-      str(PREFILL_PORT),
+      str(http_port),
       '-dp',
-      str(PREFILL_GPU_NUM),
-      '--enable-expert-parallel',
+      '1',
       '-tp',
       '1',
       '--enable-auto-tool-choice',

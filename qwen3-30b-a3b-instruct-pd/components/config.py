@@ -19,8 +19,8 @@ DECODE_VISIBLE_DEVICES = ','.join(str(i) for i in range(DECODE_GPU_OFFSET, DECOD
 
 
 class BentoArgs(pydantic.BaseModel):
-  num_prefill: int = 1
-  num_decode: int = 1
+  num_prefill: int = 4
+  num_decode: int = 4
 
   @property
   def envs(self) -> list[dict[str, str]]:

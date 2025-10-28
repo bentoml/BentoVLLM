@@ -12,7 +12,6 @@ image = (
   bentoml.images.Image(python_version='3.10', lock_python_packages=False)
   .system_packages('curl', 'git', 'ninja-build')
   .requirements_file('requirements.txt')
-  .python_packages('./wheels/sglang_router-0.1.9-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl')
 )
 if 'b200' in PREFILL_GPU_TYPE:
   image = image.python_packages('./wheels/deep_gemm-2.1.1+c9f8b34-cp310-cp310-linux_x86_64.whl')

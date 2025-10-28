@@ -1,5 +1,5 @@
 [project]
-name = "llama-4-maverick-fp8-pd-amd"
+name = "qwen3-30b-fp8-pd"
 version = "1.4.25"
 description = "Self-host LLMs with SGLang and BentoML"
 readme = "README.md"
