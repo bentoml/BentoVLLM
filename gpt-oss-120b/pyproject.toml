@@ -1,6 +1,6 @@
 [project]
 name = "gpt-oss-120b"
-version = "1.4.25"
+version = "1.4.33"
 description = "Self-host LLMs with vLLM and BentoML"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -34,8 +34,8 @@ gpu_type = "nvidia-h100-80gb"
 tp = 4
 model_id = "openai/gpt-oss-120b"
 exclude = [
-  "original/**/*",
-  "metal/**/*",
+  "original/",
+  "metal/",
 ]
 skip_flashinfer = true
 tool_parser = "openai"

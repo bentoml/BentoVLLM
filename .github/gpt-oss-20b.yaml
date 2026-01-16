@@ -8,8 +8,8 @@ args:
     gpu_recommendation: Nvidia GPUs with at least 80GB VRAM (e.g about 1 H100 GPU).
   model_id: openai/gpt-oss-20b
   exclude:
-    - "original/**/*"
-    - "metal/**/*"
+    - "original/"
+    - "metal/"
   skip_flashinfer: true
   reasoning_parser: openai_gptoss
   tool_parser: openai
