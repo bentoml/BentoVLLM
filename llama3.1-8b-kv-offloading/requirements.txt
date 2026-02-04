@@ -1,5 +1,5 @@
 bentoml==1.4.33
-vllm==0.13.0
+vllm==0.14.0
 huggingface-hub
 lmcache
 kantoku
