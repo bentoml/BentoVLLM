@@ -1,8 +1,8 @@
-bentoml==1.4.25
+bentoml==1.4.35
 fastapi
 huggingface-hub
 ninja
-vllm==0.11.0
+vllm==0.14.1
 kernels
 msgpack
 pyzmq
