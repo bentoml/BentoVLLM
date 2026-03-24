@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
 import os
+import signal
 import time
 from dataclasses import dataclass, field
 from typing import Any
@@ -11,9 +13,9 @@ import yaml
 
 logger = logging.getLogger('bentoml.service')
 
-IDLE_CHECK_INTERVAL = 60  # seconds between idle sweeps
-# Reserve this fraction of each GPU for CUDA contexts, fragmentation, etc.
+IDLE_CHECK_INTERVAL = 60
 GPU_MEMORY_HEADROOM = 0.10
+BASE_PORT = 9100  # vllm serve instances get ports starting here
 
 
 @dataclass
@@ -24,25 +26,52 @@ class ModelConfig:
   max_model_len: int | None = None
   gpu_memory_utilization: float = 0.40
   dtype: str = 'auto'
+
+  # Batch inference tuning
   max_num_seqs: int | None = None
   max_num_batched_tokens: int | None = None
-  extra_args: dict[str, Any] = field(default_factory=dict)
+
+  # Tool calling
+  tool_parser: str | None = None  # hermes, llama3_json, pythonic, mistral, jamba, deepseek_v3, ...
+
+  # Reasoning / thinking
+  reasoning_parser: str | None = None  # deepseek_r1, qwen3, ...
+
+  # Quantization
+  quantization: str | None = None  # awq, gptq, fp8, gguf, bitsandbytes, experts_int8, ...
+
+  # KV cache
+  kv_cache_dtype: str | None = None  # auto, fp8, fp8_e4m3, fp8_e5m2
+
+  # Vision / multimodal
+  limit_mm_per_prompt: dict[str, int] | None = None  # e.g. {"image": 3}
+
+  # Attention backend
+  attn_backend: str = 'FLASH_ATTN'  # FLASH_ATTN, FLASHMLA
+
+  # Misc
+  trust_remote_code: bool = False
+  chat_template: str | None = None  # path to jinja template
+  extra_args: list[str] = field(default_factory=list)  # additional CLI args
 
 
 @dataclass
 class LoadedModel:
-  engine: Any  # vllm.AsyncLLMEngine
-  tokenizer: Any
   config: ModelConfig
+  port: int
+  process: asyncio.subprocess.Process
   gpu_ids: list[int] = field(default_factory=list)
   last_access: float = field(default_factory=time.time)
+
+  @property
+  def base_url(self) -> str:
+    return f'http://127.0.0.1:{self.port}'
 
 
 @dataclass
 class GPUBudget:
-  """Tracks memory utilization budget for a single GPU."""
   gpu_id: int
-  used: float = 0.0  # sum of gpu_memory_utilization of loaded models
+  used: float = 0.0
 
   @property
   def free(self) -> float:
@@ -53,16 +82,12 @@ class GPUBudget:
 
 
 class ModelManager:
-  """Manages multiple vLLM engines with per-GPU memory budgeting.
+  """Manages multiple vLLM serve subprocesses with per-GPU memory budgeting.
 
-  Multiple models can share the same GPU as long as the sum of their
-  ``gpu_memory_utilization`` values (plus headroom) doesn't exceed 1.0.
-  Models requiring tensor parallelism (tp > 1) span multiple GPUs and
-  reserve ``gpu_memory_utilization`` on each.
-
-  When a requested model cannot fit, the least-recently-used model(s) are
-  evicted until enough budget is freed.  An idle timeout monitor runs in the
-  background to reclaim memory from models that haven't been accessed.
+  Each model runs as a ``vllm serve`` subprocess on its own port, giving full
+  OpenAI API compatibility including tool calling, reasoning, vision, and
+  quantized model support.  Multiple models can share GPUs as long as the
+  sum of their ``gpu_memory_utilization`` values (plus headroom) ≤ 1.0.
   """
 
   def __init__(self, config_path: str = 'models_config.yaml') -> None:
@@ -84,10 +109,17 @@ class ModelManager:
         dtype=cfg.get('dtype', 'auto'),
         max_num_seqs=cfg.get('max_num_seqs'),
         max_num_batched_tokens=cfg.get('max_num_batched_tokens'),
-        extra_args=cfg.get('extra_args', {}),
+        tool_parser=cfg.get('tool_parser'),
+        reasoning_parser=cfg.get('reasoning_parser'),
+        quantization=cfg.get('quantization'),
+        kv_cache_dtype=cfg.get('kv_cache_dtype'),
+        limit_mm_per_prompt=cfg.get('limit_mm_per_prompt'),
+        attn_backend=cfg.get('attn_backend', 'FLASH_ATTN'),
+        trust_remote_code=cfg.get('trust_remote_code', False),
+        chat_template=cfg.get('chat_template'),
+        extra_args=cfg.get('extra_args', []),
       )
 
-    # Detect available GPUs.
     try:
       import torch
       total_gpus = torch.cuda.device_count()
@@ -99,8 +131,9 @@ class ModelManager:
     self._loaded: dict[str, LoadedModel] = {}
     self._lock = asyncio.Lock()
     self._idle_task: asyncio.Task[None] | None = None
+    self._next_port = BASE_PORT
 
-    logger.info('ModelManager: %d GPU(s) detected, %d model(s) registered', total_gpus, len(self.model_configs))
+    logger.info('ModelManager: %d GPU(s), %d model(s) registered', total_gpus, len(self.model_configs))
 
   # ------------------------------------------------------------------
   # Public API
@@ -110,8 +143,8 @@ class ModelManager:
     if self._idle_task is None:
       self._idle_task = asyncio.create_task(self._idle_monitor())
 
-  async def get_engine(self, model_name: str) -> LoadedModel:
-    """Return the engine for *model_name*, loading it on demand."""
+  async def get_model(self, model_name: str) -> LoadedModel:
+    """Return the running model for *model_name*, starting it on demand."""
     async with self._lock:
       if model_name in self._loaded:
         loaded = self._loaded[model_name]
@@ -123,16 +156,12 @@ class ModelManager:
 
       cfg = self.model_configs[model_name]
       if cfg.tp > self.total_gpus:
-        raise ValueError(
-          f'Model {model_name!r} requires tp={cfg.tp} GPUs but only {self.total_gpus} total GPUs available'
-        )
+        raise ValueError(f'Model {model_name!r} requires tp={cfg.tp} but only {self.total_gpus} GPU(s) available')
 
-      # Ensure enough memory budget is available (evict LRU if needed).
       gpu_ids = await self._find_or_free_gpus(cfg)
       return await self._do_load(model_name, gpu_ids)
 
   async def unload_model(self, model_name: str) -> bool:
-    """Force-unload a specific model. Returns True if it was loaded."""
     async with self._lock:
       if model_name not in self._loaded:
         return False
@@ -140,7 +169,6 @@ class ModelManager:
       return True
 
   async def unload_all(self) -> list[str]:
-    """Force-unload all models."""
     async with self._lock:
       names = list(self._loaded.keys())
       for name in names:
@@ -159,21 +187,31 @@ class ModelManager:
         'path': cfg.path,
         'tp': cfg.tp,
         'gpu_memory_utilization': cfg.gpu_memory_utilization,
+        'features': [],
       }
+      if cfg.tool_parser:
+        entry['features'].append('tool_calling')
+      if cfg.reasoning_parser:
+        entry['features'].append('reasoning')
+      if cfg.quantization:
+        entry['features'].append(f'quantized:{cfg.quantization}')
+      if cfg.limit_mm_per_prompt:
+        entry['features'].append('vision')
       if loaded:
-        entry['gpu_ids'] = self._loaded[name].gpu_ids
+        lm = self._loaded[name]
+        entry['gpu_ids'] = lm.gpu_ids
+        entry['port'] = lm.port
       result.append(entry)
     return result
 
   def status(self) -> dict[str, Any]:
     return {
       'total_gpus': self.total_gpus,
-      'gpus': [
-        {'gpu_id': b.gpu_id, 'used': round(b.used, 3), 'free': round(b.free, 3)} for b in self.gpu_budgets
-      ],
+      'gpus': [{'gpu_id': b.gpu_id, 'used': round(b.used, 3), 'free': round(b.free, 3)} for b in self.gpu_budgets],
       'loaded_models': {
         name: {
           'gpu_ids': lm.gpu_ids,
+          'port': lm.port,
           'gpu_memory_utilization': lm.config.gpu_memory_utilization,
           'last_access': lm.last_access,
         }
@@ -187,31 +225,19 @@ class ModelManager:
   # ------------------------------------------------------------------
 
   def _find_fitting_gpus(self, cfg: ModelConfig) -> list[int] | None:
-    """Find ``cfg.tp`` GPUs that can each fit ``cfg.gpu_memory_utilization``.
-
-    For tp=1, pick the GPU with the most free budget.
-    For tp>1, find a contiguous (or any) group of tp GPUs that all have room.
-    Returns None if no feasible placement exists without eviction.
-    """
     utilization = cfg.gpu_memory_utilization
     eligible = [b for b in self.gpu_budgets if b.can_fit(utilization)]
-
     if len(eligible) < cfg.tp:
       return None
-
     if cfg.tp == 1:
-      # Pick GPU with the most free space.
       best = max(eligible, key=lambda b: b.free)
       return [best.gpu_id]
-
-    # tp > 1: try contiguous first, then any combination.
+    # tp > 1: try contiguous first.
     eligible_ids = {b.gpu_id for b in eligible}
     for start in range(self.total_gpus - cfg.tp + 1):
       group = list(range(start, start + cfg.tp))
       if all(g in eligible_ids for g in group):
         return group
-
-    # Non-contiguous fallback (sorted by most free space).
     eligible.sort(key=lambda b: b.free, reverse=True)
     return [b.gpu_id for b in eligible[: cfg.tp]]
 
@@ -224,12 +250,9 @@ class ModelManager:
       self.gpu_budgets[gid].used = max(0.0, self.gpu_budgets[gid].used - utilization)
 
   async def _find_or_free_gpus(self, cfg: ModelConfig) -> list[int]:
-    """Find GPUs for *cfg*, evicting LRU models if necessary."""
     gpu_ids = self._find_fitting_gpus(cfg)
     if gpu_ids is not None:
       return gpu_ids
-
-    # Evict LRU models until placement is possible.
     while True:
       if not self._loaded:
         raise RuntimeError(
@@ -237,78 +260,135 @@ class ModelManager:
           f'even with all GPUs empty. Check gpu_memory_utilization + headroom ({GPU_MEMORY_HEADROOM}).'
         )
       lru_name = min(self._loaded, key=lambda n: self._loaded[n].last_access)
-      logger.info(
-        'Evicting LRU model %s (last access %.0fs ago) to free memory for %s',
-        lru_name,
-        time.time() - self._loaded[lru_name].last_access,
-        cfg.name,
-      )
+      logger.info('Evicting LRU model %s to free memory for %s', lru_name, cfg.name)
       await self._do_unload(lru_name)
-
       gpu_ids = self._find_fitting_gpus(cfg)
       if gpu_ids is not None:
         return gpu_ids
 
   # ------------------------------------------------------------------
-  # Engine lifecycle
+  # vllm serve subprocess lifecycle
   # ------------------------------------------------------------------
 
-  async def _do_load(self, model_name: str, gpu_ids: list[int]) -> LoadedModel:
-    cfg = self.model_configs[model_name]
+  def _build_vllm_cmd(self, cfg: ModelConfig, port: int, gpu_ids: list[int]) -> list[str]:
+    """Build the ``vllm serve`` command line."""
     model_path = cfg.path
     if not os.path.isabs(model_path):
       candidate = os.path.join(self.models_dir, model_path)
       if os.path.isdir(candidate):
         model_path = candidate
 
+    cmd = [
+      'vllm', 'serve', model_path,
+      '--port', str(port),
+      '-tp', str(cfg.tp),
+      '--gpu-memory-utilization', str(cfg.gpu_memory_utilization),
+      '--dtype', cfg.dtype,
+      '--served-model-name', cfg.name,
+      '--disable-uvicorn-access-log',
+      '--disable-fastapi-docs',
+      '--no-use-tqdm-on-load',
+    ]
+
+    if cfg.max_model_len:
+      cmd.extend(['--max-model-len', str(cfg.max_model_len)])
+    if cfg.max_num_seqs:
+      cmd.extend(['--max-num-seqs', str(cfg.max_num_seqs)])
+    if cfg.max_num_batched_tokens:
+      cmd.extend(['--max-num-batched-tokens', str(cfg.max_num_batched_tokens)])
+
+    # Tool calling
+    if cfg.tool_parser:
+      cmd.extend(['--enable-auto-tool-choice', '--tool-call-parser', cfg.tool_parser])
+
+    # Reasoning / thinking
+    if cfg.reasoning_parser:
+      cmd.extend(['--reasoning-parser', cfg.reasoning_parser])
+
+    # Quantization
+    if cfg.quantization:
+      cmd.extend(['--quantization', cfg.quantization])
+
+    # KV cache dtype
+    if cfg.kv_cache_dtype:
+      cmd.extend(['--kv-cache-dtype', cfg.kv_cache_dtype])
+
+    # Vision / multimodal
+    if cfg.limit_mm_per_prompt:
+      cmd.extend(['--limit-mm-per-prompt', json.dumps(cfg.limit_mm_per_prompt)])
+
+    # Misc
+    if cfg.trust_remote_code:
+      cmd.append('--trust-remote-code')
+    if cfg.chat_template:
+      cmd.extend(['--chat-template', cfg.chat_template])
+
+    cmd.extend(cfg.extra_args)
+    return cmd
+
+  def _build_env(self, cfg: ModelConfig, gpu_ids: list[int]) -> dict[str, str]:
+    """Build environment variables for the vllm serve subprocess."""
+    env = {**os.environ}
+    env['CUDA_VISIBLE_DEVICES'] = ','.join(str(g) for g in gpu_ids)
+    env['VLLM_ATTENTION_BACKEND'] = cfg.attn_backend
+    return env
+
+  async def _wait_for_health(self, port: int, timeout: float = 300) -> bool:
+    """Poll the vllm serve health endpoint until ready or timeout."""
+    import httpx
+
+    deadline = time.time() + timeout
+    url = f'http://127.0.0.1:{port}/health'
+    async with httpx.AsyncClient() as client:
+      while time.time() < deadline:
+        try:
+          resp = await client.get(url, timeout=5)
+          if resp.status_code == 200:
+            return True
+        except (httpx.ConnectError, httpx.RequestError):
+          pass
+        await asyncio.sleep(2)
+    return False
+
+  def _allocate_port(self) -> int:
+    port = self._next_port
+    self._next_port += 1
+    return port
+
+  async def _do_load(self, model_name: str, gpu_ids: list[int]) -> LoadedModel:
+    cfg = self.model_configs[model_name]
+    port = self._allocate_port()
+
     self._reserve_budget(gpu_ids, cfg.gpu_memory_utilization)
-    logger.info(
-      'Loading model %s from %s on GPU(s) %s (tp=%d, util=%.2f)',
-      model_name, model_path, gpu_ids, cfg.tp, cfg.gpu_memory_utilization,
-    )
+
+    cmd = self._build_vllm_cmd(cfg, port, gpu_ids)
+    env = self._build_env(cfg, gpu_ids)
+
+    logger.info('Starting vllm serve for %s on port %d, GPU(s) %s', model_name, port, gpu_ids)
+    logger.info('Command: %s', ' '.join(cmd))
 
     try:
-      from vllm import AsyncEngineArgs, AsyncLLMEngine
-
-      kwargs: dict[str, Any] = {}
-      if cfg.max_model_len:
-        kwargs['max_model_len'] = cfg.max_model_len
-      if cfg.max_num_seqs:
-        kwargs['max_num_seqs'] = cfg.max_num_seqs
-      if cfg.max_num_batched_tokens:
-        kwargs['max_num_batched_tokens'] = cfg.max_num_batched_tokens
-
-      engine_args = AsyncEngineArgs(
-        model=model_path,
-        tensor_parallel_size=cfg.tp,
-        gpu_memory_utilization=cfg.gpu_memory_utilization,
-        dtype=cfg.dtype,
-        enforce_eager=False,
-        disable_log_requests=True,
-        **kwargs,
-        **cfg.extra_args,
+      process = await asyncio.create_subprocess_exec(
+        *cmd,
+        env=env,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE,
       )
 
-      # Pin engine to specific GPUs.
-      old_cuda_visible = os.environ.get('CUDA_VISIBLE_DEVICES')
-      os.environ['CUDA_VISIBLE_DEVICES'] = ','.join(str(g) for g in gpu_ids)
+      # Wait for vLLM to be healthy.
+      healthy = await self._wait_for_health(port)
+      if not healthy:
+        process.terminate()
+        await process.wait()
+        raise RuntimeError(f'vllm serve for {model_name} failed to start on port {port}')
 
-      try:
-        engine = AsyncLLMEngine.from_engine_args(engine_args)
-      finally:
-        if old_cuda_visible is not None:
-          os.environ['CUDA_VISIBLE_DEVICES'] = old_cuda_visible
-        else:
-          os.environ.pop('CUDA_VISIBLE_DEVICES', None)
-
-      tokenizer = await engine.get_tokenizer()
     except Exception:
       self._release_budget(gpu_ids, cfg.gpu_memory_utilization)
       raise
 
-    loaded = LoadedModel(engine=engine, tokenizer=tokenizer, config=cfg, gpu_ids=gpu_ids)
+    loaded = LoadedModel(config=cfg, port=port, process=process, gpu_ids=gpu_ids)
     self._loaded[model_name] = loaded
-    logger.info('Model %s loaded on GPU(s) %s', model_name, gpu_ids)
+    logger.info('Model %s ready on port %d, GPU(s) %s', model_name, port, gpu_ids)
     return loaded
 
   async def _do_unload(self, model_name: str) -> None:
@@ -316,9 +396,18 @@ class ModelManager:
     if loaded is None:
       return
 
-    logger.info('Shutting down engine for %s (GPU(s) %s)', model_name, loaded.gpu_ids)
-    loaded.engine.shutdown()
-    await asyncio.sleep(0.5)
+    logger.info('Stopping vllm serve for %s (port %d, GPU(s) %s)', model_name, loaded.port, loaded.gpu_ids)
+
+    # Graceful shutdown: SIGTERM, then SIGKILL after timeout.
+    try:
+      loaded.process.send_signal(signal.SIGTERM)
+      try:
+        await asyncio.wait_for(loaded.process.wait(), timeout=15)
+      except asyncio.TimeoutError:
+        loaded.process.kill()
+        await loaded.process.wait()
+    except ProcessLookupError:
+      pass
 
     self._release_budget(loaded.gpu_ids, loaded.config.gpu_memory_utilization)
 
@@ -329,16 +418,14 @@ class ModelManager:
     except Exception:
       pass
 
-    logger.info('Model %s unloaded, freed GPU(s) %s', model_name, loaded.gpu_ids)
+    logger.info('Model %s stopped, freed GPU(s) %s', model_name, loaded.gpu_ids)
 
   async def _idle_monitor(self) -> None:
     while True:
       await asyncio.sleep(IDLE_CHECK_INTERVAL)
       async with self._lock:
         now = time.time()
-        to_unload = [
-          name for name, lm in self._loaded.items() if (now - lm.last_access) >= self.idle_timeout
-        ]
+        to_unload = [name for name, lm in self._loaded.items() if (now - lm.last_access) >= self.idle_timeout]
         for name in to_unload:
           idle_for = now - self._loaded[name].last_access
           logger.info('Model %s idle for %.0fs (timeout=%ds), unloading', name, idle_for, self.idle_timeout)

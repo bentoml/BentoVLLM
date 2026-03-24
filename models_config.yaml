@@ -1,39 +1,49 @@
 # Model registry for the batch service.
 #
-# models_dir: base directory where HuggingFace model files are stored.
-# idle_timeout_seconds: unload a model after this many seconds of inactivity.
-# max_batch_size: max requests allowed in a single /v1/batch call.
+# Each model runs as a separate `vllm serve` subprocess, so ALL vLLM features
+# are supported natively: tool calling, reasoning, vision, quantization, etc.
 #
-# Each model entry:
-#   path  – relative to models_dir (or an absolute path / HF repo ID)
-#   tp    – tensor parallelism: number of GPUs this model needs (default 1)
-#   gpu_memory_utilization – fraction of GPU VRAM this model reserves (default 0.40)
-#       Multiple models share one GPU as long as the sum ≤ 0.90 (10% headroom).
-#       Example on 80GB A100: 0.40 = ~32GB per model → 2 models per GPU.
-#   max_model_len – context length cap (optional, vLLM auto-detects if omitted)
-#   max_num_seqs – max concurrent sequences per batch (default: vLLM default 256)
-#       Increase for batch throughput (e.g. 1024), decrease for lower latency.
-#   max_num_batched_tokens – max tokens across all sequences per scheduler step
-#       (default: vLLM default 8192). Increase for batch throughput (e.g. 32768).
-#   dtype – data type override (default "auto")
-#   extra_args – additional kwargs forwarded to AsyncEngineArgs
+# Global settings:
+#   models_dir             – base directory for HuggingFace model files
+#   idle_timeout_seconds   – unload after this many seconds of inactivity
+#   max_batch_size         – max requests per /v1/batch call
 #
-# GPU memory budgeting (single GPU example, 80GB A100):
-#   ┌─────────────────────────────────────────────────────────────┐
-#   │ Model A (8B, util=0.40, ~32GB) │ Model B (8B, util=0.40)   │
-#   │ headroom (10%, ~8GB)           │ free (~8GB)                │
-#   └─────────────────────────────────────────────────────────────┘
+# Per-model fields:
+#   path                   – HF repo ID or path relative to models_dir
+#   tp                     – tensor parallelism (GPUs needed, default 1)
+#   gpu_memory_utilization – fraction of GPU VRAM to reserve (default 0.40)
+#                            Multiple models share one GPU: sum must be ≤ 0.90
+#   max_model_len          – context length cap
+#   max_num_seqs           – max concurrent sequences (batch throughput knob)
+#   max_num_batched_tokens – max tokens per scheduler step (throughput knob)
+#   dtype                  – data type: auto, float16, bfloat16 (default auto)
 #
-# Multi-GPU example (4x A100):
-#   GPU 0: Model A (8B, util=0.40) + Model B (8B, util=0.40)
-#   GPU 1: Model C (8B, util=0.40) + Model D (8B, util=0.40)
-#   GPU 2-3: Model E (70B, tp=2, util=0.85 on each GPU)
+#   tool_parser            – enable tool/function calling
+#                            values: hermes, llama3_json, pythonic, mistral,
+#                                    jamba, deepseek_v3, qwen3, ...
+#   reasoning_parser       – enable thinking/reasoning mode
+#                            values: deepseek_r1, qwen3, ...
+#   quantization           – quantization format
+#                            values: awq, gptq, fp8, gguf, bitsandbytes,
+#                                    experts_int8, marlin, ...
+#   kv_cache_dtype         – KV cache data type (50% memory saving with fp8)
+#                            values: auto, fp8, fp8_e4m3, fp8_e5m2
+#   limit_mm_per_prompt    – vision/multimodal: max media per prompt
+#                            e.g. {"image": 3}
+#   attn_backend           – attention implementation
+#                            values: FLASH_ATTN (default), FLASHMLA
+#   trust_remote_code      – allow custom model code from HF (default false)
+#   chat_template          – path to custom jinja chat template
+#   extra_args             – additional vllm serve CLI args as a list
 
 models_dir: "/data/models"
 idle_timeout_seconds: 1800
 max_batch_size: 128
 
 models:
+  # -------------------------------------------------------------------
+  # Standard model with tool calling
+  # -------------------------------------------------------------------
   llama3.1-8b-instruct:
     path: "meta-llama/Meta-Llama-3.1-8B-Instruct"
     tp: 1
@@ -41,7 +51,11 @@ models:
     max_model_len: 8192
     max_num_seqs: 512
     max_num_batched_tokens: 16384
+    tool_parser: "llama3_json"
 
+  # -------------------------------------------------------------------
+  # Model with reasoning (thinking) + tool calling
+  # -------------------------------------------------------------------
   qwen3-8b:
     path: "Qwen/Qwen3-8B"
     tp: 1
@@ -49,12 +63,85 @@ models:
     max_model_len: 4096
     max_num_seqs: 512
     max_num_batched_tokens: 16384
+    tool_parser: "hermes"
+    reasoning_parser: "qwen3"
 
-  # Example: large model requiring 4 GPUs
+  # -------------------------------------------------------------------
+  # Quantized model (AWQ) — fits in much less VRAM
+  #   8B model at AWQ Q4 ≈ ~5GB weights (vs ~16GB fp16)
+  #   Set gpu_memory_utilization low to co-locate with other models
+  # -------------------------------------------------------------------
+  # llama3.1-8b-instruct-awq:
+  #   path: "hugging-quants/Meta-Llama-3.1-8B-Instruct-AWQ-INT4"
+  #   tp: 1
+  #   gpu_memory_utilization: 0.25
+  #   max_model_len: 8192
+  #   quantization: "awq"
+  #   tool_parser: "llama3_json"
+
+  # -------------------------------------------------------------------
+  # Quantized model (GGUF Q4_K_M)
+  #   NOTE: GGUF support in vLLM is experimental and slower than AWQ/GPTQ.
+  #   The path format for HF-hosted GGUF is "repo_id:quant_type".
+  # -------------------------------------------------------------------
+  # qwen3-8b-gguf:
+  #   path: "unsloth/Qwen3-8B-GGUF:Q4_K_M"
+  #   tp: 1
+  #   gpu_memory_utilization: 0.25
+  #   quantization: "gguf"
+
+  # -------------------------------------------------------------------
+  # FP8 KV cache — halves KV cache memory, doubles concurrent requests
+  # -------------------------------------------------------------------
+  # llama3.1-8b-fp8kv:
+  #   path: "meta-llama/Meta-Llama-3.1-8B-Instruct"
+  #   tp: 1
+  #   gpu_memory_utilization: 0.40
+  #   max_model_len: 16384
+  #   kv_cache_dtype: "fp8"
+  #   tool_parser: "llama3_json"
+
+  # -------------------------------------------------------------------
+  # Vision / multimodal model
+  # -------------------------------------------------------------------
+  # gemma3-4b-instruct:
+  #   path: "google/gemma-3-4b-it"
+  #   tp: 1
+  #   gpu_memory_utilization: 0.30
+  #   max_model_len: 4096
+  #   limit_mm_per_prompt: {"image": 3}
+
+  # -------------------------------------------------------------------
+  # DeepSeek R1 reasoning model with tool calling
+  # -------------------------------------------------------------------
+  # deepseek-r1-0528-qwen3-8b:
+  #   path: "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B"
+  #   tp: 1
+  #   gpu_memory_utilization: 0.40
+  #   max_model_len: 8192
+  #   tool_parser: "hermes"
+  #   reasoning_parser: "deepseek_r1"
+
+  # -------------------------------------------------------------------
+  # Large model with tensor parallelism (4 GPUs)
+  # -------------------------------------------------------------------
   # llama3.3-70b-instruct:
   #   path: "meta-llama/Llama-3.3-70B-Instruct"
   #   tp: 4
   #   gpu_memory_utilization: 0.85
   #   max_model_len: 8192
   #   max_num_seqs: 256
-  #   max_num_batched_tokens: 8192
+  #   tool_parser: "pythonic"
+
+  # -------------------------------------------------------------------
+  # DeepSeek V3 with FLASHMLA attention + custom chat template
+  # -------------------------------------------------------------------
+  # deepseek-v3-671b:
+  #   path: "deepseek-ai/DeepSeek-V3"
+  #   tp: 8
+  #   gpu_memory_utilization: 0.90
+  #   attn_backend: "FLASHMLA"
+  #   trust_remote_code: true
+  #   tool_parser: "deepseek_v3"
+  #   chat_template: "templates/tool_deepseek_v3.jinja"
+  #   extra_args: ["--enable-chunked-prefill", "--max-num-batched-tokens", "4096"]

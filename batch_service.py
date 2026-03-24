@@ -1,16 +1,17 @@
-"""BentoML batch service with dynamic multi-model loading across 1-8 GPUs.
+"""BentoML batch service with dynamic multi-model management via vllm serve.
 
-Multiple models can be loaded simultaneously as long as GPUs are available.
-When a new model doesn't fit, the least-recently-used model is evicted.
+Each model runs as a ``vllm serve`` subprocess with full OpenAI API
+compatibility — tool calling, reasoning/thinking, vision, quantization,
+and KV cache dtype are all supported natively.
 
 Run with:
     bentoml serve batch_service:VLLMBatchService --port 3000
 
-Endpoints:
-    POST /v1/chat/completions       – OpenAI-compatible chat (streams or returns JSON)
-    POST /v1/completions            – OpenAI-compatible completions
+Endpoints (proxied to per-model vllm serve instances):
+    POST /v1/chat/completions       – OpenAI chat (tools, reasoning, vision, streaming)
+    POST /v1/completions            – OpenAI completions
     POST /v1/batch                  – Batch: array of chat completion requests
-    GET  /v1/models                 – List registered models + loaded status
+    GET  /v1/models                 – List registered models + loaded status + features
     POST /v1/models/{name}/unload   – Force-unload a specific model
     GET  /v1/status                 – GPU allocation summary
     GET  /health                    – Health check
@@ -18,14 +19,12 @@ Endpoints:
 from __future__ import annotations
 
 import asyncio
-import json
 import logging
 import os
-import time
-import uuid
-from typing import Any, AsyncIterator
+from typing import Any
 
 import bentoml
+import httpx
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse, StreamingResponse
 
@@ -34,190 +33,104 @@ from model_manager import ModelManager
 logger = logging.getLogger('bentoml.service')
 
 app = FastAPI()
-manager: ModelManager | None = None  # initialised by BentoML lifecycle
-
-
-def _uuid() -> str:
-  return uuid.uuid4().hex
+manager: ModelManager | None = None
 
 
 # ---------------------------------------------------------------------------
-# Helpers
+# Proxy helpers
 # ---------------------------------------------------------------------------
 
-async def _generate_chat(loaded, request_data: dict[str, Any]) -> dict[str, Any] | AsyncIterator[str]:
-  """Run a single chat-completion request through the vLLM engine."""
-  from vllm import SamplingParams
-
-  messages = request_data.get('messages', [])
-  model_name = loaded.config.name
-
-  prompt = loaded.tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
-
-  sampling = SamplingParams(
-    max_tokens=request_data.get('max_tokens', 512),
-    temperature=request_data.get('temperature', 0.7),
-    top_p=request_data.get('top_p', 1.0),
-    stop=request_data.get('stop'),
-  )
-
-  request_id = f'chatcmpl-{_uuid()}'
-  stream = request_data.get('stream', False)
-
-  if stream:
-    return _stream_chat(loaded.engine, prompt, sampling, request_id, model_name)
-
-  # Non-streaming: collect the full output.
-  final_output = None
-  async for output in loaded.engine.generate(prompt, sampling, request_id):
-    final_output = output
-
-  text = final_output.outputs[0].text if final_output else ''
-  finish_reason = final_output.outputs[0].finish_reason if final_output else 'stop'
-  usage = {
-    'prompt_tokens': len(final_output.prompt_token_ids) if final_output else 0,
-    'completion_tokens': len(final_output.outputs[0].token_ids) if final_output else 0,
-    'total_tokens': (len(final_output.prompt_token_ids) + len(final_output.outputs[0].token_ids)) if final_output else 0,
-  }
-
-  return {
-    'id': request_id,
-    'object': 'chat.completion',
-    'created': int(time.time()),
-    'model': model_name,
-    'choices': [{'index': 0, 'message': {'role': 'assistant', 'content': text}, 'finish_reason': finish_reason}],
-    'usage': usage,
-  }
+async def _proxy_request(base_url: str, path: str, body: bytes, headers: dict[str, str], stream: bool):
+  """Forward a request to a vllm serve instance and return the response."""
+  url = f'{base_url}{path}'
+  async with httpx.AsyncClient(timeout=None) as client:
+    if stream:
+      req = client.build_request('POST', url, content=body, headers=headers)
+      resp = await client.send(req, stream=True)
+      return StreamingResponse(
+        resp.aiter_bytes(),
+        status_code=resp.status_code,
+        media_type=resp.headers.get('content-type', 'text/event-stream'),
+      )
+    else:
+      resp = await client.post(url, content=body, headers=headers)
+      return JSONResponse(resp.json(), status_code=resp.status_code)
 
 
-async def _stream_chat(engine, prompt: str, sampling, request_id: str, model_name: str) -> AsyncIterator[str]:
-  previous_len = 0
-  async for output in engine.generate(prompt, sampling, request_id):
-    text = output.outputs[0].text
-    delta = text[previous_len:]
-    previous_len = len(text)
-    if delta:
-      chunk = {
-        'id': request_id,
-        'object': 'chat.completion.chunk',
-        'created': int(time.time()),
-        'model': model_name,
-        'choices': [{'index': 0, 'delta': {'content': delta}, 'finish_reason': None}],
-      }
-      yield f'data: {json.dumps(chunk)}\n\n'
-
-  # Final chunk with finish_reason.
-  final_chunk = {
-    'id': request_id,
-    'object': 'chat.completion.chunk',
-    'created': int(time.time()),
-    'model': model_name,
-    'choices': [{'index': 0, 'delta': {}, 'finish_reason': 'stop'}],
-  }
-  yield f'data: {json.dumps(final_chunk)}\n\n'
-  yield 'data: [DONE]\n\n'
-
-
-async def _generate_completion(loaded, request_data: dict[str, Any]) -> dict[str, Any]:
-  """Run a single /v1/completions request."""
-  from vllm import SamplingParams
-
-  prompt = request_data.get('prompt', '')
-  model_name = loaded.config.name
-
-  sampling = SamplingParams(
-    max_tokens=request_data.get('max_tokens', 256),
-    temperature=request_data.get('temperature', 0.7),
-    top_p=request_data.get('top_p', 1.0),
-    stop=request_data.get('stop'),
-  )
-
-  request_id = f'cmpl-{_uuid()}'
-  final_output = None
-  async for output in loaded.engine.generate(prompt, sampling, request_id):
-    final_output = output
-
-  text = final_output.outputs[0].text if final_output else ''
-  finish_reason = final_output.outputs[0].finish_reason if final_output else 'stop'
-
-  return {
-    'id': request_id,
-    'object': 'text_completion',
-    'created': int(time.time()),
-    'model': model_name,
-    'choices': [{'index': 0, 'text': text, 'finish_reason': finish_reason}],
-    'usage': {
-      'prompt_tokens': len(final_output.prompt_token_ids) if final_output else 0,
-      'completion_tokens': len(final_output.outputs[0].token_ids) if final_output else 0,
-      'total_tokens': (len(final_output.prompt_token_ids) + len(final_output.outputs[0].token_ids)) if final_output else 0,
-    },
-  }
+async def _get_loaded_model(model_name: str | None):
+  """Resolve model name and return the LoadedModel."""
+  assert manager is not None
+  if not model_name:
+    raise HTTPException(400, detail='Missing "model" field in request body')
+  try:
+    return await manager.get_model(model_name)
+  except ValueError as exc:
+    raise HTTPException(404, detail=str(exc))
+  except RuntimeError as exc:
+    raise HTTPException(503, detail=str(exc))
 
 
 # ---------------------------------------------------------------------------
-# FastAPI routes (mounted by BentoML)
+# OpenAI-compatible endpoints (proxied to vllm serve)
 # ---------------------------------------------------------------------------
 
 @app.post('/v1/chat/completions')
 async def chat_completions(request: Request):
-  assert manager is not None
-  body = await request.json()
-  model_name = body.get('model')
-  if not model_name:
-    raise HTTPException(400, detail='Missing "model" field')
+  """Proxied to vllm serve — supports tool calling, reasoning, vision, streaming."""
+  body_bytes = await request.body()
+  body_json = await request.json()
+  model_name = body_json.get('model')
+  loaded = await _get_loaded_model(model_name)
 
-  try:
-    loaded = await manager.get_engine(model_name)
-  except ValueError as exc:
-    raise HTTPException(404, detail=str(exc))
+  is_stream = body_json.get('stream', False)
+  headers = {'content-type': 'application/json'}
 
-  result = await _generate_chat(loaded, body)
-
-  if isinstance(result, dict):
-    return JSONResponse(result)
-  # Streaming
-  return StreamingResponse(result, media_type='text/event-stream')
+  return await _proxy_request(loaded.base_url, '/v1/chat/completions', body_bytes, headers, stream=is_stream)
 
 
 @app.post('/v1/completions')
 async def completions(request: Request):
-  assert manager is not None
-  body = await request.json()
-  model_name = body.get('model')
-  if not model_name:
-    raise HTTPException(400, detail='Missing "model" field')
+  body_bytes = await request.body()
+  body_json = await request.json()
+  model_name = body_json.get('model')
+  loaded = await _get_loaded_model(model_name)
 
-  try:
-    loaded = await manager.get_engine(model_name)
-  except ValueError as exc:
-    raise HTTPException(404, detail=str(exc))
+  is_stream = body_json.get('stream', False)
+  headers = {'content-type': 'application/json'}
 
-  result = await _generate_completion(loaded, body)
-  return JSONResponse(result)
+  return await _proxy_request(loaded.base_url, '/v1/completions', body_bytes, headers, stream=is_stream)
 
+
+# ---------------------------------------------------------------------------
+# Batch endpoint
+# ---------------------------------------------------------------------------
 
 @app.post('/v1/batch')
 async def batch(request: Request):
-  """Batch endpoint: submit multiple chat completion requests at once.
+  """Submit multiple chat completion requests at once.
 
-  Request body:
+  All requests go to the same model and are processed concurrently via
+  vLLM's continuous batching.  Tool calling, reasoning, and vision are
+  supported in each individual request.
+
+  Request body::
+
       {
         "model": "llama3.1-8b-instruct",
         "requests": [
           {"messages": [{"role": "user", "content": "Hello"}], "max_tokens": 100},
-          {"messages": [{"role": "user", "content": "World"}], "max_tokens": 100}
+          {"messages": [...], "tools": [...], "max_tokens": 200}
         ]
       }
 
-  Response:
-      {
-        "results": [ <chat.completion>, <chat.completion>, ... ]
-      }
+  Response::
+
+      { "results": [ <chat.completion>, ... ] }
   """
   assert manager is not None
-  body = await request.json()
-  model_name = body.get('model')
-  requests = body.get('requests', [])
+  body_json = await request.json()
+  model_name = body_json.get('model')
+  requests = body_json.get('requests', [])
 
   if not model_name:
     raise HTTPException(400, detail='Missing "model" field')
@@ -228,26 +141,30 @@ async def batch(request: Request):
   if len(requests) > max_batch:
     raise HTTPException(
       400,
-      detail=f'Batch size {len(requests)} exceeds max_batch_size={max_batch}. '
-      f'Split your requests into smaller batches.',
+      detail=f'Batch size {len(requests)} exceeds max_batch_size={max_batch}. Split into smaller batches.',
     )
 
-  try:
-    loaded = await manager.get_engine(model_name)
-  except ValueError as exc:
-    raise HTTPException(404, detail=str(exc))
+  loaded = await _get_loaded_model(model_name)
 
-  # Fan-out all requests concurrently – vLLM continuous batching handles them.
-  async def _run(req: dict[str, Any]) -> dict[str, Any]:
+  async def _run_one(req: dict[str, Any]) -> dict[str, Any]:
+    # Ensure model name and non-streaming.
     req['model'] = model_name
     req['stream'] = False
-    result = await _generate_chat(loaded, req)
-    assert isinstance(result, dict)
-    return result
+    import json as _json
 
-  results = await asyncio.gather(*[_run(r) for r in requests])
+    body = _json.dumps(req).encode()
+    headers = {'content-type': 'application/json'}
+    async with httpx.AsyncClient(timeout=None) as client:
+      resp = await client.post(f'{loaded.base_url}/v1/chat/completions', content=body, headers=headers)
+      return resp.json()
+
+  results = await asyncio.gather(*[_run_one(r) for r in requests])
   return JSONResponse({'results': list(results)})
 
+
+# ---------------------------------------------------------------------------
+# Management endpoints
+# ---------------------------------------------------------------------------
 
 @app.get('/v1/models')
 async def list_models():
@@ -291,8 +208,4 @@ class VLLMBatchService:
     config_path = os.environ.get('MODELS_CONFIG', 'models_config.yaml')
     manager = ModelManager(config_path)
     asyncio.get_event_loop().create_task(manager.start_idle_monitor())
-    logger.info(
-      'VLLMBatchService started, config=%s, total_gpus=%d',
-      config_path,
-      manager.total_gpus,
-    )
+    logger.info('VLLMBatchService started, config=%s, gpus=%d', config_path, manager.total_gpus)
