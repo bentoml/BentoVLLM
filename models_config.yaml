@@ -1,13 +1,21 @@
 # Model registry for the batch service.
+#
 # models_dir: base directory where HuggingFace model files are stored.
 # idle_timeout_seconds: unload a model after this many seconds of inactivity.
 #
 # Each model entry:
 #   path  – relative to models_dir (or an absolute path / HF repo ID)
-#   max_model_len – context length cap (optional, vLLM will auto-detect if omitted)
+#   tp    – tensor parallelism: number of GPUs this model needs (default 1)
+#   max_model_len – context length cap (optional, vLLM auto-detects if omitted)
 #   gpu_memory_utilization – fraction of GPU memory to use (default 0.90)
 #   dtype – data type override (default "auto")
 #   extra_args – additional kwargs forwarded to AsyncEngineArgs
+#
+# GPU allocation:
+#   With 1 GPU:  only one model loaded at a time (auto-swaps on demand).
+#   With 8 GPUs: e.g. load a 70B model (tp=4) on GPUs 0-3 and an 8B model
+#                (tp=1) on GPU 4 simultaneously.  LRU eviction frees GPUs
+#                when a new model doesn't fit.
 
 models_dir: "/data/models"
 idle_timeout_seconds: 1800
@@ -15,10 +23,19 @@ idle_timeout_seconds: 1800
 models:
   llama3.1-8b-instruct:
     path: "meta-llama/Meta-Llama-3.1-8B-Instruct"
+    tp: 1
     max_model_len: 8192
     gpu_memory_utilization: 0.90
 
   qwen3-8b:
     path: "Qwen/Qwen3-8B"
+    tp: 1
     max_model_len: 4096
     gpu_memory_utilization: 0.90
+
+  # Example: large model requiring 4 GPUs
+  # llama3.3-70b-instruct:
+  #   path: "meta-llama/Llama-3.3-70B-Instruct"
+  #   tp: 4
+  #   max_model_len: 8192
+  #   gpu_memory_utilization: 0.90

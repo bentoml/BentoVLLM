@@ -1,15 +1,19 @@
-"""BentoML batch service that dynamically loads/unloads vLLM models on a single GPU.
+"""BentoML batch service with dynamic multi-model loading across 1-8 GPUs.
+
+Multiple models can be loaded simultaneously as long as GPUs are available.
+When a new model doesn't fit, the least-recently-used model is evicted.
 
 Run with:
     bentoml serve batch_service:VLLMBatchService --port 3000
 
 Endpoints:
-    POST /v1/chat/completions   – OpenAI-compatible chat (streams or returns JSON)
-    POST /v1/completions        – OpenAI-compatible completions
-    POST /v1/batch              – Batch: array of chat completion requests
-    GET  /v1/models             – List registered models + loaded status
-    POST /v1/models/unload      – Force-unload the current model
-    GET  /health                – Health check
+    POST /v1/chat/completions       – OpenAI-compatible chat (streams or returns JSON)
+    POST /v1/completions            – OpenAI-compatible completions
+    POST /v1/batch                  – Batch: array of chat completion requests
+    GET  /v1/models                 – List registered models + loaded status
+    POST /v1/models/{name}/unload   – Force-unload a specific model
+    GET  /v1/status                 – GPU allocation summary
+    GET  /health                    – Health check
 """
 from __future__ import annotations
 
@@ -243,13 +247,19 @@ async def list_models():
   return JSONResponse({'object': 'list', 'data': manager.list_models()})
 
 
-@app.post('/v1/models/unload')
-async def unload_model():
+@app.post('/v1/models/{model_name}/unload')
+async def unload_model(model_name: str):
   assert manager is not None
-  name = await manager.unload_current()
-  if name is None:
-    return JSONResponse({'status': 'no model loaded'})
-  return JSONResponse({'status': 'unloaded', 'model': name})
+  was_loaded = await manager.unload_model(model_name)
+  if not was_loaded:
+    raise HTTPException(404, detail=f'Model {model_name!r} is not currently loaded')
+  return JSONResponse({'status': 'unloaded', 'model': model_name})
+
+
+@app.get('/v1/status')
+async def gpu_status():
+  assert manager is not None
+  return JSONResponse(manager.status())
 
 
 @app.get('/health')
@@ -264,7 +274,7 @@ async def health():
 @bentoml.service(
   name='vllm-batch-service',
   traffic={'timeout': 600},
-  resources={'gpu': 1},
+  resources={'gpu': int(os.environ.get('NUM_GPUS', '1'))},
 )
 @bentoml.mount_asgi_app(app)
 class VLLMBatchService:
@@ -273,4 +283,8 @@ class VLLMBatchService:
     config_path = os.environ.get('MODELS_CONFIG', 'models_config.yaml')
     manager = ModelManager(config_path)
     asyncio.get_event_loop().create_task(manager.start_idle_monitor())
-    logger.info('VLLMBatchService started, config=%s', config_path)
+    logger.info(
+      'VLLMBatchService started, config=%s, total_gpus=%d',
+      config_path,
+      manager.total_gpus,
+    )
