@@ -2,40 +2,59 @@
 #
 # models_dir: base directory where HuggingFace model files are stored.
 # idle_timeout_seconds: unload a model after this many seconds of inactivity.
+# max_batch_size: max requests allowed in a single /v1/batch call.
 #
 # Each model entry:
 #   path  – relative to models_dir (or an absolute path / HF repo ID)
 #   tp    – tensor parallelism: number of GPUs this model needs (default 1)
+#   gpu_memory_utilization – fraction of GPU VRAM this model reserves (default 0.40)
+#       Multiple models share one GPU as long as the sum ≤ 0.90 (10% headroom).
+#       Example on 80GB A100: 0.40 = ~32GB per model → 2 models per GPU.
 #   max_model_len – context length cap (optional, vLLM auto-detects if omitted)
-#   gpu_memory_utilization – fraction of GPU memory to use (default 0.90)
+#   max_num_seqs – max concurrent sequences per batch (default: vLLM default 256)
+#       Increase for batch throughput (e.g. 1024), decrease for lower latency.
+#   max_num_batched_tokens – max tokens across all sequences per scheduler step
+#       (default: vLLM default 8192). Increase for batch throughput (e.g. 32768).
 #   dtype – data type override (default "auto")
 #   extra_args – additional kwargs forwarded to AsyncEngineArgs
 #
-# GPU allocation:
-#   With 1 GPU:  only one model loaded at a time (auto-swaps on demand).
-#   With 8 GPUs: e.g. load a 70B model (tp=4) on GPUs 0-3 and an 8B model
-#                (tp=1) on GPU 4 simultaneously.  LRU eviction frees GPUs
-#                when a new model doesn't fit.
+# GPU memory budgeting (single GPU example, 80GB A100):
+#   ┌─────────────────────────────────────────────────────────────┐
+#   │ Model A (8B, util=0.40, ~32GB) │ Model B (8B, util=0.40)   │
+#   │ headroom (10%, ~8GB)           │ free (~8GB)                │
+#   └─────────────────────────────────────────────────────────────┘
+#
+# Multi-GPU example (4x A100):
+#   GPU 0: Model A (8B, util=0.40) + Model B (8B, util=0.40)
+#   GPU 1: Model C (8B, util=0.40) + Model D (8B, util=0.40)
+#   GPU 2-3: Model E (70B, tp=2, util=0.85 on each GPU)
 
 models_dir: "/data/models"
 idle_timeout_seconds: 1800
+max_batch_size: 128
 
 models:
   llama3.1-8b-instruct:
     path: "meta-llama/Meta-Llama-3.1-8B-Instruct"
     tp: 1
+    gpu_memory_utilization: 0.40
     max_model_len: 8192
-    gpu_memory_utilization: 0.90
+    max_num_seqs: 512
+    max_num_batched_tokens: 16384
 
   qwen3-8b:
     path: "Qwen/Qwen3-8B"
     tp: 1
+    gpu_memory_utilization: 0.40
     max_model_len: 4096
-    gpu_memory_utilization: 0.90
+    max_num_seqs: 512
+    max_num_batched_tokens: 16384
 
   # Example: large model requiring 4 GPUs
   # llama3.3-70b-instruct:
   #   path: "meta-llama/Llama-3.3-70B-Instruct"
   #   tp: 4
+  #   gpu_memory_utilization: 0.85
   #   max_model_len: 8192
-  #   gpu_memory_utilization: 0.90
+  #   max_num_seqs: 256
+  #   max_num_batched_tokens: 8192

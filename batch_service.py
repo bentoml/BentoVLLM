@@ -224,6 +224,14 @@ async def batch(request: Request):
   if not requests:
     raise HTTPException(400, detail='Missing or empty "requests" array')
 
+  max_batch = manager.max_batch_size
+  if len(requests) > max_batch:
+    raise HTTPException(
+      400,
+      detail=f'Batch size {len(requests)} exceeds max_batch_size={max_batch}. '
+      f'Split your requests into smaller batches.',
+    )
+
   try:
     loaded = await manager.get_engine(model_name)
   except ValueError as exc:
