@@ -1,0 +1,24 @@
+# Model registry for the batch service.
+# models_dir: base directory where HuggingFace model files are stored.
+# idle_timeout_seconds: unload a model after this many seconds of inactivity.
+#
+# Each model entry:
+#   path  – relative to models_dir (or an absolute path / HF repo ID)
+#   max_model_len – context length cap (optional, vLLM will auto-detect if omitted)
+#   gpu_memory_utilization – fraction of GPU memory to use (default 0.90)
+#   dtype – data type override (default "auto")
+#   extra_args – additional kwargs forwarded to AsyncEngineArgs
+
+models_dir: "/data/models"
+idle_timeout_seconds: 1800
+
+models:
+  llama3.1-8b-instruct:
+    path: "meta-llama/Meta-Llama-3.1-8B-Instruct"
+    max_model_len: 8192
+    gpu_memory_utilization: 0.90
+
+  qwen3-8b:
+    path: "Qwen/Qwen3-8B"
+    max_model_len: 4096
+    gpu_memory_utilization: 0.90
