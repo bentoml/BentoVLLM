@@ -2,13 +2,6 @@
     <h1 align="center">Self-host Gemma 3 4B Instruct with vLLM and BentoML</h1>
 </div>
 
-Follow this guide to self-host the Gemma 3 4B Instruct model with BentoCloud in your own cloud account. If your team doesn’t already have access to BentoCloud, please use the link below to contact us and set it up in your cloud environment.
-
-[![Deploy on BentoCloud](https://img.shields.io/badge/Deploy_on_BentoCloud-d0bfff?style=for-the-badge)](https://cloud.bentoml.com/)
-[![Talk to sales](https://img.shields.io/badge/Talk_to_sales-eefbe4?style=for-the-badge)](https://bentoml.com/contact)
-
-See [here](https://docs.bentoml.com/en/latest/examples/overview.html) for a full list of BentoML example projects.
-
 💡 This example is served as a basis for advanced code customization, such as custom model, inference logic or vLLM options. For simple LLM hosting with OpenAI compatible endpoint without writing any code, see [OpenLLM](https://github.com/bentoml/OpenLLM).
 
 ## Prerequisites
@@ -91,38 +84,4 @@ print(completion.choices[0].message.content)  # will return something like: {"ci
 
 All supported extra parameters are listed in [vLLM documentation](https://docs.vllm.ai/en/latest/serving/openai_compatible_server.html#extra-parameters).
 
-**Note**: If your Service is deployed with [protected endpoints on BentoCloud](https://docs.bentoml.com/en/latest/bentocloud/how-tos/manage-access-token.html#access-protected-deployments), you need to set the environment variable `OPENAI_API_KEY` to your BentoCloud API key first.
-
-```bash
-export OPENAI_API_KEY={YOUR_BENTOCLOUD_API_TOKEN}
-```
-
-You can then use the following line to replace the client in the above code snippet. Refer to [Obtain the endpoint URL](https://docs.bentoml.com/en/latest/bentocloud/how-tos/call-deployment-endpoints.html#obtain-the-endpoint-url) to retrieve the endpoint URL.
-
-```python
-client = OpenAI(base_url='your_bentocloud_deployment_endpoint_url/v1')
-```
-
-For detailed explanations of the Service code, see [vLLM inference](https://docs.bentoml.org/en/latest/examples/vllm.html).
-
-## Deploy to BentoCloud
-
-After the Service is ready, you can deploy the application to BentoCloud for better management and scalability. [Sign up](https://www.bentoml.com/) if you haven't got a BentoCloud account.
-
-Make sure you have [logged in to BentoCloud](https://docs.bentoml.com/en/latest/scale-with-bentocloud/manage-api-tokens.html).
-
-```bash
-bentoml cloud login
-```
-
-Create a BentoCloud secret to store the required environment variable and reference it for deployment.
-
-```bash
-bentoml secret create huggingface HF_TOKEN=$HF_TOKEN
-
-bentoml deploy service:LLM --secret huggingface
-```
-
-Once the application is up and running on BentoCloud, you can access it via the exposed URL.
-
-**Note**: For custom deployment in your own infrastructure, use [BentoML to generate an OCI-compliant image](https://docs.bentoml.com/en/latest/get-started/packaging-for-deployment.html).
+For custom deployment in your own infrastructure, use [BentoML to generate an OCI-compliant image](https://docs.bentoml.com/en/latest/get-started/packaging-for-deployment.html).
